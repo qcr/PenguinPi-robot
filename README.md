@@ -1,45 +1,103 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
+#Welcome to EGB439 Advanced Robotics
+  - Included in this repository is python, matlab and c code used to operate the
+    PenguinPi using the Raspbian Jessie operating system. Please note all code
+    stored here will restore you robot to default and changes will be lost
+  - if you wish to use a different operating system please speak to your tutor
+  
+Folders
+  - ```matlab``` runs on your computer and talks to the robot
+  - ```python``` Python 3 code that runs on the Raspberry Pi
+  - ```atmelstudio``` C code that runs on the Atmel processor on the shield that connects the Pi to the robot hardware
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+##Defaults
+###Raspberry pi login
+  username: pi
+  Password: raspberry - see instruction to change
+  https://www.raspberrypi.org/documentation/linux/usage/users.md
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
+Change your host name https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/
 
----
+server-camera.py, server-motors_fixed.py and GPIOSoftShutdown.py launch at
+start up if you wish to change this please speak to your tutor
 
-## Edit a file
+##Network setup
+This needs to be done on the Pi either by SSH or connecting it to a screen and key board
+Open in nano (text editor) and make the following changes - sudo nano /etc/network/interfaces
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
+###ENB439_TpLink_Config
+```
+allow-hotplug wlan0 
+auto wlan0
+iface wlan0 inet dhcp
+    wpa-ap-scan 1
+    wpa-scan-ssid 1
+    wpa-ssid "ENB439"
+    wpa-proto RSN
+    wpa-pairwise TKIP
+    wpa-key-mgmt WPA-PSK
+    wpa-psk "enb439123"
+```
 
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
+###ENB439-2_Linksys_Config
+```
+allow-hotplug wlan0 
+auto wlan0
+iface wlan0 inet dhcp
+    wpa-ssid "EGB439-2"
+    wpa-psk "egb439123"
+```
 
----
+###ENB439-3 QUT Network with internet access
+```
+allow-hotplug wlan0 
+auto wlan0
+iface wlan0 inet dhcp
+    wpa-ssid "EGB439-3"
+    wpa-psk "egb439123"
+```
 
-## Create a file
+###Mobile Tethering
+```
+allow-hotplug wlan0
+auto wlan0
+iface wlan0 inet dhcp
+    wpa-ap-scan 1
+    wpa-scan-ssid 1
+    wpa-ssid "networkName"
+    wpa-proto RSN
+    wpa-pairwise CCMP
+    wpa-key-mgmt WPA-PSK
+    wpa-psk "password"
+```
 
-Next, you’ll add a new file to this repository.
+###Tethering
+```
+auto eth0
+iface eth0 inet static
+    address 192.168.0.100
+    netmask 255.255.255.0
 
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
+```
 
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
-
----
-
-## Clone a repository
-
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
-
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
-
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).
+##Connecting to the internet 
+####(Comment out the fixed IP address address settings and include the line)
+```
+iface eth0 inet manual
+```
+After configuring interfaces restart the Pi with sudo reboot and run
+```
+./InternetAccessClient/IAClientConfigCmd
+```
+Step through the instructions adding your user name and password when prompted and leaving the other fields unmodified.
+```
+Authentication server [http://ias-services.qut.edu.au/IAServer/]:
+Username: nxxxxxx
+Password: ***
+Domain [qut.edu.au]:
+```
+Run the comand. 
+```
+./InternetAccessClient/IAClient
+```
+This will notify of a secessful connection when finished note this may take a few minuets on the first connection. When connected press ctrl c to close the program.
+This last step will be repeted each time a connection is needed
