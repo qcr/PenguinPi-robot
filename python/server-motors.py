@@ -25,7 +25,7 @@ FN_DISPLAY_VALUE = 'setDisplayValue'
 FN_DISPLAY_MODE = 'setDisplayMode'
 FN_ALL_STOP = 'stopAll'
 
-
+IP_connected = 0
 """
 " Helper functions
 """
@@ -156,10 +156,62 @@ def executeRequestedFunction(requestData, connection):
 " Heartbeat thread, pulse the green LED periodically
 """
 def HeartBeat():
+    global IP_connected
 
-    led = ppi.LED(ppi.AD_LED_G)
+    led = ppi.LED(ppi.AD_LED_R)
 
     while True:
+        #
+        # if IP_connected = 0:
+        #
+        #     if ip_addr_eth0_str.find("inet ") != -1: 
+        #         ip_addr_eth0_str   = ip_addr_eth0_str.split("inet ")[1].split("/")[0]
+        #         IP_connected = 1
+        #     else:
+        #         ip_addr_eth0_str   = "1.1.1.1"
+        #
+        #     if ip_addr_wlan0_str.find("inet ") != -1: 
+        #         ip_addr_wlan0_str  = ip_addr_wlan0_str.split("inet ")[1].split("/")[0]
+        #         IP_connected = 1
+        #     else:
+        #         ip_addr_wlan0_str   = "1.1.1.1"
+        #
+        #     print ( "ETH0 Address is ", ip_addr_eth0_str )
+        #     print ( "WLAN0 Address is ", ip_addr_wlan0_str )
+        #
+        #     oled.set_ip_eth ( ip_addr_eth0_str )
+        #     oled.set_ip_wlan( ip_addr_wlan0_str )
+        #
+        #
+
+        if IP_connected == 0:
+            oled = ppi.OLED( ppi.AD_OLED )
+            ip_addr_eth0_str   = os.popen('ip addr show eth0').read()
+            print(ip_addr_eth0_str)
+            ip_addr_wlan0_str  = os.popen('ip addr show wlan0').read()
+
+
+            print('not con')
+
+            if ip_addr_eth0_str.find("inet ") != -1: 
+                ip_addr_eth0_str   = ip_addr_eth0_str.split("inet ")[1].split("/")[0]
+                IP_connected = 1
+            else:
+                ip_addr_eth0_str   = "1.1.1.1"
+
+            if ip_addr_wlan0_str.find("inet ") != -1: 
+                ip_addr_wlan0_str  = ip_addr_wlan0_str.split("inet ")[1].split("/")[0]
+                IP_connected = 1
+            else:
+                ip_addr_wlan0_str   = "1.1.1.1"
+
+            print ( "ETH0 Address is ", ip_addr_eth0_str )
+            print ( "WLAN0 Address is ", ip_addr_wlan0_str )
+
+            oled.set_ip_eth ( ip_addr_eth0_str )
+            oled.set_ip_wlan( ip_addr_wlan0_str )
+
+
         led.set_state(1);
         led.set_count(1000);
         time.sleep(2);
@@ -215,13 +267,14 @@ except ValueError:
 sock.listen(1)
 
 while True:
-	connection, client_address = sock.accept()
-	recv_str = connection.recv(CHUNK_SIZE)
-	data = recv_str
-	while not recv_str:
-		recv_str = connection.recv(CHUNK_SIZE)
-		data += recv_str
-	# TODO should check if all data was received.... but too lazy
+    connection, client_address = sock.accept()
+    recv_str = connection.recv(CHUNK_SIZE)
+    data = recv_str
+    while not recv_str:
+            recv_str = connection.recv(CHUNK_SIZE)
+            data += recv_str
+    # TODO should check if all data was received.... but too lazy
 
-	# Send the data to the function processor
-	executeRequestedFunction(data.rstrip(), connection)
+    # Send the data to the function processor
+    executeRequestedFunction(data.rstrip(), connection)
+
