@@ -1,0 +1,9 @@
+{% include 'header.html' %}
+      <form action="" method="post">
+         <p>Enter motor speeds:
+         <input type="text" value="{{ speed_l }}" name="Left" />
+         <input type="text" value="{{ speed_r }}" name="Right" />
+         <p><input type="submit" value="Set" name="Set" /></p>
+         <p><input type="submit" value="STOP" name="STOP" /></p>
+      </form>
+{% include 'footer.html' %}

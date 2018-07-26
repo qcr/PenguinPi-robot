@@ -1,0 +1,44 @@
+body {
+        background-color: lightblue;
+        font-family:"Helvetica";
+}
+
+h1 {
+        color: navy;
+        text-align:left;
+        font-family: Helvetica;
+        font-size:50px;
+}
+
+.nav-tab {
+    background-color: #ffdc73;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom-right-radius: 12px;
+}
+
+/* page copyright footer */
+.footer {
+    clear:both;
+    background-color:#808080;
+    color:white;
+    font-family:"Helvetica";
+    padding: 5px;
+    margin-top: 40px;
+}
+
+/* column spacing for table */
+td {
+    padding-left: 7.5px;
+    padding-right: 7.5px;
+}
+
+td:first-child {
+  padding-left: 0;
+}
+
+td:last-child {
+    padding-right: 0;
+}
