@@ -6,6 +6,7 @@ import time
 import os
 import threading
 import queue
+import datetime
 
 #Communications Defines
 STARTBYTE = 0x11 #Device Control 1
@@ -196,19 +197,26 @@ class UART(object):
         '''
         dgram = (struct.pack('!B', STARTBYTE)) + dgram
         self.ser.write(dgram)
+        #print(str(datetime.datetime.now())+": DGRAM: ad=0x%02x op=0x%02x" % (dgram[2], dgram[3]) )    ;
+
 
     def uart_recv(self):
         '''thread: receives command packets, and prints other messages
         '''
+        startLine = True;
         while not self.close_event.is_set():
             #read first byte
-            com = self.ser.read(size=1)
+            try:
+                com = self.ser.read(size=1)
+            except:
+                print("--- caught serial port error")
             if len(com) == 0:
                 continue;
             if ord(com) == 0:
                 continue
             elif ord(com) == STARTBYTE:
                 #extract the packet from the UART
+                print("#", end="")
                 paylen = self.ser.read()
                 paylenint, = struct.unpack("!B", paylen)
                 dgram = self.ser.read(paylenint-2)
@@ -226,13 +234,16 @@ class UART(object):
 
             else: #displayable
                 if ord(com) == 10:
-                    print(" ")
+                    print("")   # print LF
+                    startLine = True;
                 else:
-                    print(com.decode("utf-8", "ignore"))
+                    if startLine:
+                        print(str(datetime.datetime.now())+": ", end="");
+                        startLine = False;
+                    print(com.decode("utf-8", "ignore"), end="")    # print the character
 
 #create UART object
 uart = UART("/dev/serial0", 115200)
-
 
 
 def init():
