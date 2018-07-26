@@ -1,0 +1,44 @@
+{% include 'header.html' %}
+<h1>PenguinPi home page</h1>
+<table bgcolor="SkyBlue">
+    <tr>
+      <td>
+        <table  cellpadding="5">
+           <tr>
+            <td>Pose.x</td> <td>{{ '%.2f'%pose_x }}</td>
+           </tr>
+            <td>Pose.y</td> <td>{{ '%.2f'%pose_y }}</td>
+           </tr>
+            <td>Pose.&theta;</td> <td>{{ '%.2f'%pose_theta }}</td>
+           </tr>
+           <tr>
+            <td>Encoder.left</td> <td>{{ enc_l }}</td>
+           </tr>
+           <tr>
+            <td>Encoder.right</td> <td>{{ enc_r }}</td>
+           </tr>
+           <tr>
+            <td>Battery</td> <td>{{ volts }}V</td>
+           </tr>
+        </table>
+    </td>
+    <td>
+       <img src="/picam" style="height:auto; width:100%; max-width:100%;" width="100%">
+    </td>
+    </tr>
+</table>
+   <br />
+      <form action = "" method = "post">
+         <p>Test motors
+         <input type = "submit" name = "test_l" value = "Left" />
+         <input type = "submit" name = "test_r" value = "Right" />
+         </p>
+      </form>
+      <form action = "" method = "post">
+          <p>
+         <input type = "submit" name = "refresh" value = "Refresh" />
+         </p>
+      </form>
+      <p>This robot contains a {{ model }}.</p>
+
+{% include 'footer.html' %}

@@ -1,0 +1,90 @@
+{% include 'header.html' %}
+
+{% macro Option(name,active) %}
+  {% if name == active %}
+    <option value="{{ name }}" selected>{{ name|capitalize }}</option>
+  {% else %}
+    <option value="{{ name }}">{{ name|capitalize }}</option>
+  {% endif %} 
+{% endmacro %}
+
+<h1>PenguinPi board camera</h1>
+<img src="/picam" width="60%">
+<br />
+<form action="" method="post" id="camera">
+  <table>
+    <tr>
+      <td>Rotation</td>
+      <td>
+          <select name="rotation">
+              {{ Option('0', rotation) }}
+              {{ Option('90', rotation) }}
+              {{ Option('180', rotation) }}
+              {{ Option('270', rotation) }}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>White balance mode</td>
+      <td>
+          <select name="awb_mode">
+              {{ Option('off', awb_mode) }}
+              {{ Option('auto', awb_mode) }}
+              {{ Option('sunlight', awb_mode) }}
+              {{ Option('cloudy', awb_mode) }}
+              {{ Option('shade', awb_mode) }}
+              {{ Option('tungsten', awb_mode) }}
+              {{ Option('fluorescent', awb_mode) }}
+              {{ Option('incandescent', awb_mode) }}
+              {{ Option('flash', awb_mode) }}
+              {{ Option('horizon', awb_mode) }}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Meter mode</td>
+      <td>
+          <select name="exposure">
+              {{ Option('average', meter_mode) }}
+              {{ Option('spot', meter_mode) }}
+              {{ Option('backlit', meter_mode) }}
+              {{ Option('matrix', meter_mode) }}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Dynamic range</td>
+      <td>
+        <select name="exposure">
+              {{ Option('off', exposure_mode) }}
+              {{ Option('low', exposure_mode) }}
+              {{ Option('medium', exposure_mode) }}
+              {{ Option('high', exposure_mode) }}
+        </select>
+      </td>
+    </tr>
+    <tr>
+        <td>ISO</td>
+        <td><input type="text" value="{{ iso }}" name="iso" /></td>
+    </tr>
+    <tr>
+        <td>Brightness</td>
+        <td><input type="text" value="{{ brightness }}" name="brightness" /></td>
+    </tr>
+    <tr>
+        <td>Exposure speed</td>
+        <td><input type="text" value="{{ exposure_speed }}" name="exposure_speed" /></td>
+    </tr>
+    <tr>
+        <td>Shutter speed</td>
+        <td><input type="text" value="{{ shutter_speed}}" name="shutter_speed" /></td>
+    </tr>
+    <tr>
+        <td>Zoom</td>
+        <td><input type="text" value="{{ zoom }}" name="zoom" /></td>
+    </tr>
+  </table>
+        <input type="submit" name="refresh" value="Refresh" />
+</form>
+
+{% include 'footer.html' %}
