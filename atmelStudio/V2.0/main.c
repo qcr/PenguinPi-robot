@@ -39,7 +39,6 @@
 #include "PenguinPi.h"
 
 #define ERRMSGLEN   80
-//#define errmessage(fmt, ...) errmsessage(PSTR(fmt), ##__VA_ARGS__)
 
 void errmessage(const char *fmt, ...);
 
@@ -286,7 +285,7 @@ uint8_t checkBuffer(void){
 		//check for errors
         if(com & UART_FRAME_ERROR){
             /* Framing Error detected, i.e no stop bit detected */
-            errmessage("ERROR: Bad UART Frame");
+            errmessage("Bad UART Frame");
 			//flash Blue LED
 			ledB.state = 1;
 			ledB.count = 1000;
@@ -298,7 +297,7 @@ uint8_t checkBuffer(void){
                 * not read by the interrupt handler before the next character arrived,
                 * one or more received characters have been dropped
                 */
-            errmessage("ERROR: UART Buffer Overrun");
+            errmessage("UART Buffer Overrun");
 			//flash BLUE LED
 			ledB.state = 1;
 			ledB.count = 1000;
@@ -309,7 +308,7 @@ uint8_t checkBuffer(void){
                 * We are not reading the receive buffer fast enough,
                 * one or more received character have been dropped 
                 */
-            errmessage("ERROR: UART Buffer Overflow");
+            errmessage("UART Buffer Overflow");
 			//flash BLUE LED
 			ledB.state = 1;
 			ledB.count = 1000;
@@ -365,7 +364,7 @@ void parseDatagram( uint8_t *datagram ){
 		
 		datagram[i] = checkBuffer();
 		if(i >= DGRAM_MAX_LENGTH){
-			errmessage("ERROR: Datagram Buffer Overflow");
+			errmessage("Datagram Buffer Overflow");
 			ledB.state = 1;
 			ledB.count = 1000;
 			return;
@@ -377,7 +376,7 @@ void parseDatagram( uint8_t *datagram ){
 	datagram[0] -= 1;	
 
 	if(crcCalc != crcDgram){
-		errmessage("ERROR: CRC Failed");
+		errmessage("CRC Failed");
 		ledB.state = 1;
 		ledB.count = 1000;
 		return;
@@ -440,8 +439,7 @@ void parseDatagram( uint8_t *datagram ){
 		break;
 		
 		default:
-			errmessage("ERROR: Datagram: unknown address %d", datagram[1]);
-			oled_show_error( &hat_oled, "Datagram:Unknown Address");
+			errmessage("Datagram: unknown address %d", datagram[1]);
 			//flash BLUE LED
 			ledB.state = 1;
 			ledB.count = 1000;
@@ -467,10 +465,8 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				else motor->dir = 0;
 				ledB.state = 1;
 				ledB.count = 1000;
-			}else{
+			}else
 				errmessage("ERROR: MOTOR_SET_SPEED: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_DPS:Incorrect Type");
-			}
 		break;
 		case MOTOR_SET_DEGREES:
 			if(datagram[0] == 5){
@@ -484,10 +480,8 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				if(degrees > 0) motor->dir = 1;
 				else if(degrees < 0) motor->dir = -1;
 				else motor->dir = 0;
-			}else{
-				errmessage("ERROR: MOTOR_SET_DEG: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_DEGS:Incorrect Type");
-			}
+			}else
+				errmessage("MOTOR_SET_DEG: incorrect type %d", datagram[0]);
 		break;
 		case MOTOR_SET_ENC:
             // actually does a reset
@@ -502,10 +496,8 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				if(direction > 0) motor->dir = 1;
 				else if(direction < 0) motor->dir = -1;
 				else motor->dir = 0;
-			}else{
-				errmessage("ERROR: MOTOR_SET_DIR: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_DIR:Incorrect Type");
-			}
+			} else
+				errmessage("MOTOR_SET_DIR: incorrect type %d", datagram[0]);
 		break;
 		case MOTOR_SET_GAIN_P:
 			if(datagram[0] == 7){
@@ -513,10 +505,8 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
 				motor->gainP = readFloat(flMem) * PID_SCALE;
 				motor->maxError = INT16_MAX / (motor->gainP + 1);				
-			}else{
-				errmessage("ERROR: MOTOR_SET_P: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_P:Incorrect Type");
-			}
+			}else
+				errmessage("MOTOR_SET_P: incorrect type %d", datagram[0]);
 		break;
 		case MOTOR_SET_GAIN_I:
 			if(datagram[0] == 7){
@@ -524,20 +514,16 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
 				motor->gainI = readFloat(flMem) * PID_SCALE;
 				motor->maxErrorSum = (INT32_MAX / 2) / (motor->gainI + 1);
-			}else{
-				errmessage("ERROR: MOTOR_SET_I: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_I:Incorrect Type");
-			}
+			}else
+				errmessage("MOTOR_SET_I: incorrect type %d", datagram[0]);
 		break;
 		case MOTOR_SET_GAIN_D:
 			if(datagram[0] == 7){
 				uint8_t flMem[4];
 				for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
 				motor->gainD = readFloat(flMem) * PID_SCALE;
-			}else{
-				errmessage("ERROR: MOTOR_SET_D: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_D:Incorrect Type");
-			}
+			}else
+				errmessage("MOTOR_SET_D: incorrect type %d", datagram[0]);
 		break;
 		case MOTOR_SET_ENC_MODE:
 			if(datagram[0] == 4){
@@ -547,10 +533,8 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				//also resets some of the motor struct
 				motor->degrees = 0;
 				motor->dir = 0;
-			}else{
-				errmessage("ERROR: MOTOR_SET_ENCMODE: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_ENC:Incorrect Type");
-			}
+			}else
+				errmessage("MOTOR_SET_ENCMODE: incorrect type %d", datagram[0]);
 		break;
 		case MOTOR_SET_CONTROL_MODE:
 			if(datagram[0] == 4){
@@ -559,10 +543,8 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				//also resets some of the motor struct
 				motor->degrees = 0;
 				motor->dir = 0;
-			}else{
-				errmessage("ERROR: MOTOR_SET_CONTROLMODE: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "MOTOR:SET_CTRL:Incorrect Type");
-			}
+			}else
+				errmessage("MOTOR_SET_CONTROLMODE: incorrect type %d", datagram[0]);
 		break;
 		
 		//GETTERS
@@ -615,8 +597,7 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 		break;
 		
 		default:
-			errmessage("ERROR: bad motor opcode %d", datagram[2]);
-			oled_show_error( hat_oled, "MOTOR:Unknown OpCode");
+			errmessage("bad motor opcode %d", datagram[2]);
 		break;		
 	}
 }
@@ -632,9 +613,8 @@ void parseDisplayOp	( uint8_t *datagram, Hat_oled *hat_oled, Display *display ){
 			if(datagram[0] == 4){
 				display->value = datagram[3];
 				display->draw = 1;
-			}else{
-				errmessage("ERROR: DISPLAY_SET_VALUE: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("DISPLAY_SET_VALUE: incorrect type %d", datagram[0]);
 		break;
 		case DISPLAY_SET_DIGIT_0:
 			if(datagram[0] == 4){
@@ -643,9 +623,8 @@ void parseDisplayOp	( uint8_t *datagram, Hat_oled *hat_oled, Display *display ){
 				else if(digit < -15) display->digit0 = -15;
 				else display->digit0 = digit;
 				display->draw = 1;
-			}else{
-				errmessage("ERROR: DISPLAY_SET_DIGIT: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("DISPLAY_SET_DIGIT: incorrect type %d", datagram[0]);
 		break;
 		case DISPLAY_SET_DIGIT_1:
 			if(datagram[0] == 4){
@@ -654,16 +633,15 @@ void parseDisplayOp	( uint8_t *datagram, Hat_oled *hat_oled, Display *display ){
 				else if(digit < -15) display->digit1 = -15;
 				else display->digit1 = digit;
 				display->draw = 1;
-			}else{
-				errmessage("ERROR: DISPLAY_SETDIGIT: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("DISPLAY_SETDIGIT: incorrect type %d", datagram[0]);
         case DISPLAY_SET_MODE:
 			if(datagram[0] == 4){
 				display->mode = datagram[3];
 				display->draw = 1;
-			}else{
-				errmessage("ERROR: DISPLAY_SETMODE: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("DISPLAY_SETMODE: incorrect type %d", datagram[0]);
+
 		break;
 		
 		//GETTERS
@@ -689,7 +667,7 @@ void parseDisplayOp	( uint8_t *datagram, Hat_oled *hat_oled, Display *display ){
 		break;
 		
 		default:
-			errmessage("ERROR: bad display opcode %d", datagram[2]);
+			errmessage("bad display opcode %d", datagram[2]);
 		break;
 	}
 }
@@ -702,9 +680,8 @@ void parseLEDOp		( uint8_t *datagram, Hat_oled *hat_oled, LED *led ){
 				int8_t state = datagram[3];
 				if(state >= 1) led->state = 1;
 				else led->state = 0;
-			}else{
-				errmessage("ERROR: LED_SETSTATE: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("LED_SETSTATE: incorrect type %d", datagram[0]);
 		break;
 		case LED_SET_BRIGHTNESS:
 			if(datagram[0] == 4){
@@ -712,16 +689,15 @@ void parseLEDOp		( uint8_t *datagram, Hat_oled *hat_oled, LED *led ){
 				if(brightness > 100) led->brightness = 100;
 				else if(brightness > 0) led->brightness = brightness;
 				else led->brightness = 0;
-			}else{
-				errmessage("ERROR: LED_SETBRIGHT: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("LED_SETBRIGHT: incorrect type %d", datagram[0]);
+
 		break;
 		case LED_SET_COUNT:
 			if(datagram[0] == 5){
 				led->count = (datagram[3]<<8)|datagram[4];
-			}else{
-				errmessage("ERROR: LED_SETCOUNT: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("LED_SETCOUNT: incorrect type %d", datagram[0]);
 		break;
 
 		//GETTERS
@@ -742,8 +718,7 @@ void parseLEDOp		( uint8_t *datagram, Hat_oled *hat_oled, LED *led ){
 		break;
 
 		default:
-			errmessage("ERROR: bad LED opcode %d", datagram[2]);
-			oled_show_error( hat_oled, "LED:Unknown OpCode");
+			errmessage("bad LED opcode %d", datagram[2]);
 		break;
 	}
 }
@@ -754,74 +729,76 @@ void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
 		//SETTERS
 		case OLED_SET_IP_ETH_1:
 			if( datagram[0] == 5 ){
-				hat_oled->eth_addr_1 = (datagram[3]<<8) | datagram[4];
+				hat_oled->eth[0] = (datagram[3]<<8) | datagram[4];
 			}
-			else {					
-				errmessage("ERROR: OLED_SET_IP1: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_E1:Incorrect Type");
-			}			
+			else			
+				errmessage("OLED_SET_IP1: incorrect type %d", datagram[0]);		
 		break;
 		case OLED_SET_IP_ETH_2:
 			if( datagram[0] == 5 ){
-				hat_oled->eth_addr_2 =  (datagram[3]<<8) | datagram[4];
-			}else{
-				errmessage("ERROR: OLED_SETIP2: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_E2:Incorrect Type");
-			}
+				hat_oled->eth[1] =  (datagram[3]<<8) | datagram[4];
+			} else
+				errmessage("OLED_SETIP2: incorrect type %d", datagram[0]);
 		break;
 		case OLED_SET_IP_ETH_3:
 			if( datagram[0] == 5 ){
-				hat_oled->eth_addr_3 = (datagram[3]<<8) | datagram[4];
-			}else{
-				errmessage("ERROR: OLED_SETIP3: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_E3:Incorrect Type");
-			}
+				hat_oled->eth[2] = (datagram[3]<<8) | datagram[4];
+			} else
+				errmessage("OLED_SETIP3: incorrect type %d", datagram[0]);
 		break;
 		case OLED_SET_IP_ETH_4:
 			if( datagram[0] == 5 ){
-				hat_oled->eth_addr_4 = (datagram[3]<<8) | datagram[4];
-			}else{
-				errmessage("ERROR: OLED_SETIP4: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_E4:Incorrect Type");
-			}
+				hat_oled->eth[3] = (datagram[3]<<8) | datagram[4];
+			} else
+				errmessage("OLED_SETIP4: incorrect type %d", datagram[0]);
+
 		break;
 		case OLED_SET_IP_WLAN_1:
 			if( datagram[0] == 5 ){
-				hat_oled->wlan_addr_1 = (datagram[3]<<8) | datagram[4];
+				hat_oled->wlan[0] = (datagram[3]<<8) | datagram[4];
 			}
-			else {					
-				errmessage("ERROR: OLED_SETIPWLAN1: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_W1:Incorrect Type");
-			}			
+			else				
+				errmessage("OLED_SETIPWLAN1: incorrect type %d", datagram[0]);			
 		break;
 		case OLED_SET_IP_WLAN_2:
 			if( datagram[0] == 5 ){
-				hat_oled->wlan_addr_2 =  (datagram[3]<<8) | datagram[4];
-			}else{
-				errmessage("ERROR: OLED_SETIPWLAN2: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_W2:Incorrect Type");
-			}
+				hat_oled->wlan[1] =  (datagram[3]<<8) | datagram[4];
+			}else
+				errmessage("OLED_SETIPWLAN2: incorrect type %d", datagram[0]);
+
 		break;
 		case OLED_SET_IP_WLAN_3:
 			if( datagram[0] == 5 ){
-				hat_oled->wlan_addr_3 = (datagram[3]<<8) | datagram[4];
-			}else{
-				errmessage("ERROR: OLED_SETIPWLAN3: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_W3:Incorrect Type");
-			}
+				hat_oled->wlan[2] = (datagram[3]<<8) | datagram[4];
+			}else
+				errmessage("OLED_SETIPWLAN3: incorrect type %d", datagram[0]);
+
 		break;
 		case OLED_SET_IP_WLAN_4:
 			if( datagram[0] == 5 ){
-				hat_oled->wlan_addr_4 = (datagram[3]<<8) | datagram[4];
-			}else{
-				errmessage("ERROR: OLED_SETIPWLAN4: incorrect type %d", datagram[0]);
-				oled_show_error( hat_oled, "OLED:SET_W4:Incorrect Type");
-			}
-		break;		
+				hat_oled->wlan[3] = (datagram[3]<<8) | datagram[4];
+			}else
+				errmessage("OLED_SETIPWLAN4: incorrect type %d", datagram[0]);
+
+		break;	
+		case OLED_SET_IP_ETH
+			if( datagram[0] == 7 ){
+				for (uint8_t i=0; i<4; i++)
+					hat_oled->eth[i] = datagram[i];
+			}else
+				errmessage("OLED_SETIPETH: incorrect type %d", datagram[0]);
+
+		break;
+		case OLED_SET_IP_WLAN
+			if( datagram[0] == 7 ){
+				for (uint8_t i=0; i<4; i++)
+					hat_oled->wlan[i] = datagram[i];
+			}else
+				errmessage("OLED_SETIPWLAN: incorrect type %d", datagram[0]);
+		break;
 		
 		default:
-			errmessage("ERROR: bad OLED opcode %d", datagram[2]);
-			oled_show_error( hat_oled, "OLED:Unknown OpCode");
+			errmessage("bad OLED opcode %d", datagram[2]);
 		break;
 	}	
 }
@@ -834,9 +811,8 @@ void parseADCOp		( uint8_t *datagram, Hat_oled *hat_oled, AnalogIn *adc ){
 				uint8_t flMem[4];
 				for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
 				adc->scale = readFloat(flMem);
-			}else{
-				errmessage("ERROR: ADC_SETSCALE: incorrect type %d", datagram[0]);
-			}
+			}else
+				errmessage("ADC_SETSCALE: incorrect type %d", datagram[0]);
 		break;
 		
 		//GETTERS
@@ -857,7 +833,7 @@ void parseADCOp		( uint8_t *datagram, Hat_oled *hat_oled, AnalogIn *adc ){
 		break;
 		
 		default:
-			errmessage("ERROR: bad ADC opcode %d", datagram[2]);
+			errmessage("bad ADC opcode %d", datagram[2]);
 			//flash BLUE LED
 			ledB.state = 1;
 			ledB.count = 1000;			
@@ -865,6 +841,7 @@ void parseADCOp		( uint8_t *datagram, Hat_oled *hat_oled, AnalogIn *adc ){
 	}
 }
 
+// central error message handler, sends to serial port and OLED
 void errmessage(const char *fmt, ...)
 {
     va_list ap;
@@ -873,8 +850,11 @@ void errmessage(const char *fmt, ...)
     va_start(ap, fmt);
 
     vsnprintf(buf, ERRMSGLEN, fmt, ap);
+    uart_puts("ERR: ");
     uart_puts(buf);
     uart_puts("\n");
+
+    oled_show_error( hat_oled, buf);
 
     va_end(ap);
 }
@@ -935,37 +915,6 @@ void parseAllOp		( uint8_t *datagram ){
 		break;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1166,20 +1115,20 @@ int16_t main(void) {
         
 						
 		//LED update
-			if(ledR.state > 0) {
-				if(ledR.brightness > 0) redLEDPercent(ledR.brightness);
-				else 					LEDOn(LED_R);
-			} else 						LEDOff(LED_R);
-	
-			if(ledG.state > 0) {
-				if(ledG.brightness > 0) greenLEDPercent(ledG.brightness);
-				else 					LEDOn(LED_G);
-			} else 						LEDOff(LED_G);
-	
-			if(ledB.state > 0) { 
-				if(ledB.brightness > 0) blueLEDPercent(ledB.brightness);
-				else 					LEDOn(LED_B);
-			} else 						LEDOff(LED_B);
+		if(ledR.state > 0) {
+			if(ledR.brightness > 0) redLEDPercent(ledR.brightness);
+			else 					LEDOn(LED_R);
+		} else 						LEDOff(LED_R);
+
+		if(ledG.state > 0) {
+			if(ledG.brightness > 0) greenLEDPercent(ledG.brightness);
+			else 					LEDOn(LED_G);
+		} else 						LEDOff(LED_G);
+
+		if(ledB.state > 0) { 
+			if(ledB.brightness > 0) blueLEDPercent(ledB.brightness);
+			else 					LEDOn(LED_B);
+		} else 						LEDOff(LED_B);
 		
 
 
