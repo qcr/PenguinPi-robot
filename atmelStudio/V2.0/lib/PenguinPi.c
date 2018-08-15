@@ -864,23 +864,23 @@ void oled_screen   ( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *mo
 			oled_string( 0, 0, "IP Addresses" );
 			
 			oled_string( 0, 1, "eth      .   .   ." );			
-				sprintf(fstring, "%3d", oled->eth_addr_1 );
+				sprintf(fstring, "%3d", oled->eth[0] );
 				oled_string (  6,1,fstring );			
-				sprintf(fstring, "%3d", oled->eth_addr_2 );
+				sprintf(fstring, "%3d", oled->eth[1] );
 				oled_string ( 10,1,fstring );
-				sprintf(fstring, "%3d", oled->eth_addr_3 );
+				sprintf(fstring, "%3d", oled->eth[2] );
 				oled_string ( 14,1,fstring );
-				sprintf(fstring, "%3d", oled->eth_addr_4 );
+				sprintf(fstring, "%3d", oled->eth[3] );
 				oled_string ( 18,1,fstring );			
 			
 			oled_string( 0, 2, "wlan     .   .   ." );
-				sprintf(fstring, "%3d", oled->wlan_addr_1 );
+				sprintf(fstring, "%3d", oled->wlan[0] );
 				oled_string (  6,2,fstring );			
-				sprintf(fstring, "%3d", oled->wlan_addr_2 );
+				sprintf(fstring, "%3d", oled->wlan[1] );
 				oled_string ( 10,2,fstring );
-				sprintf(fstring, "%3d", oled->wlan_addr_3 );
+				sprintf(fstring, "%3d", oled->wlan[2] );
 				oled_string ( 14,2,fstring );
-				sprintf(fstring, "%3d", oled->wlan_addr_4 );
+				sprintf(fstring, "%3d", oled->wlan[3] );
 				oled_string ( 18,2,fstring );						
 			
 		
