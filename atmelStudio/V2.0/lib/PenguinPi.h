@@ -111,20 +111,26 @@ typedef struct {
 	uint8_t 			show_option;		// Selects which screen to show
 	
 	//IP Addresses
-	int16_t				eth_addr_1;	
-	int16_t				eth_addr_2;
-	int16_t				eth_addr_3;
-	int16_t				eth_addr_4;
+	// int16_t				eth_addr_1;	
+	// int16_t				eth_addr_2;
+	// int16_t				eth_addr_3;
+	// int16_t				eth_addr_4;
 	
-	int16_t				wlan_addr_1;	
-	int16_t				wlan_addr_2;
-	int16_t				wlan_addr_3;
-	int16_t				wlan_addr_4;
+	// int16_t				wlan_addr_1;	
+	// int16_t				wlan_addr_2;
+	// int16_t				wlan_addr_3;
+	// int16_t				wlan_addr_4;
+
+	uint8_t				eth[4];
+	uint8_t				wlan[4];
 	
 	//Error messages
 	uint8_t				err_line_1[21];
 	uint8_t 			err_line_2[21];
 	uint8_t				err_line_3[21];
+
+	// User messages
+	uint8_t				user_msg[4][21];
 	
 } Hat_oled;
 
@@ -409,6 +415,9 @@ void buttonLogic(Button *button, uint8_t btnVal);
 #define OLED_SET_IP_WLAN_2 	0x06
 #define OLED_SET_IP_WLAN_3 	0x07
 #define OLED_SET_IP_WLAN_4	0x08
+
+#define OLED_SET_IP_ETH    0x10
+#define OLED_SET_IP_WLAN   0x11
 
 //BUTTON
 #define BUTTON_SET_PROGRAM_MODE 0x01
