@@ -1,15 +1,17 @@
-{% include 'header.html' %}
+#extends 'base.html'
 
-{% macro Option(name,active) %}
-  {% if name == active %}
+# macro Option(name,active)
+#  if name == active
     <option value="{{ name }}" selected>{{ name|capitalize }}</option>
-  {% else %}
+#  else
     <option value="{{ name }}">{{ name|capitalize }}</option>
-  {% endif %} 
-{% endmacro %}
+#  endif
+# endmacro 
+
+#block content
 
 <h1>PenguinPi board camera</h1>
-<img src="/picam" width="60%">
+<img src="/get/camera" width="60%">
 <br />
 <form action="" method="post" id="camera">
   <table>
@@ -87,4 +89,4 @@
         <input type="submit" name="refresh" value="Refresh" />
 </form>
 
-{% include 'footer.html' %}
+ #endblock
