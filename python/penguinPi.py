@@ -8,11 +8,6 @@ import threading
 import queue
 import datetime
 
-import sys
-if sys.version_info[0] < 3:
-    raise Exception("Must be using Python 3")
-
-
 #Communications Defines
 STARTBYTE = 0x11 #Device Control 1
 
@@ -230,7 +225,12 @@ class UART(object):
                 dgram = self.ser.read(paylenint-2)
                 crcDgram = self.ser.read()
                 dgram = paylen + dgram
-                crcDgram, = struct.unpack("!B", crcDgram)\
+                try:
+                    crcDgram, = struct.unpack("!B", crcDgram)
+                except:
+                    print('error with datagram')
+                    print_hex(dgram, 'DGRAM')
+
                 #run crcCalc to ensure correct data
                 crcCalc = crc8(dgram, paylenint-1)
                 if crcCalc == crcDgram:
@@ -238,7 +238,10 @@ class UART(object):
                 else:
                     #todo: throw an exception?
                     print("ERROR: CRC Failed (Python)")
-                    print("Calculated CRC: " + hex(crcCalc) + " Recieved CRC: " + hex(crcDgram))
+                    print("Calculated CRC: " + hex(crcCalc) + " Received CRC: " + hex(crcDgram))
+                    print('len=', paylenint)
+                    print_hex(dgram, 'DGRAM')
+                    self.queue.put(None)
 
             else: #displayable
                 if ord(com) == 10:
@@ -248,7 +251,8 @@ class UART(object):
                     if startLine:
                         print(str(datetime.datetime.now())+": ", end="");
                         startLine = False;
-                    print(com.decode("utf-8", "ignore"), end="")    # print the character
+                    #print('CHAR', com.decode("utf-8", "ignore"), end="")    # print the character
+                    print_hex(com, 'C')
 
 #create UART object
 uart = UART("/dev/serial0", 115200)
@@ -283,10 +287,10 @@ def crc8(word, length):
     return crc
 
 
-def print_hex(bin):
+def print_hex(bin, label=''):
     '''print hex value
     '''
-    print(" ".join(hex(n) for n in bin))
+    print(label + ': ', " ".join(hex(n) for n in bin))
 
 
 def form_datagram(address, opCode, payload=0x00, paytype=''):
@@ -318,13 +322,14 @@ def form_datagram(address, opCode, payload=0x00, paytype=''):
 
 def extract_payload(bin, address, opcode, paytype):
     '''Extracts payload from the microcontroler
+       return is int or float
     '''
     if paytype == 'char':
         upackstr = "!b"
+    elif paytype == 'uint':
+        upackstr = "!H" #h represents a 2 byte unsigned int
     elif paytype == 'int':
         upackstr = "!h" #h represents a 2 byte signed int
-    elif paytype == 'long':
-        upackstr = "!l" #l represents a 4 byte signed int
     elif paytype == 'float':
         upackstr = "!f"
     else :
@@ -336,7 +341,8 @@ def extract_payload(bin, address, opcode, paytype):
             com, = struct.unpack(upackstr, bin[3:])
             return com
     else:
-        print(bin.decode("utf-8", "ignore"))
+        #print('EX', bin.decode("utf-8", "ignore"))
+        print_hex(bin, 'EX')
         return 0
 
 
@@ -345,14 +351,19 @@ def get_variable(address, opcode, paytype, timeout=2):
     '''
     dgram = form_datagram(address, opcode)
     uart.putcs(dgram)
-    bin = uart.queue.get()
-    #clear the MSB of the opcode
-    opcode = opcode & 0b01111111
-    payload = extract_payload(bin, address, opcode, paytype)
-    print('payload: ', payload)
-    uart.queue.task_done()
-    return payload
+    try:
+        bin = uart.queue.get(timeout=0.2)
+        if bin:
+            #clear the MSB of the opcode
+            opcode = opcode & 0b01111111
+            payload = extract_payload(bin, address, opcode, paytype)
+            uart.queue.task_done()
+            return payload
+    except queue.Empty:
+        print('-- queue read times out')
 
+    # some error occurred, flag it
+    return None
 
 def get_dip():
     '''Read the DIP switches.  
