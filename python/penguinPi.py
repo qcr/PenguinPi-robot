@@ -8,6 +8,11 @@ import threading
 import queue
 import datetime
 
+import sys
+if sys.version_info[0] < 3:
+    raise Exception("Must be using Python 3")
+
+
 #Communications Defines
 STARTBYTE = 0x11 #Device Control 1
 
@@ -141,6 +146,10 @@ ALL_STOP = 0xFF
 CLEAR_DATA = 0xEE
 SET_RESET = 0xDD
 GET_RESET = 0x11
+ALL_SET_DIP = 0x20
+ALL_GET_DIP = 0xA0
+ALL_SET_MOTORS = 0x23
+ALL_GET_MOTORS = 0xA3
 
 class UART(object):
     """Setup UART comunication between the raspberry pi and the microcontroler
@@ -216,7 +225,6 @@ class UART(object):
                 continue
             elif ord(com) == STARTBYTE:
                 #extract the packet from the UART
-                print("#", end="")
                 paylen = self.ser.read()
                 paylenint, = struct.unpack("!B", paylen)
                 dgram = self.ser.read(paylenint-2)
@@ -315,6 +323,8 @@ def extract_payload(bin, address, opcode, paytype):
         upackstr = "!b"
     elif paytype == 'int':
         upackstr = "!h" #h represents a 2 byte signed int
+    elif paytype == 'long':
+        upackstr = "!l" #l represents a 4 byte signed int
     elif paytype == 'float':
         upackstr = "!f"
     else :
@@ -339,9 +349,28 @@ def get_variable(address, opcode, paytype, timeout=2):
     #clear the MSB of the opcode
     opcode = opcode & 0b01111111
     payload = extract_payload(bin, address, opcode, paytype)
+    print('payload: ', payload)
     uart.queue.task_done()
     return payload
 
+
+def get_dip():
+    '''Read the DIP switches.  
+       Switch 1 is the high-order bit.`
+       ON means 1.
+    '''
+    dip = get_variable(AD_ALL, ALL_GET_DIP, 'char') & 0x0F
+    return dip
+
+def motor_setget(speedL, speedR):
+    # send the motor speeds to Atmel
+    dgram = form_datagram(AD_ALL, ALL_GET_MOTORS, speedR<<8 | speedL, 'int')
+    uart.putcs(dgram)
+
+    # get the encoder values back
+    bin = uart.queue.get();
+    encoders = extract_payload(bin, AD_ALL, ALL_SET_MOTORS, 'long')
+    return ( encoders&0xffff, (encoders>>16) )
 
 def stop_all():
     dgram = form_datagram(AD_ALL, ALL_STOP)
@@ -350,7 +379,6 @@ def stop_all():
 def clear_data():
     dgram = form_datagram(AD_ALL, CLEAR_DATA)
     uart.putcs(dgram)
-    print('ppi clear_data')
 
 ### --- Device Classes --- ###
 '''
