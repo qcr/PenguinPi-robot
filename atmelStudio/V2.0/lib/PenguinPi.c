@@ -245,6 +245,7 @@ void blueLEDPercent(uint8_t percent){
 //
 //#################################################################################################
 
+void debugmessage(const char *fmt, ...);
 
 int16_t velocityPIDLoop(int16_t setPoint, Motor *motor, PidController *pid) {
     // Scale the set point to match the non-pid commands
@@ -265,6 +266,11 @@ int16_t velocityPIDLoop(int16_t setPoint, Motor *motor, PidController *pid) {
 
     // Increase motor command by control output
     pid->motorCommand = pid->motorCommand + controlOut;
+
+    /*
+    debugmessage("sp %d, dt %d, e %d, u %d, mc0 %d, mc %d", 
+        setPoint, deltaDegrees, pid->error, pid->output, mc0, pid->motorCommand);
+        */
 
     // Cap the commands
     if (pid->motorCommand > 100) {
@@ -534,20 +540,22 @@ void init_hat( Hat_s *hat ) {
 	data_r[0]	= 0;
 	data_r[1]	= 0;
 	for(uint8_t j = 0; j < 8; j++) {
-
-		data_r[0]	=0<<j;
+		data_r[0]	=1<<j;
 
 		i2cWritenBytes( data_r, PCA6416A_0, 0x02, 2);		
-		_delay_ms(500);		
+		_delay_ms(100);		
 	}
-
 	for(uint8_t j = 0; j < 8; j++) {
-
-		data_r[1]	= 0<<j;
+		data_r[1]	=1<<j;
 
 		i2cWritenBytes( data_r, PCA6416A_0, 0x02, 2);		
-		_delay_ms(500);		
+		_delay_ms(100);		
 	}
+
+    data_r[0]	= 0;
+    data_r[1]	= 0;
+    i2cWritenBytes( data_r, PCA6416A_0, 0x02, 2);		
+    _delay_ms(500);		
 }
 
 
@@ -692,14 +700,9 @@ void oled_string   ( uint8_t x, uint8_t y, char *string ) {
 
 void oled_next_screen ( Hat_oled *oled ) {
 	
-	if ( oled->show_option >= OLED_ERROR-1 ) {		//Dont increment into OLED_ERROR screen or anything further
+    oled->show_option += 1;     // next screen
+	if ( oled->show_option > OLED_LAST ) 
 		oled->show_option = 0;		
-	}
-	else {
-		oled->show_option = oled->show_option + 1;
-//		uart_puts_P("OLED ++\n");		
-	}
-	
 }
 
 void  oled_show_error	( Hat_oled *oled, char *msg ){
