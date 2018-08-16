@@ -18,10 +18,6 @@
 uint8_t datagramG[DGRAM_MAX_LENGTH+1];
 char 	fstring[32];
 
-
-
-
-
 //Structs
 typedef struct {
 	volatile uint8_t 	enc1PinState;
@@ -142,10 +138,12 @@ union {
 
 union dgramMem {
 	uint8_t uch;
-	uint8_t ch;
+	int8_t ch;
 	uint16_t uin;
+	uint16_t uint2[2];
 	int16_t in;
 	float fl;
+    uint8_t data[4];
 } dgrammem;
 
 
@@ -181,6 +179,7 @@ typedef struct PidController {
     int16_t motorCommand;
 } PidController;
 
+int16_t velocityPIDLoop(int16_t setPoint, Motor *motor, PidController *pid);
 
 
 
@@ -419,6 +418,11 @@ void buttonLogic(Button *button, uint8_t btnVal);
 #define OLED_SET_IP_ETH    0x10
 #define OLED_SET_IP_WLAN   0x11
 
+#define OLED_SET_USER_TEXT1 0x20
+#define OLED_SET_USER_TEXT2 0x21
+#define OLED_SET_USER_TEXT3 0x22
+#define OLED_SET_USER_TEXT4 0x23
+
 //BUTTON
 #define BUTTON_SET_PROGRAM_MODE 0x01
 #define BUTTON_SET_PIN_MODE 0x02
@@ -440,21 +444,28 @@ void buttonLogic(Button *button, uint8_t btnVal);
 #define CLEAR_DATA 0xEE
 #define SET_RESET 0xDD
 #define GET_RESET 0x11
+#define ALL_SET_DIP 0x20
+#define ALL_GET_DIP 0xA0
+#define ALL_SET_MOTORS 0x23
+#define ALL_GET_MOTORS 0xA3
 
 //OLED Screen Options
 #define OLED_IP_ADDR	0
-#define OLED_BATTERY	1
-#define OLED_MOTORS		2 
-#define OLED_ENCODERS	3
-#define OLED_POSITION 4
-#define OLED_PID      5
+#define OLED_USER	1
+#define OLED_BATTERY	2
+#define OLED_MOTORS		3 
+#define OLED_ENCODERS	4
+#define OLED_POSITION 5
+#define OLED_PID      6
 
 //#define OLED_DISPLAY	5
 //#define OLED_DATAGRAM	5
 
 //Options are screens that appear but not via user selection
-#define OLED_ERROR		6	//Keep this as first is non user list
-#define OLED_SHUTDOWN	7	
+#define OLED_ERROR		7	//Keep this as first is non user list
+
+#define OLED_LAST       OLED_ERROR
+#define OLED_SHUTDOWN	8	
 
 
 static const uint8_t ASCII[][5] =
