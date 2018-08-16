@@ -1,4 +1,4 @@
-#!usr/bin/python3
+#!/usr/bin/python3
 
 import time
 import traceback
@@ -9,6 +9,8 @@ import os
 import argparse
 import io
 import math
+import json
+import logging
 
 import penguinPi as ppi
 import picamera
@@ -39,21 +41,30 @@ count = 0;
 @app.route('/', methods = ['POST', 'GET'])
 def home():
     if request.method == 'POST':
-        print("POST")
         if "refresh" in request.form:
             print("refresh")
         elif "test_l" in request.form:
             print("testL")
         elif "test_r" in request.form:
             print("testR")
-    else:
-        print("GET")
 
-    ea = mA.get_encoder()
-    eb = mB.get_encoder()
+    # read the robot state
+    ea = mLeft.get_encoder()
+    eb = mRight.get_encoder()
     v = "%.2f" % voltage.get_value()
+
+    # get info about the Raspberry Pi
     with open('/sys/firmware/devicetree/base/model') as f:
         model = f.read()
+    for _ in (True,):
+        with open('/etc/os-release') as f:
+            line = f.readline()
+            distro = line.split('=')[1];
+            break
+    with open('/proc/version') as f:
+        kernel = f.read()
+
+    # render the page
     state = {
             "enc_l": ea,
             "enc_r": eb,
@@ -61,8 +72,17 @@ def home():
             "pose_x": x,
             "pose_y": y,
             "pose_theta": theta,
-            "model": model
+            "model": model,
+            "distro": distro,
+            "kernel": kernel,
+            "refresh": 5
             }
+
+    # get refresh
+    refresh = request.args.get('refresh');
+    if refresh:
+            state['refresh'] = refresh
+
     return render_template('home.html', **state)
 
 @app.route('/voltage')
@@ -81,24 +101,19 @@ def speed():
     global sp1, sp2
     if args.debug:
         print('--- set velocity\n');
-    print(request.form)
     if request.method == 'POST':
         if "Set" in request.form:
             sp1 = request.form['Left']
             sp2 = request.form['Right']
             sp1 = int(sp1)
             sp2 = int(sp2)
-            print(sp1, sp2)
-            mA.set_power(sp1);
-            mB.set_power(sp2);
-            print("submit")
+            mLeft.set_power(sp1);
+            mRight.set_power(sp2);
         elif "STOP" in request.form:
             sp1 = 0
             sp2 = 0
-            mA.set_power(sp1);
-            mB.set_power(sp2);
-            print("stop")
-    print("speeds:", sp1, sp2)
+            mLeft.set_power(sp1);
+            mRight.set_power(sp2);
     return render_template('speed.html', speed_l=sp1, speed_r=sp2);
 
 @app.route('/camera', methods = ['POST', 'GET'])
@@ -123,24 +138,15 @@ def camera():
         update_int('iso')
         update_int('brightness')
 
-    print('Camera GET', camera_state)
+    # get refresh
+    refresh = request.args.get('refresh');
+    if refresh:
+            camera_state['refresh'] = refresh
+
     return render_template('camera.html', **camera_state)
 
-@app.route('/picam')
+@app.route('/get/camera')
 def picam():
-    # parameters
-    # rotation
-    # resolution=0,90,180,270
-    # awb =off,auto,sunlight,cloudy,shade,tungsten,fluorescent,incandescent,flash,horizon
-    # brightness=0 to 100, default 50
-    # exposure_mode
-    # image_effect
-    # iso
-    # meter_mode
-    # iso
-    # zoom 0 to 1
-    # preview=0 or 1, start/stop_preview
-
     # Create a byte stream
     stream = io.BytesIO()
 
@@ -155,61 +161,135 @@ def picam():
 
     return send_file(stream, 'image/png')
 
-@app.route('/set')
-def set():
-    # extra args: default, type to convert to
-    speeds = request.args.get('speed');
-    if speeds:
-        print(speeds);
-        speeds = speeds.split(',')
-        comms_mutex.acquire()
-        mA.set_power(int(speeds[0]));
-        mB.set_power(int(speeds[1]));
-        comms_mutex.release()
-
-        ea = mA.get_encoder()
-        eb = mB.get_encoder()
-        return "%d,%d" % (ea, eb)
-    else:
-        return render_template('speed.html');
-
-@app.route('/stop')
-def stop():
-    stop_all()
-    return ''
-
-@app.route('/getencoders')
+@app.route('/get/encoders')
 def getencoders():
-    global mA, mB
+    global mLeft, mRight
     comms_mutex.acquire()
-    ea = mA.get_encoder()
-    eb = mB.get_encoder()
+    ea = mLeft.get_encoder()
+    eb = mRight.get_encoder()
     comms_mutex.release()
     if args.debug:
         print('--- get encoders: %d %d\n' % (ea,eb));
     return "%d,%d" % (ea, eb)
 
+@app.route('/set/motors')
+def motors():
+
+    # TODO: the trajectory could be done by the pose estimation thread
+    dt = 0.05;
+
+    # coroutine to do a floating point version of xrange
+    def xfrange(start, stop, step):
+        i = 0
+        while start + i * step < stop:
+            yield start + i * step
+            i += 1
+
+
+    # set motor speed using GET side effects
+    speeds = request.args.get('speed')
+    if speeds:
+        try:
+            speeds = [int(x) for x in speeds.split(',')]
+        except:
+            return "bad speeds given"
+
+        duration = request.args.get('time')
+        if duration:
+            # a duration was given
+
+            # get duration
+            try:
+                Ttotal = float(duration)
+            except:
+                return "bad time given"
+
+            # get optional acceleration
+            accel = request.args.get('accel')
+            if accel:
+                try:
+                    Taccel = float(accel)
+                except:
+                    return "bad acceleration given"
+            else:
+                Taccel = 0.0
+
+            if Ttotal <= Taccel*2:
+                return "acceleration time too long"
+
+            if Taccel > 0:
+                    for t in xfrange(0, Taccel, dt):
+                            setspeed(speeds, t/Taccel);
+                            time.sleep(dt)
+
+            for t in xfrange(0, Ttotal-Taccel, dt):
+                    setspeed(speeds, 1.0)
+                    time.sleep(dt)
+
+            if Taccel > 0:
+                    for t in xfrange(0, Taccel, dt):
+                            setspeed(speeds, (Taccel-t)/Taccel);
+                            time.sleep(dt)
+            # all stop
+            stop_all()
+
+        else:
+            # no duration given
+
+            setspeed(speeds)
+
+    return robot_state_json()
+
+
+@app.route('/reset')
+def reset():
+    global x, y, theta
+
+    x = 0
+    y = 0
+    theta = 0
+    return robot_state_json()
+
+@app.route('/stop')
+def stop():
+    stop_all()
+    return robot_state_json()
+
 """
 " Helper functions
 """
-def setspeed(speed, fraction):
-    global mA, mB
+def setspeed(speed, fraction=1.0):
+    global mLeft, mRight
 
     comms_mutex.acquire()
-    mA.set_power(int(speed[0]*fraction))
-    mB.set_power(int(speed[1]*fraction))
+    mLeft.set_power(int(speed[0]*fraction))
+    mRight.set_power(int(speed[1]*fraction))
     comms_mutex.release()
 
 def stop_all():
-    global mA, mB
+    global mLeft, mRight
 
     comms_mutex.acquire()
-    mA.set_power(0)
-    mB.set_power(0)
+    mLeft.set_power(0)
+    mRight.set_power(0)
     comms_mutex.release()
 
+def robot_state_json():
+    state = { 'encoder' : {
+                    'left'  : mLeft.get_encoder(),
+                    'right' : mRight.get_encoder()
+                    },
+              'pose' : {
+                    'x'     : x, 
+                    'y'     : y,
+                    'theta' : theta
+                   }
+              }
+    return json.dumps(state)
+
+
 """
-" Heartbeat thread, pulse the green LED periodically
+" Heartbeat thread, pulse the red LED periodically
 """
 def HeartBeat():
 
@@ -218,9 +298,9 @@ def HeartBeat():
     while True:
         comms_mutex.acquire()
         led.set_state(1);
-        led.set_count(1000);
+        led.set_count(30000);
         comms_mutex.release()
-        time.sleep(2);
+        time.sleep(5);
 
 """
 " Pose estimation thread
@@ -228,35 +308,70 @@ def HeartBeat():
 def PoseEstimator():
     global x, y, theta
 
-    dt = 1   # sample interval
-    W = 0.12   # lateral wheel separation
+    dt = 0.1   # sample interval
+    W = 0.156  # lateral wheel separation
+    wheelDiam = 0.065;
+    encScale = math.pi * wheelDiam /384 
+
+    # read the initial encoders 
     comms_mutex.acquire()
-    left = mA.get_encoder()
-    right = mB.get_encoder()
+    left = mLeft.get_encoder()
+    right = mRight.get_encoder()
     comms_mutex.release()
+
+    def encoder_difference(a, b):
+        d = a - b
+        if d > 32000:
+            d = 0x10000 - d
+        elif d < -32000:
+            d += 0x10000
+        return d
+
     while True:
+        # read the encoders 
         comms_mutex.acquire()
-        new_left = mA.get_encoder()
-        new_right = mB.get_encoder()
+        new_left = mLeft.get_encoder()
+        new_right = mRight.get_encoder()
         comms_mutex.release()
-        dL = new_left - left
-        dR = new_right - right
+
+        # check if bad read value
+        if new_left is None or new_right is None:
+            print('bad encoder read')
+            continue
+
+        # compute the difference since last sample and handle 16-bit wrapping
+        dL = encoder_difference(new_left, left)
+        dR = encoder_difference(new_right, right)
         left = new_left
         right = new_right
 
-        avg = (dL + dR) / 2
-        diff = (dL - dR)
-        theta = theta + dt * diff / W;
-        x = x + dt * avg * math.cos(theta)
-        y = y + dt * avg * math.sin(theta)
-        print('Estimated pose %f %f %f (enc=%f %f)' % (x,y,theta,left,right))
+        # compute average and differential wheel motion
+        #  this is average and differential wheel speed * dt
+        avg = encScale * (dL + dR) / 2
+        diff = encScale * (dL - dR)
+
+        # update the state
+        #   no need to multiply by dt, it's included already
+        theta_old = theta
+        theta += diff / W;          # update theta
+        theta_avg = (theta + theta_old)/2   # average theta over the interval
+        x += avg * math.cos(theta_avg)      # update position
+        y += avg * math.sin(theta_avg)
+        #print('Estimated pose %f %f %f (enc=%f %f)' % (x,y,theta,left,right))
+        while theta > 2*math.pi:
+            theta -= 2*math.pi
+        while theta < -2*math.pi:
+            theta += 2*math.pi
+
+        # sleep a bit
         time.sleep(dt);
 
 
 """
-" Main execution block
+" main execution block
 """
 if __name__ == '__main__':
+
     # handle command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--debug", help="show debug information", 
@@ -272,15 +387,15 @@ if __name__ == '__main__':
     parser.add_argument("-g", "--gain", dest="gain", action="store", help="set white balance gain manually: rbgain OR rgain,bgain")
     args = parser.parse_args()
 
-    mA = ppi.Motor(ppi.AD_MOTOR_A)
-    mB = ppi.Motor(ppi.AD_MOTOR_B)
+    mLeft = ppi.Motor(ppi.AD_MOTOR_B)
+    mRight = ppi.Motor(ppi.AD_MOTOR_A)
     display = ppi.Display(ppi.AD_DISPLAY_A)
     voltage = ppi.AnalogIn(ppi.AD_ADC_V)
 
     #initialise serial, and retrieve initial values from the Atmega
     ppi.init()
-    mA.get_all()
-    mB.get_all()
+    mLeft.get_all()
+    mRight.get_all()
 
     # create a comms mutex
     comms_mutex = threading.Lock()
@@ -320,4 +435,11 @@ if __name__ == '__main__':
     print('white balance mode is ', camera.awb_mode)
 
     # open a non-priviliged port
+    app.jinja_env.lstrip_blocks = True
+    app.jinja_env.trim_blocks = True
+    app.jinja_env.line_statement_prefix = '#'
+
+    log = logging.getLogger('werkzeug')  # the Flask log channel
+    #log.setLevel(logging.ERROR)
+
     app.run(host='0.0.0.0', port=8080)
