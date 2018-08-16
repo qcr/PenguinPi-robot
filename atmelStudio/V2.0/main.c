@@ -40,7 +40,26 @@
 
 #define ERRMSGLEN   80
 
+#define LED_DEBUG
+
+#ifdef  LED_DEBUG
+  #define LED_DEBUG_R(duration) \
+        ledR.state = 1;\
+        ledR.count = duration;
+  #define LED_DEBUG_G(duration) \
+        ledG.state = 1;\
+        ledG.count = duration;
+  #define LED_DEBUG_B(duration) \
+        ledB.state = 1;\
+        ledB.count = duration;
+#else
+  #define   LED_DEBUG_R(duration)
+  #define   LED_DEBUG_G(duration)
+  #define   LED_DEBUG_B(duration)
+#endif
+
 void errmessage(const char *fmt, ...);
+void debugmessage(const char *fmt, ...);
 
 
 //Always have
@@ -89,8 +108,7 @@ ISR( PCINT0_vect ) {
 		fn_update_motor_states( &motorB, enc_b1_val, enc_b2_val ); 
 	
 	//Update LEDs
-		ledG.state = 1;
-		ledG.count = 100;
+        LED_DEBUG_G(100);
 }
 
 ISR( PCINT2_vect ) {
@@ -194,14 +212,14 @@ void init_structs(void){
 	hat.has_oled			= 0;		//No OLED by default
 	
 	hat_oled.show_option	= OLED_IP_ADDR;	
-	hat_oled.eth_addr_1		= 0;
-	hat_oled.eth_addr_2		= 0;
-	hat_oled.eth_addr_3		= 0;
-	hat_oled.eth_addr_4		= 0;
-	hat_oled.wlan_addr_1	= 0;	
-	hat_oled.wlan_addr_2	= 0;
-	hat_oled.wlan_addr_3	= 0;
-	hat_oled.wlan_addr_4	= 0;	
+	hat_oled.eth[0] 		= 0;
+	hat_oled.eth[1] 		= 0;
+	hat_oled.eth[2] 		= 0;
+	hat_oled.eth[3] 		= 0;
+	hat_oled.wlan[0] 		= 0;
+	hat_oled.wlan[1] 		= 0;
+	hat_oled.wlan[2] 		= 0;
+	hat_oled.wlan[3] 		= 0;
 	
 }
 
@@ -287,8 +305,7 @@ uint8_t checkBuffer(void){
             /* Framing Error detected, i.e no stop bit detected */
             errmessage("Bad UART Frame");
 			//flash Blue LED
-			ledB.state = 1;
-			ledB.count = 1000;
+            LED_DEBUG_R(1000);
 			return 0;
         }
         if(com & UART_OVERRUN_ERROR){
@@ -299,8 +316,7 @@ uint8_t checkBuffer(void){
                 */
             errmessage("UART Buffer Overrun");
 			//flash BLUE LED
-			ledB.state = 1;
-			ledB.count = 1000;
+            LED_DEBUG_R(1000);
 			return 0;
         }
         if(com & UART_BUFFER_OVERFLOW){
@@ -310,8 +326,7 @@ uint8_t checkBuffer(void){
                 */
             errmessage("UART Buffer Overflow");
 			//flash BLUE LED
-			ledB.state = 1;
-			ledB.count = 1000;
+            LED_DEBUG_R(1000);
 			return 0;
         }
 		return com & 0xFF;//return lowbyte
@@ -336,6 +351,14 @@ void formdatagram(uint8_t *datagram, uint8_t address, uint8_t opCode, union dgra
 			datagram[4] = payl.in & 0xFF;
 			paylen = 2;
 		break;
+		case 'H':
+		case 'h':;
+			datagram[3] = (payl.uint2[0] >> 8);
+			datagram[4] = payl.uint2[0] & 0xFF;
+			datagram[5] = (payl.uint2[1] >> 8);
+			datagram[6] = payl.uint2[1] & 0xFF;
+			paylen = 4;
+		break;
 		case 'f':;
 			uint8_t *fl = float2char(payl.fl);
 			for(uint8_t i = 0; i < 4; i++){
@@ -353,8 +376,7 @@ void formdatagram(uint8_t *datagram, uint8_t address, uint8_t opCode, union dgra
 
 void parseDatagram( uint8_t *datagram ){
 	//flash RED LED
-	ledR.state = 1;
-	ledR.count = 1000;
+    LED_DEBUG_B(1000);
 	
 	_delay_us(UART_INTERBYTE_WAIT);
 	uint8_t dlen = checkBuffer();
@@ -365,8 +387,7 @@ void parseDatagram( uint8_t *datagram ){
 		datagram[i] = checkBuffer();
 		if(i >= DGRAM_MAX_LENGTH){
 			errmessage("Datagram Buffer Overflow");
-			ledB.state = 1;
-			ledB.count = 1000;
+            LED_DEBUG_R(1000);
 			return;
 		}
 	}
@@ -377,14 +398,14 @@ void parseDatagram( uint8_t *datagram ){
 
 	if(crcCalc != crcDgram){
 		errmessage("CRC Failed");
-		ledB.state = 1;
-		ledB.count = 1000;
+        LED_DEBUG_R(1000);
 		return;
 	}
 	 
 //	sprintf(fstring, "PDG %x\n", datagram[1] );
 //	uart_puts(fstring);		 
 	
+
 	switch( datagram[1] ){
 		case AD_MOTOR_A:
 			parseMotorOp(datagram, &hat_oled, &motorA);
@@ -425,7 +446,7 @@ void parseDatagram( uint8_t *datagram ){
 //DELETE		break;
 //DELETE		case AD_BTN_C:
 //DELETE			parseButtonOp(datagram, &buttonC);
-//DELETE		break;
+		break;
 
 		case AD_ADC_V:
 			parseADCOp(datagram, &hat_oled, &vdiv);
@@ -441,8 +462,7 @@ void parseDatagram( uint8_t *datagram ){
 		default:
 			errmessage("Datagram: unknown address %d", datagram[1]);
 			//flash BLUE LED
-			ledB.state = 1;
-			ledB.count = 1000;
+            LED_DEBUG_R(1000);
 		break;
 	}
 }
@@ -463,8 +483,6 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 				if(speed > 0) motor->dir = 1;
 				else if(speed < 0) motor->dir = -1;
 				else motor->dir = 0;
-				ledB.state = 1;
-				ledB.count = 1000;
 			}else
 				errmessage("ERROR: MOTOR_SET_SPEED: incorrect type %d", datagram[0]);
 		break;
@@ -696,6 +714,7 @@ void parseLEDOp		( uint8_t *datagram, Hat_oled *hat_oled, LED *led ){
 		case LED_SET_COUNT:
 			if(datagram[0] == 5){
 				led->count = (datagram[3]<<8)|datagram[4];
+                led->state = 1;
 			}else
 				errmessage("LED_SETCOUNT: incorrect type %d", datagram[0]);
 		break;
@@ -781,7 +800,7 @@ void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
 				errmessage("OLED_SETIPWLAN4: incorrect type %d", datagram[0]);
 
 		break;	
-		case OLED_SET_IP_ETH
+        case OLED_SET_IP_ETH:
 			if( datagram[0] == 7 ){
 				for (uint8_t i=0; i<4; i++)
 					hat_oled->eth[i] = datagram[i];
@@ -789,7 +808,7 @@ void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
 				errmessage("OLED_SETIPETH: incorrect type %d", datagram[0]);
 
 		break;
-		case OLED_SET_IP_WLAN
+        case OLED_SET_IP_WLAN:
 			if( datagram[0] == 7 ){
 				for (uint8_t i=0; i<4; i++)
 					hat_oled->wlan[i] = datagram[i];
@@ -835,8 +854,7 @@ void parseADCOp		( uint8_t *datagram, Hat_oled *hat_oled, AnalogIn *adc ){
 		default:
 			errmessage("bad ADC opcode %d", datagram[2]);
 			//flash BLUE LED
-			ledB.state = 1;
-			ledB.count = 1000;			
+            LED_DEBUG_R(1000);
 		break;
 	}
 }
@@ -854,13 +872,63 @@ void errmessage(const char *fmt, ...)
     uart_puts(buf);
     uart_puts("\n");
 
-    oled_show_error( hat_oled, buf);
+    oled_show_error( &hat_oled, buf);
 
     va_end(ap);
 }
 
+void debugmessage(const char *fmt, ...)
+{
+    va_list ap;
+    char    buf[ERRMSGLEN];
+
+    va_start(ap, fmt);
+
+    vsnprintf(buf, ERRMSGLEN, fmt, ap);
+    uart_puts("DBG: ");
+    uart_puts(buf);
+    uart_puts("\n");
+
+    oled_show_error( &hat_oled, buf);
+
+    va_end(ap);
+}
+
+
 void parseAllOp		( uint8_t *datagram ){
 	switch(datagram[2]){
+        case ALL_GET_MOTORS:
+			if(datagram[0] == 5) {
+				int16_t speedA = datagram[3];
+				motorA.setSpeedDPS = abs(speedA);
+				if(speedA > 0)
+                    motorA.dir = 1;
+				else if(speedA < 0)
+                    motorA.dir = -1;
+				else 
+                    motorA.dir = 0;
+				int16_t speedB = datagram[4];
+				motorB.setSpeedDPS = abs(speedB);
+				if(speedB > 0)
+                    motorB.dir = 1;
+				else if(speedB < 0)
+                    motorB.dir = -1;
+				else 
+                    motorB.dir = 0;
+
+			} else
+				errmessage("ERROR: ALL_GET_MOTORS: incorrect type %d", datagram[0]);
+			dgrammem.uint2[0] = motorA.position;
+			dgrammem.uint2[1] = motorB.position;
+			formdatagram(datagramG, datagram[1], ALL_SET_MOTORS, dgrammem, 'h');
+			uartputcs(datagramG);
+            break;
+
+        case ALL_GET_DIP:
+			dgrammem.ch = (hat.dip >> 4) & 0x0f;
+			formdatagram(datagramG, datagram[1], ALL_SET_DIP, dgrammem, 'c');
+			uartputcs(datagramG);
+        break;
 		case ALL_STOP:
 			motorA.position = 0;
 			motorA.setDegrees = 0;
@@ -910,8 +978,7 @@ void parseAllOp		( uint8_t *datagram ){
 		default:
 			uart_puts_P("ERROR: Unknown OpCode\n");
 			//flash BLUE LED
-			ledB.state = 1;
-			ledB.count = 1000;
+            LED_DEBUG_R(1000);
 		break;
 	}
 }
@@ -932,18 +999,10 @@ int16_t main(void) {
 	uint8_t 	data_r[2]  			= {0, 0};
 	
 	uint16_t 	oled_refresh_count 	= 0;
-//	uint16_t 	debug_loop_count	= 0;
 	 
-	
-
 	init_structs();
 	init();	
 	
-	ledB.state = 1;
-	ledB.count = 10000;
-	ledR.state = 1;
-	ledR.count = 10000;	
-
 	uart_puts_P("PenguinPi v2.0\n");
 		
 	detect_reset();	
@@ -951,8 +1010,6 @@ int16_t main(void) {
 	init_hat( &hat );
 	
 //INIT Done	
-
-
 
 //TESTS
 //	//LEDs
@@ -973,40 +1030,37 @@ int16_t main(void) {
 		PORTC = PORTC | (1 << 5);
 		_delay_ms(500);		
 
-
-//	//RGB
-//	redLEDPercent(50);	
-//	_delay_ms(500);
-//	redLEDPercent(100);	
-//	_delay_ms(500);
-//	redLEDPercent(0);	
-//	greenLEDPercent(50);
-//	_delay_ms(500);
-//	greenLEDPercent(100);
-//	_delay_ms(500);	
-//	greenLEDPercent(0);
-//	blueLEDPercent(50);
-//	_delay_ms(500);
-//	blueLEDPercent(100);
-//	_delay_ms(500);	
-//	blueLEDPercent(0);
+	//RGB
+	redLEDPercent(50);	
+	_delay_ms(500);
+	redLEDPercent(100);	
+	_delay_ms(500);
+	redLEDPercent(0);	
+	greenLEDPercent(50);
+	_delay_ms(500);
+	greenLEDPercent(100);
+	_delay_ms(500);	
+	greenLEDPercent(0);
+	blueLEDPercent(50);
+	_delay_ms(500);
+	blueLEDPercent(100);
+	_delay_ms(500);	
+	blueLEDPercent(0);
 	
+#ifdef notdef
 	//MOTORS	
-//	motorA.dir			= -1;
-//	motorA.setSpeedDPS	= 50;
+	motorA.dir			= -1;
+	motorA.setSpeedDPS	= 50;
 	
-//	motorB.dir			= -1;
-//	motorB.setSpeedDPS	= 90;	
-
+	motorB.dir			= -1;
+	motorB.setSpeedDPS	= 90;	
 //END TESTS
-	
-
+#endif
 	
 	uint8_t com;
 
 	vdiv.count 	= ADC_COUNT;
 	ADCSRA 		|= (1<<ADSC);		//start the first ADC conversion
-
 
     // Set up velocity PID
     PidController pidA;
@@ -1017,16 +1071,16 @@ int16_t main(void) {
     pidB.kP = 1;
     pidB.motorCommand = 0;
 
-    
 	static uint8_t motorControlCount = 0;
 	
     while (1) 
     {
+        // Get the datagram
 		com = checkBuffer();					
 		if(com == STARTBYTE) {
 			parseDatagram( datagramG );
 			
-			if ( 0==1) {
+#ifdef notdef
 				//Print Datagram
 				uart_puts_P("DG : ");
 				for( uint8_t j = 0; j < DGRAM_MAX_LENGTH; j++) {			
@@ -1034,8 +1088,7 @@ int16_t main(void) {
 					uart_puts(fstring);				
 				}
 				uart_puts_P("\n");									
-			}	
-      
+#endif      
 			//Save a copy of datagram for OLED display
 				memcpy(&datagram_last, &datagramG, DGRAM_MAX_LENGTH);		
 		}
@@ -1045,7 +1098,8 @@ int16_t main(void) {
 			if ( (DEBUG==1) | (oled_refresh_count == OLED_REFRESH) ) {
 				oled_refresh_count	= 0;
 				
-				oled_screen( &hat_oled, &vdiv, &csense, &motorA, &motorB, &displayA, datagram_last, pidA, pidB, pid_on, pid_dt);
+				oled_screen( &hat_oled, &vdiv, &csense, &motorA, &motorB,
+                        &displayA, datagram_last, pidA, pidB, pid_on, pid_dt);
 			}
 			else {
 				oled_refresh_count++;				
@@ -1130,7 +1184,6 @@ int16_t main(void) {
 			else 					LEDOn(LED_B);
 		} else 						LEDOff(LED_B);
 		
-
 
 		//Analog update
 		if(vdiv.ready && !(ADCSRA&(1<<ADSC))){
@@ -1226,74 +1279,70 @@ int16_t main(void) {
 			 							
 			hat_07_int_flag = 0;
 		}
-	
-	
-
-
 		
+#ifdef notdef
+        if (debug_loop_count++ > 1000) {
+            debug_loop_count = 0;
+			uart_puts_P("*");
+        }
 		if ( DEBUG==1 ) {
 		
-//			uart_puts_P("#");
-//			_delay_ms(100);
+			if ( debug_loop_count==20 ) {
+				
+				debug_loop_count = 0;
+				oled_next_screen ( &oled );			//remove irq from issue
+			}
+			else debug_loop_count ++ ;
 			
-//			if ( debug_loop_count==20 ) {
-//				
-//				debug_loop_count = 0;
-//				oled_next_screen ( &oled );			//remove irq from issue
-//			}
-//			else debug_loop_count ++ ;
-//			
-//		
-//			//to UART
-//				//OLed option
-//					sprintf(fstring, "oled: %d\n", oled.show_option );
-//					uart_puts(fstring);				
-//			
-//				//Voltage
-//					sprintf(fstring, "Voltage: %5.3f V\n", vdiv.value);
-//					uart_puts(fstring);				
-//				
-//				//Current
-//					sprintf(fstring, "Current: %5.3f mA\n", csense.value);
-//					uart_puts(fstring);	
-//			
-//				//Motors
-//					uart_puts_P("M:A\n");
-//						fn_dbg_motor ( &motorA );					
-//					uart_puts_P("M:B\n");
-//						fn_dbg_motor ( &motorB );				
-//						
-//				//Timers
-//					sprintf(fstring, "OC MA: %5d\n", OCR0B );	//Motor A on OCR0B
-//					uart_puts(fstring);			
-//					sprintf(fstring, "OC MB: %5d\n", OCR0A ); 	//Motor B on OCR0A
-//					uart_puts(fstring);		
-//
-//				//Display
-//					sprintf(fstring, "DSP addr: %d : ", displayA.address );
-//					uart_puts(fstring);				
-//					sprintf(fstring, "draw: %d : ", displayA.draw );
-//					uart_puts(fstring);			
-//					sprintf(fstring, "value: %d : ", displayA.value );
-//					uart_puts(fstring);	
-//					sprintf(fstring, "dig0: %d : ", displayA.digit0 );
-//					uart_puts(fstring);	
-//					sprintf(fstring, "dig1: %d : ", displayA.digit1 );
-//					uart_puts(fstring);	
-//					sprintf(fstring, "mode: %d\n", displayA.mode );
-//					uart_puts(fstring);	
-
-//					i2cWriteByte( displayA.digit0, PCA6416A_0, 0x02 );									
-
-//					if ( i2c_check_device( I2C_IMU+I2C_WRITE ) == 0 ){
-//						uart_puts_P("IMU Present\n");
-//					}	
-//					else {
-//						uart_puts_P("IMU Not found\n");
-//					}					
-					
-		}
 		
+			//to UART
+				//OLed option
+					sprintf(fstring, "oled: %d\n", oled.show_option );
+					uart_puts(fstring);				
+			
+				//Voltage
+					sprintf(fstring, "Voltage: %5.3f V\n", vdiv.value);
+					uart_puts(fstring);				
+				
+				//Current
+					sprintf(fstring, "Current: %5.3f mA\n", csense.value);
+					uart_puts(fstring);	
+			
+				//Motors
+					uart_puts_P("M:A\n");
+						fn_dbg_motor ( &motorA );					
+					uart_puts_P("M:B\n");
+						fn_dbg_motor ( &motorB );				
+						
+				//Timers
+					sprintf(fstring, "OC MA: %5d\n", OCR0B );	//Motor A on OCR0B
+					uart_puts(fstring);			
+					sprintf(fstring, "OC MB: %5d\n", OCR0A ); 	//Motor B on OCR0A
+					uart_puts(fstring);		
+
+				//Display
+					sprintf(fstring, "DSP addr: %d : ", displayA.address );
+					uart_puts(fstring);				
+					sprintf(fstring, "draw: %d : ", displayA.draw );
+					uart_puts(fstring);			
+					sprintf(fstring, "value: %d : ", displayA.value );
+					uart_puts(fstring);	
+					sprintf(fstring, "dig0: %d : ", displayA.digit0 );
+					uart_puts(fstring);	
+					sprintf(fstring, "dig1: %d : ", displayA.digit1 );
+					uart_puts(fstring);	
+					sprintf(fstring, "mode: %d\n", displayA.mode );
+					uart_puts(fstring);	
+
+					i2cWriteByte( displayA.digit0, PCA6416A_0, 0x02 );									
+
+					if ( i2c_check_device( I2C_IMU+I2C_WRITE ) == 0 ){
+						uart_puts_P("IMU Present\n");
+					}	
+					else {
+						uart_puts_P("IMU Not found\n");
+					}					
+		}
+#endif
     }
 }
-
