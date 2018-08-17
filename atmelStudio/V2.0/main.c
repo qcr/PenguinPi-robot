@@ -18,7 +18,6 @@
  */
 #define DEBUG 0 
 
-#define OLED_REFRESH 1000	//How often should the main loop run before OLED refresh. If too fast information cannot be seen
  
 #define BAUD  115200
 #define F_CPU 20000000UL
@@ -38,9 +37,9 @@
 #include    "timer.h"
 #include "i2cmaster.h"
 #include "uart.h"
-#include "PCA6416A.h"
 
 #include "PenguinPi.h"
+#include "hat.h"
 
 #include "global.h"
 
@@ -62,11 +61,9 @@ volatile uint32_t    timer_counter;
 
 //HAT dependant
 Hat_s		hat;
-Hat_oled	hat_oled;
 
 Display 	displayA;	//remove when parsing logic changed
 
-uint8_t		hat_07_int_flag = 0;
 
 //PID FLAG
 uint8_t    pid_on = 3;
@@ -100,16 +97,6 @@ ISR( PCINT0_vect ) {
         LED_DEBUG_G(100);
 }
 
-ISR( PCINT2_vect ) {
-	//PCINT2 contains the interrupt from HAT07 on PCINT23 which is PC7
-	
-	if ( bit_is_clear( PINC, 7 ) ) { 							// detect falling edge on PC7
-		
-		//Need main loop to handle this as clearing INT will cause I2C clashes if not handled appropriately
-		hat_07_int_flag = 1;
-	}
-}
-
 #define CONTROL_INTERVAL    1563
 volatile uint16_t tcontrol;
 
@@ -139,6 +126,7 @@ ISR( TIMER2_OVF_vect ){
     // enable interrupts and carry on
     sei();  
    
+    
     // Work out motor speed for either PID or non-PID and then apply after
     
     if (pid_on == 0) {
@@ -202,6 +190,229 @@ ISR( ADC_vect ) {
 
 
 //#################################################################################################
+//                      Main polling loop
+//#################################################################################################
+
+int
+main(void)
+{
+	 
+	init_structs();
+	init();	
+	
+	uart_puts_P("PenguinPi v2.0\n");
+		
+	detect_reset();	
+	
+	hat_init( &hat );
+	
+//INIT Done	
+
+//TESTS
+//	//LEDs
+//		//Y0	C2
+//		//Y1	C3
+//		//Y2	C5
+    PORTC = 0x00;
+    _delay_ms(500);	
+    PORTC = 0x2C;
+    _delay_ms(500);			
+    PORTC = 0x00;
+    _delay_ms(500);	
+
+    PORTC = PORTC | (1 << 2);
+    _delay_ms(500);		
+    PORTC = PORTC | (1 << 3);
+    _delay_ms(500);		
+    PORTC = PORTC | (1 << 5);
+    _delay_ms(500);		
+
+	//RGB
+    /*
+	redLEDPercent(50);	
+	_delay_ms(500);
+	redLEDPercent(100);	
+	_delay_ms(500);
+	redLEDPercent(0);	
+	greenLEDPercent(50);
+	_delay_ms(500);
+	greenLEDPercent(100);
+	_delay_ms(500);	
+	greenLEDPercent(0);
+	blueLEDPercent(50);
+	_delay_ms(500);
+	blueLEDPercent(100);
+	_delay_ms(500);	
+	blueLEDPercent(0);
+    */
+
+	
+#ifdef notdef
+	//MOTORS	
+	motorA.dir			= -1;
+	motorA.setSpeedDPS	= 50;
+	
+	motorB.dir			= -1;
+	motorB.setSpeedDPS	= 90;	
+//END TESTS
+#endif
+	
+	vdiv.count 	= ADC_COUNT;
+	ADCSRA 		|= (1<<ADSC);		//start the first ADC conversion
+
+    // Set up velocity PID
+    pidA.kP = 1;
+    pidA.motorCommand = 0;
+
+    pidB.kP = 1;
+    pidB.motorCommand = 0;
+
+	static uint8_t motorControlCount = 0;
+	
+    timer_t t0, tf;
+
+    t0 = timer_get();
+    stats_t  loop_time;
+    stats_init(&loop_time);
+    debugmessage("starting main loop");
+    while (1) 
+    {
+
+        // get timing stats for main loop
+        tf = timer_get();
+        stats_add(&loop_time, timer_diff(tf, t0) );
+        t0 = tf;
+
+        // Check for a new datagram
+        check_datagram();
+		
+        hat_update();
+
+		
+        if(motorControlCount < 250) {
+            motorControlCount++;
+        } else {
+            //set PID flags
+            motorA.pidTimerFlag = 1;
+            motorB.pidTimerFlag = 1;
+            motorControlCount   = 0;
+        }
+	
+#ifdef notdef
+		//cleanup buffers
+		com = 0;
+		for(uint8_t j = 0; j < DGRAM_MAX_LENGTH; j++) datagramG[j] = 0;
+		dgrammem.fl = 0;
+#endif
+
+        // Ratio is now 1
+		motorA.degrees = motorA.position; // * DEGPERCOUNT;
+		motorB.degrees = motorB.position; //  * DEGPERCOUNT;
+
+
+        // CONTROL WAS HERE
+						
+		//LED update
+		if(ledR.state > 0) {
+			if(ledR.brightness > 0) redLEDPercent(ledR.brightness);
+			else 					LEDOn(LED_R);
+		} else 						LEDOff(LED_R);
+
+		if(ledG.state > 0) {
+			if(ledG.brightness > 0) greenLEDPercent(ledG.brightness);
+			else 					LEDOn(LED_G);
+		} else 						LEDOff(LED_G);
+
+		if(ledB.state > 0) { 
+			if(ledB.brightness > 0) blueLEDPercent(ledB.brightness);
+			else 					LEDOn(LED_B);
+		} else 						LEDOff(LED_B);
+		
+
+		//Analog update
+		if(vdiv.ready && !(ADCSRA&(1<<ADSC))){
+			vdiv.raw   = ADC;
+			vdiv.value = vdiv.raw * vdiv.scale/1000;
+			vdiv.ready = 0;
+
+			//change multiplexer to csense
+			ADMUX 		|= (1<<MUX0);//change mux
+			csense.count = ADC_COUNT;
+			ADCSRA 		|= (1<<ADSC);//restart
+		}
+		
+		if(csense.ready && !(ADCSRA&(1<<ADSC))){
+			csense.raw   = ADC;
+			csense.value = csense.raw * csense.scale;
+			csense.ready = 0;
+
+			//change multiplexer to csense
+			ADMUX 	  &= ~(1<<MUX0);//change mux
+			vdiv.count = ADC_COUNT;
+			ADCSRA 	  |= (1<<ADSC);//restart
+		}
+
+		if(vdiv.value < battery.cutoff){
+			if(battery.count < battery.limit) battery.count++;
+			else{
+                //FIXMEhat_lowvolts();
+			}
+		}else battery.count = 0;
+
+
+        uint32_t  timer_counter_copy = 0;
+        ATOMIC_BLOCK(ATOMIC_FORCEON) {
+            if (timer_counter > 100000) {
+                timer_counter_copy = timer_counter;
+                timer_counter = 0;
+            }
+        }
+        if (timer_counter_copy > 0) {
+            debugmessage("timer counter %lu %f", timer_counter_copy, pid_dt);
+            debugmessage("mean %lu, var %lu, max %lu", 
+                    stats_mean(&loop_time), stats_var(&loop_time), loop_time.max );
+        }
+		
+        //main_loop_debug();
+    }
+}
+
+// central error message handler, sends to serial port and OLED
+void errmessage(const char *fmt, ...)
+{
+    va_list ap;
+    char    buf[ERRMSGLEN];
+
+    va_start(ap, fmt);
+
+    vsnprintf(buf, ERRMSGLEN, fmt, ap);
+    uart_puts("ERR: ");
+    uart_puts(buf);
+    uart_puts("\n");
+
+    hat_show_error(buf);
+
+    va_end(ap);
+}
+
+void debugmessage(const char *fmt, ...)
+{
+    va_list ap;
+    char    buf[ERRMSGLEN];
+
+    va_start(ap, fmt);
+
+    vsnprintf(buf, ERRMSGLEN, fmt, ap);
+    uart_puts("DBG: ");
+    uart_puts(buf);
+    uart_puts("\n");
+
+    //hat_show_error( buf);
+
+    va_end(ap);
+}
+
+//#################################################################################################
 //
 // INITs
 //
@@ -237,21 +448,6 @@ void init_structs(void){
 	battery.count			= 0;
 	battery.limit 			= 5000;//about 1.5 seconds
 	
-	hat.config				= -1;
-	hat.dip	    			= -1;
-	hat.dir					= 0x00;		//Inputs by default
-	hat.int_07				= 0;		//No interrupts by default
-	hat.has_oled			= 0;		//No OLED by default
-	
-	hat_oled.show_option	= OLED_IP_ADDR;	
-	hat_oled.eth[0] 		= 0;
-	hat_oled.eth[1] 		= 0;
-	hat_oled.eth[2] 		= 0;
-	hat_oled.eth[3] 		= 0;
-	hat_oled.wlan[0] 		= 0;
-	hat_oled.wlan[1] 		= 0;
-	hat_oled.wlan[2] 		= 0;
-	hat_oled.wlan[3] 		= 0;
 	
 }
 
@@ -318,264 +514,9 @@ void init(void){
 		sei();
 }
 
-//#################################################################################################
-//                      Main polling loop
-//#################################################################################################
-
-int
-main(void)
+#ifdef notdef
+void main_loop_debug()
 {
-	uint8_t 	data_r[2]  			= {0, 0};
-	uint16_t 	oled_refresh_count 	= 0;
-	 
-	init_structs();
-	init();	
-	
-	uart_puts_P("PenguinPi v2.0\n");
-		
-	detect_reset();	
-	
-	init_hat( &hat );
-	
-//INIT Done	
-
-//TESTS
-//	//LEDs
-//		//Y0	C2
-//		//Y1	C3
-//		//Y2	C5
-		PORTC = 0x00;
-		_delay_ms(500);	
-		PORTC = 0x2C;
-		_delay_ms(500);			
-		PORTC = 0x00;
-        	_delay_ms(500);	
-	
-		PORTC = PORTC | (1 << 2);
-		_delay_ms(500);		
-		PORTC = PORTC | (1 << 3);
-		_delay_ms(500);		
-		PORTC = PORTC | (1 << 5);
-		_delay_ms(500);		
-
-	//RGB
-	redLEDPercent(50);	
-	_delay_ms(500);
-	redLEDPercent(100);	
-	_delay_ms(500);
-	redLEDPercent(0);	
-	greenLEDPercent(50);
-	_delay_ms(500);
-	greenLEDPercent(100);
-	_delay_ms(500);	
-	greenLEDPercent(0);
-	blueLEDPercent(50);
-	_delay_ms(500);
-	blueLEDPercent(100);
-	_delay_ms(500);	
-	blueLEDPercent(0);
-
-	
-#ifdef notdef
-	//MOTORS	
-	motorA.dir			= -1;
-	motorA.setSpeedDPS	= 50;
-	
-	motorB.dir			= -1;
-	motorB.setSpeedDPS	= 90;	
-//END TESTS
-#endif
-	
-	vdiv.count 	= ADC_COUNT;
-	ADCSRA 		|= (1<<ADSC);		//start the first ADC conversion
-
-    // Set up velocity PID
-    pidA.kP = 1;
-    pidA.motorCommand = 0;
-
-    pidB.kP = 1;
-    pidB.motorCommand = 0;
-
-	static uint8_t motorControlCount = 0;
-	
-    timer_t t0, tf;
-
-    t0 = timer_get();
-    stats_t  loop_time;
-    stats_init(&loop_time);
-    while (1) 
-    {
-        // get timing stats for main loop
-        tf = timer_get();
-        stats_add(&loop_time, timer_diff(tf, t0) );
-        t0 = tf;
-
-        // Check for a new datagram
-        check_datagram();
-		
-		//Refresh OLED
-		if ( hat.has_oled == 1 ) {
-			if ( (DEBUG==1) | (oled_refresh_count == OLED_REFRESH) ) {
-				oled_refresh_count	= 0;
-				
-				oled_screen( &hat_oled, &vdiv, &csense, &motorA, &motorB,
-                        &displayA, datagram_last, &pidA, &pidB, pid_on, pid_dt);
-			}
-			else {
-				oled_refresh_count++;				
-			} 
-		}		
-		
-        if(motorControlCount < 250) {
-            motorControlCount++;
-        } else {
-            //set PID flags
-            motorA.pidTimerFlag = 1;
-            motorB.pidTimerFlag = 1;
-            motorControlCount   = 0;
-        }
-	
-#ifdef notdef
-		//cleanup buffers
-		com = 0;
-		for(uint8_t j = 0; j < DGRAM_MAX_LENGTH; j++) datagramG[j] = 0;
-		dgrammem.fl = 0;
-#endif
-
-
-        // Ratio is now 1
-		motorA.degrees = motorA.position; // * DEGPERCOUNT;
-		motorB.degrees = motorB.position; //  * DEGPERCOUNT;
-
-
-        // CONTROL WAS HERE
-						
-		//LED update
-		if(ledR.state > 0) {
-			if(ledR.brightness > 0) redLEDPercent(ledR.brightness);
-			else 					LEDOn(LED_R);
-		} else 						LEDOff(LED_R);
-
-		if(ledG.state > 0) {
-			if(ledG.brightness > 0) greenLEDPercent(ledG.brightness);
-			else 					LEDOn(LED_G);
-		} else 						LEDOff(LED_G);
-
-		if(ledB.state > 0) { 
-			if(ledB.brightness > 0) blueLEDPercent(ledB.brightness);
-			else 					LEDOn(LED_B);
-		} else 						LEDOff(LED_B);
-		
-
-		//Analog update
-		if(vdiv.ready && !(ADCSRA&(1<<ADSC))){
-			vdiv.raw   = ADC;
-			vdiv.value = vdiv.raw * vdiv.scale/1000;
-			vdiv.ready = 0;
-
-			//change multiplexer to csense
-			ADMUX 		|= (1<<MUX0);//change mux
-			csense.count = ADC_COUNT;
-			ADCSRA 		|= (1<<ADSC);//restart
-		}
-		
-		if(csense.ready && !(ADCSRA&(1<<ADSC))){
-			csense.raw   = ADC;
-			csense.value = csense.raw * csense.scale;
-			csense.ready = 0;
-
-			//change multiplexer to csense
-			ADMUX 	  &= ~(1<<MUX0);//change mux
-			vdiv.count = ADC_COUNT;
-			ADCSRA 	  |= (1<<ADSC);//restart
-		}
-
-		if(vdiv.value < battery.cutoff){
-			if(battery.count < battery.limit) battery.count++;
-			else{
-				//lockout most functions
-				PRR0 |= (1<<PRTIM2)|(1<<PRTIM0)|(1<<PRTIM1);//|(1<<PRADC);
-				//display low battery warning
-				uint8_t reg[2] = {0, 0};
-				reg[0] = DIGIT0_B;
-				reg[1] = DIGIT1_F;
-				i2cWritenBytes(reg, displayA.address, OUTPUT_0, 2);
-								
-				while(1){
-					//send shutdown command
-					uart_puts_P("Low battery shutdown request");
-					PORTB &= ~(1<<PB5);//pull the pin low
-					//loop until the battery really is flat...
-				}			
-			}
-		}else battery.count = 0;
-
-		
-		//HAT Interrupt
-		if ( hat.int_07 == 1 && hat_07_int_flag == 1 ) {
-			//Have to act upon it here else we get I2C clashes between clearing the INT and OLED update
-						
-			//Clear Interrupt by reading the device 
-				i2cReadnBytes(data_r, PCA6416A_1, 0x00, 2 );					
-				
-			//data_r[0][7:4] contains the DIP switch which may have changed
-				hat.dip			= data_r[0] & 0xF0;
-
-                // Is bit 4 set? Lets find out
-                if ((hat.dip & 0x10) == 0x10) {
-                    //PID ON!
-                    pid_on = 1;
-                } else {
-                    pid_on = 0;
-                }
-			
-			//data_r[1][3:0] contains the buttons
-				for(uint8_t i = 0; i < 4; i++) {
-					if ( bit_is_clear( data_r[1], i ) ) {	
-
-						switch ( i ) {
-		
-							case 0 :	//Button S1 has been pressed											
-								oled_next_screen ( &hat_oled );
-								break;
-	
-							case 1 : 	//Button S2 has been pressed											
-								motorA.dir			=   0;
-								motorA.setSpeedDPS	=   0;
-								motorB.dir			=   0;
-								motorB.setSpeedDPS	=   0;
-								break;
-								
-							case 2 : 	//Button S3 has been pressed											
-								motorA.dir			=  -1;
-								motorA.setSpeedDPS	=  50;
-								break;
-							
-							case 3 : 	//Button S4 has been pressed											
-								motorB.dir			=   1;
-								motorB.setSpeedDPS	= 100;
-								break;
-						}
-					}
-				}		
-			 							
-			hat_07_int_flag = 0;
-		}
-
-        uint32_t  timer_counter_copy = 0;
-        ATOMIC_BLOCK(ATOMIC_FORCEON) {
-            if (timer_counter > 100000) {
-                timer_counter_copy = timer_counter;
-                timer_counter = 0;
-            }
-        }
-        if (timer_counter_copy > 0) {
-            debugmessage("timer counter %lu %f", timer_counter_copy, pid_dt);
-            debugmessage("mean %lu, var %lu, max %lu", 
-                    stats_mean(&loop_time), stats_var(&loop_time), loop_time.max );
-        }
-		
-#ifdef notdef
         if (debug_loop_count++ > 1000) {
             debug_loop_count = 0;
 			uart_puts_P("*");
@@ -638,42 +579,5 @@ main(void)
 						uart_puts_P("IMU Not found\n");
 					}					
 		}
+}
 #endif
-    }
-}
-
-// central error message handler, sends to serial port and OLED
-void errmessage(const char *fmt, ...)
-{
-    va_list ap;
-    char    buf[ERRMSGLEN];
-
-    va_start(ap, fmt);
-
-    vsnprintf(buf, ERRMSGLEN, fmt, ap);
-    uart_puts("ERR: ");
-    uart_puts(buf);
-    uart_puts("\n");
-
-    oled_show_error( &hat_oled, buf);
-
-    va_end(ap);
-}
-
-void debugmessage(const char *fmt, ...)
-{
-    va_list ap;
-    char    buf[ERRMSGLEN];
-
-    va_start(ap, fmt);
-
-    vsnprintf(buf, ERRMSGLEN, fmt, ap);
-    uart_puts("DBG: ");
-    uart_puts(buf);
-    uart_puts("\n");
-
-    oled_show_error( &hat_oled, buf);
-
-    va_end(ap);
-}
-

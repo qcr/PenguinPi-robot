@@ -6,6 +6,7 @@
 #include    <util/atomic.h>
 
 #include "PenguinPi.h"
+#include "hat.h"
 #include "global.h"
 
 //#################################################################################################
@@ -158,10 +159,10 @@ void parseDatagram( uint8_t *datagram ){
 
 	switch( datagram[1] ){
 		case AD_MOTOR_A:
-			parseMotorOp(datagram, &hat_oled, &motorA);
+			parseMotorOp(datagram, &motorA);
 		break;
 		case AD_MOTOR_B:
-			parseMotorOp(datagram, &hat_oled, &motorB);
+			parseMotorOp(datagram, &motorB);
 		break;
 		
 //DELETE		case AD_SERVO_A:
@@ -172,37 +173,24 @@ void parseDatagram( uint8_t *datagram ){
 //DELETE		break;
 		
 		case AD_LED_R:
-			parseLEDOp(datagram, &hat_oled, &ledR);
+			parseLEDOp(datagram, &ledR);
 		break;
 		case AD_LED_G:
-			parseLEDOp(datagram, &hat_oled, &ledG);
+			parseLEDOp(datagram, &ledG);
 		break;
 		case AD_LED_B:
-			parseLEDOp(datagram, &hat_oled, &ledB);
+			parseLEDOp(datagram, &ledB);
 		break;
 		
 		case AD_DISPLAY_A:
-			parseDisplayOp(datagram, &hat_oled, &displayA);
+			parseDisplayOp(datagram, &displayA);
 		break;
 		
-		case AD_OLED:
-			parseOLEDOp( datagram, &hat_oled );
-
-//DELETE		case AD_BTN_A:
-//DELETE			parseButtonOp(datagram, &buttonA);
-//DELETE		break;
-//DELETE		case AD_BTN_B:
-//DELETE			parseButtonOp(datagram, &buttonB);
-//DELETE		break;
-//DELETE		case AD_BTN_C:
-//DELETE			parseButtonOp(datagram, &buttonC);
-		break;
-
 		case AD_ADC_V:
-			parseADCOp(datagram, &hat_oled, &vdiv);
+			parseADCOp(datagram, &vdiv);
 		break;
 		case AD_ADC_C:
-			parseADCOp(datagram, &hat_oled, &csense);
+			parseADCOp(datagram, &csense);
 		break;
 
 		case AD_ALL:
@@ -210,6 +198,8 @@ void parseDatagram( uint8_t *datagram ){
 		break;
 		
 		default:
+            hat_datagram(datagram);
+
 			errmessage("Datagram: unknown address %d", datagram[1]);
 			//flash BLUE LED
             LED_DEBUG_R(1000);
@@ -223,7 +213,7 @@ void parseDatagram( uint8_t *datagram ){
    ISFLOAT
    ISCHAR  etc
  */
-void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
+void parseMotorOp	( uint8_t *datagram, Motor *motor ){
 	switch(datagram[2]){
 		//SETTERS
 		case MOTOR_SET_SPEED_DPS:
@@ -370,7 +360,7 @@ void parseMotorOp	( uint8_t *datagram, Hat_oled *hat_oled, Motor *motor ){
 	}
 }
 
-void parseDisplayOp	( uint8_t *datagram, Hat_oled *hat_oled, Display *display ){
+void parseDisplayOp	( uint8_t *datagram, Display *display ){
 
 //	sprintf	 ( fstring, "parseDisplayOp: %x : ", datagram[2] );
 //	uart_puts( fstring );			
@@ -440,7 +430,7 @@ void parseDisplayOp	( uint8_t *datagram, Hat_oled *hat_oled, Display *display ){
 	}
 }
 
-void parseLEDOp		( uint8_t *datagram, Hat_oled *hat_oled, LED *led ){
+void parseLEDOp		( uint8_t *datagram, LED *led ){
 	switch(datagram[2]){
 		//SETTERS
 		case LED_SET_STATE:
@@ -492,87 +482,7 @@ void parseLEDOp		( uint8_t *datagram, Hat_oled *hat_oled, LED *led ){
 	}
 }
 
-void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
-
-	switch( datagram[2] ){
-		//SETTERS
-		case OLED_SET_IP_ETH_1:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[0] = (datagram[3]<<8) | datagram[4];
-			}
-			else			
-				errmessage("OLED_SET_IP1: incorrect type %d", datagram[0]);		
-		break;
-		case OLED_SET_IP_ETH_2:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[1] =  (datagram[3]<<8) | datagram[4];
-			} else
-				errmessage("OLED_SETIP2: incorrect type %d", datagram[0]);
-		break;
-		case OLED_SET_IP_ETH_3:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[2] = (datagram[3]<<8) | datagram[4];
-			} else
-				errmessage("OLED_SETIP3: incorrect type %d", datagram[0]);
-		break;
-		case OLED_SET_IP_ETH_4:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[3] = (datagram[3]<<8) | datagram[4];
-			} else
-				errmessage("OLED_SETIP4: incorrect type %d", datagram[0]);
-
-		break;
-		case OLED_SET_IP_WLAN_1:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[0] = (datagram[3]<<8) | datagram[4];
-			}
-			else				
-				errmessage("OLED_SETIPWLAN1: incorrect type %d", datagram[0]);			
-		break;
-		case OLED_SET_IP_WLAN_2:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[1] =  (datagram[3]<<8) | datagram[4];
-			}else
-				errmessage("OLED_SETIPWLAN2: incorrect type %d", datagram[0]);
-
-		break;
-		case OLED_SET_IP_WLAN_3:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[2] = (datagram[3]<<8) | datagram[4];
-			}else
-				errmessage("OLED_SETIPWLAN3: incorrect type %d", datagram[0]);
-
-		break;
-		case OLED_SET_IP_WLAN_4:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[3] = (datagram[3]<<8) | datagram[4];
-			}else
-				errmessage("OLED_SETIPWLAN4: incorrect type %d", datagram[0]);
-
-		break;	
-        case OLED_SET_IP_ETH:
-			if( datagram[0] == 7 ){
-				for (uint8_t i=0; i<4; i++)
-					hat_oled->eth[i] = datagram[i];
-			}else
-				errmessage("OLED_SETIPETH: incorrect type %d", datagram[0]);
-
-		break;
-        case OLED_SET_IP_WLAN:
-			if( datagram[0] == 7 ){
-				for (uint8_t i=0; i<4; i++)
-					hat_oled->wlan[i] = datagram[i];
-			}else
-				errmessage("OLED_SETIPWLAN: incorrect type %d", datagram[0]);
-		break;
-		
-		default:
-			errmessage("bad OLED opcode %d", datagram[2]);
-		break;
-	}	
-}
-
-void parseADCOp		( uint8_t *datagram, Hat_oled *hat_oled, AnalogIn *adc ){
+void parseADCOp		( uint8_t *datagram, AnalogIn *adc ){
 	switch(datagram[2]){
 		//SETTERS
 		case ADC_SET_SCALE:
@@ -639,7 +549,7 @@ void parseAllOp		( uint8_t *datagram ){
             break;
 
         case ALL_GET_DIP:
-			dgrammem.ch = (hat.dip >> 4) & 0x0f;
+			dgrammem.ch = (hat_status.dip >> 4) & 0x0f;
 			formdatagram(datagramG, datagram[1], ALL_SET_DIP, dgrammem, 'c');
 			uartputcs(datagramG);
         break;
@@ -658,7 +568,7 @@ void parseAllOp		( uint8_t *datagram ){
 			ledB.state = 0;
 			
 			
-			hat_oled.show_option = OLED_SHUTDOWN;
+			// FIXME hat_oled.show_option = OLED_SHUTDOWN;
 		break;
 		case CLEAR_DATA:
 			motorA.position = 0;

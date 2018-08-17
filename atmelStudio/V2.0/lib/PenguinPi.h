@@ -95,41 +95,6 @@ struct Battery {
 	uint16_t 			limit;				//number of cycles until it triggers a shutdown
 } battery;
 
-typedef struct {
-	int8_t 				config;				// -1 if no HAT present
-	int8_t 				dip;				// Status of the DIP switches 
-	uint8_t				dir;				// Set bit to 1 if direction of bit needs to be an output
-	uint8_t				int_07;				// Set bit to a 1 if interrupt enabled on HAT07
-	uint8_t				has_oled;			// Set bit to a 1 if the I2C OLED is on the hat
-} Hat_s;
-
-typedef struct {
-	uint8_t 			show_option;		// Selects which screen to show
-	
-	//IP Addresses
-	// int16_t				eth_addr_1;	
-	// int16_t				eth_addr_2;
-	// int16_t				eth_addr_3;
-	// int16_t				eth_addr_4;
-	
-	// int16_t				wlan_addr_1;	
-	// int16_t				wlan_addr_2;
-	// int16_t				wlan_addr_3;
-	// int16_t				wlan_addr_4;
-
-	uint8_t				eth[4];
-	uint8_t				wlan[4];
-	
-	//Error messages
-	uint8_t				err_line_1[21];
-	uint8_t 			err_line_2[21];
-	uint8_t				err_line_3[21];
-
-	// User messages
-	uint8_t				user_msg[4][21];
-	
-} Hat_oled;
-
 
 union {
 	float f;
@@ -187,19 +152,6 @@ int16_t velocityPIDLoop(int16_t setPoint, Motor *motor, PidController *pid);
 void 	init_structs		( void );
 void 	init				( void );
 void 	init_display		( void );
-void 	init_hat			( Hat_s *hat );
-void 	init_oled			( void );
-
-void 	oled_clear_frame	( );
-void    oled_frame_divider  ( );
-void 	oled_write_frame	( );
-void 	oled_character		( uint8_t x, uint8_t y, char character );
-void 	oled_string			( uint8_t x, uint8_t y, char *string );
-
-void 	oled_screen    		( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *motorA, Motor *motorB, Display *display, uint8_t *datagram, PidController pidA, PidController pidB, uint8_t pid_on, double pid_dt);
-void    oled_next_screen	( Hat_oled *oled ); 
-void    oled_show_error		( Hat_oled *oled, char *msg ); 
-
 void 	detect_reset		( void );
 
 float 	readFloat			( uint8_t *datagram );
@@ -216,13 +168,12 @@ void 	i2cReadnBytes	(uint8_t *data, uint8_t address, uint8_t reg, uint8_t n);
 int8_t 	i2cWritenBytes	(uint8_t *data, uint8_t address, uint8_t reg, uint16_t n);
 int8_t 	i2cWriteByte	(uint8_t data, uint8_t address, uint8_t reg);
 
-void parseMotorOp		( uint8_t *datagram, Hat_oled *oled, Motor *motor);
-void parseServoOp		( uint8_t *datagram, Hat_oled *oled, Servo *servo);
-void parseLEDOp			( uint8_t *datagram, Hat_oled *oled, LED *led);
-void parseOLEDOp		( uint8_t *datagram, Hat_oled *hat_oled);
-void parseDisplayOp		( uint8_t *datagram, Hat_oled *oled, Display *display);
-void parseButtonOp		( uint8_t *datagram, Hat_oled *oled, Button *btn);
-void parseADCOp			( uint8_t *datagram, Hat_oled *oled, AnalogIn *adc);
+void parseMotorOp		( uint8_t *datagram, Motor *motor);
+void parseServoOp		( uint8_t *datagram, Servo *servo);
+void parseLEDOp			( uint8_t *datagram, LED *led);
+void parseDisplayOp		( uint8_t *datagram, Display *display);
+void parseButtonOp		( uint8_t *datagram, Button *btn);
+void parseADCOp			( uint8_t *datagram, AnalogIn *adc);
 void parseAllOp			( uint8_t *datagram);
 
 int16_t motorPIDControl			( int16_t setPoint, Motor *motor );

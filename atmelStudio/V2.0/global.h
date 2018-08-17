@@ -23,6 +23,7 @@ void check_datagram();  // create datagram.h ??
 
 PidController pidA;
 PidController pidB;
+extern uint8_t    pid_on;
 
 //Always have
 extern Motor       motorA;
@@ -33,8 +34,6 @@ extern LED         ledB;
 extern AnalogIn    vdiv;
 extern AnalogIn    csense;
 //HAT dependant
-extern Hat_s       hat;
-extern Hat_oled    hat_oled;
 extern Display     displayA;   //remove when parsing logic changed
 
 extern uint8_t   datagram_last[];
