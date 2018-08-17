@@ -31,10 +31,13 @@
 #include <util/delay.h>
 #include <math.h>
 #include <util/crc16.h>
+#include <stdarg.h>
+#include <util/atomic.h>
+
+#include    "timer.h"
 #include "i2cmaster.h"
 #include "uart.h"
 #include "PCA6416A.h"
-#include <stdarg.h>
 
 #include "PenguinPi.h"
 
@@ -62,6 +65,9 @@ void errmessage(const char *fmt, ...);
 void debugmessage(const char *fmt, ...);
 
 
+PidController pidA;
+PidController pidB;
+
 //Always have
 Motor 		motorA;
 Motor 		motorB;
@@ -70,6 +76,8 @@ LED 		ledG;
 LED 		ledB;
 AnalogIn 	vdiv;
 AnalogIn 	csense;
+
+volatile uint32_t    timer_counter;
 
 //HAT dependant
 Hat_s		hat;
@@ -121,22 +129,18 @@ ISR( PCINT2_vect ) {
 	}
 }
 
-ISR( TIMER2_OVF_vect ){							// period of 21.3333us. use a counter for longer delays
-	/* static uint8_t motorControlCount = 0; */
-	
-	/* if(motorControlCount < 100) { //CONTROL_COUNT) {		//should achieve a period of 64 us */
-	/* 	motorControlCount++; */
-	/* } */
-	/* else { */
-	/* 	//set PID flags */
-	/* 	motorA.pidTimerFlag = 1; */
-	/* 	motorB.pidTimerFlag = 1; */
-	/* 	motorControlCount   = 0; */
-	/* } */
+#define CONTROL_INTERVAL    1563
+volatile uint16_t tcontrol;
+
+ISR( TIMER2_OVF_vect ){
+    // period of 12.8us
 
     // Motor control counter has been moved to the main while loop
 
+    system_timer++;
+
     pid_timer_counter++;
+    timer_counter++;
 	
 	if(ledR.count > 0) 	ledR.count--;
 	else 				ledR.state = 0;
@@ -146,7 +150,52 @@ ISR( TIMER2_OVF_vect ){							// period of 21.3333us. use a counter for longer d
 	
 	if(ledB.count > 0) 	ledB.count--;
 	else 				ledB.state = 0;
-	
+    //
+
+    if (tcontrol++ < CONTROL_INTERVAL)
+        return;
+    tcontrol = 0;
+    sei();  // enable interrupts and carry on
+        //
+        // Work out motor speed for either PID or non-PID and then apply after
+        
+        if (pid_on == 0) {
+            OCR0A = mapRanges( abs(motorA.setSpeedDPS), 0, 100, 0, 255 );
+            OCR0B = mapRanges( abs(motorB.setSpeedDPS), 0, 100, 0, 255 );
+        } else {
+            // Only run PID when the timer flag is set (using motorA for both)
+            if(motorA.pidTimerFlag == 1){
+                // This measures the length of the pid loop
+                pid_dt = pid_timer_counter * 0.0000128;
+                pid_timer_counter = 0;
+
+                // Calculate a new motor speed
+                velocityPIDLoop(motorA.setSpeedDPS * motorA.dir, &motorA, &pidA);
+                velocityPIDLoop(motorB.setSpeedDPS * motorB.dir, &motorB, &pidB);
+                motorA.pidTimerFlag = 0;
+            } 
+
+            // Store the PID motor command
+            OCR0A = mapRanges( abs(pidA.motorCommand), 0, 100, 0, 255 );
+            OCR0B = mapRanges( abs(pidB.motorCommand), 0, 100, 0, 255 );
+        }
+
+        // Update motor states
+        if( motorA.dir == 1 ){
+            PORTB &= ~(1<<MOTOR_A_PHA);
+        } else if(motorA.dir == -1) {
+            PORTB |= (1<<MOTOR_A_PHA);
+        } else {
+            OCR0A = 0;
+        }
+
+        if( motorB.dir == 1 ) {			
+            PORTB &= ~(1<<MOTOR_B_PHA);
+        } else if(motorB.dir == -1) {
+            PORTB |= (1<<MOTOR_B_PHA);
+        } else {
+            OCR0B = 0;
+        }
 }
 
 ISR( ADC_vect ) {								// period of 69.3333us for a standard ADC read, 2x longer for first
@@ -1046,6 +1095,7 @@ int16_t main(void) {
 	blueLEDPercent(100);
 	_delay_ms(500);	
 	blueLEDPercent(0);
+
 	
 #ifdef notdef
 	//MOTORS	
@@ -1063,18 +1113,35 @@ int16_t main(void) {
 	ADCSRA 		|= (1<<ADSC);		//start the first ADC conversion
 
     // Set up velocity PID
-    PidController pidA;
     pidA.kP = 1;
     pidA.motorCommand = 0;
 
-    PidController pidB;
     pidB.kP = 1;
     pidB.motorCommand = 0;
 
 	static uint8_t motorControlCount = 0;
 	
+    //------------------benchmarking-------------------------------
+    
+    timer_t t0, tf;
+    t0 = timer_get();
+    for (int i=0; i<100; i++) {
+        oled_screen( &hat_oled, &vdiv, &csense, &motorA, &motorB,
+                &displayA, datagram_last, pidA, pidB, pid_on, pid_dt);
+    }
+    tf = timer_get();
+    debugmessage("oled_screen takes %lu ms", timer_ms( timer_diff(tf, t0) ) / 100 );
+    //-------------------------------------------------------------
+    t0 = timer_get();
+    stats_t  loop_time;
+    stats_init(&loop_time);
     while (1) 
     {
+        // get the timing information
+        tf = timer_get();
+        stats_add(&loop_time, timer_diff(tf, t0) );
+        t0 = tf;
+
         // Get the datagram
 		com = checkBuffer();					
 		if(com == STARTBYTE) {
@@ -1127,46 +1194,7 @@ int16_t main(void) {
 		motorB.degrees = motorB.position; //  * DEGPERCOUNT;
 
 
-        // Work out motor speed for either PID or non-PID and then apply after
-        
-        if (pid_on == 0) {
-            OCR0A = mapRanges( abs(motorA.setSpeedDPS), 0, 100, 0, 255 );
-            OCR0B = mapRanges( abs(motorB.setSpeedDPS), 0, 100, 0, 255 );
-        } else {
-            // Only run PID when the timer flag is set (using motorA for both)
-            if(motorA.pidTimerFlag == 1){
-                // This measures the length of the pid loop
-                pid_dt = pid_timer_counter * 0.0000128;
-                pid_timer_counter = 0;
-
-                // Calculate a new motor speed
-                velocityPIDLoop(motorA.setSpeedDPS * motorA.dir, &motorA, &pidA);
-                velocityPIDLoop(motorB.setSpeedDPS * motorB.dir, &motorB, &pidB);
-                motorA.pidTimerFlag = 0;
-            } 
-
-            // Store the PID motor command
-            OCR0A = mapRanges( abs(pidA.motorCommand), 0, 100, 0, 255 );
-            OCR0B = mapRanges( abs(pidB.motorCommand), 0, 100, 0, 255 );
-        }
-
-        // Update motor states
-        if( motorA.dir == 1 ){
-            PORTB &= ~(1<<MOTOR_A_PHA);
-        } else if(motorA.dir == -1) {
-            PORTB |= (1<<MOTOR_A_PHA);
-        } else {
-            OCR0A = 0;
-        }
-
-        if( motorB.dir == 1 ) {			
-            PORTB &= ~(1<<MOTOR_B_PHA);
-        } else if(motorB.dir == -1) {
-            PORTB |= (1<<MOTOR_B_PHA);
-        } else {
-            OCR0B = 0;
-        }
-        
+        // CONTROL WAS HERE
 						
 		//LED update
 		if(ledR.state > 0) {
@@ -1279,6 +1307,19 @@ int16_t main(void) {
 			 							
 			hat_07_int_flag = 0;
 		}
+
+        uint32_t  timer_counter_copy = 0;
+        ATOMIC_BLOCK(ATOMIC_FORCEON) {
+            if (timer_counter > 100000) {
+                timer_counter_copy = timer_counter;
+                timer_counter = 0;
+            }
+        }
+        if (timer_counter_copy > 0) {
+            debugmessage("timer counter %lu %f", timer_counter_copy, pid_dt);
+            debugmessage("mean %lu, var %lu, max %lu", 
+                    stats_mean(&loop_time), stats_var(&loop_time), loop_time.max );
+        }
 		
 #ifdef notdef
         if (debug_loop_count++ > 1000) {
