@@ -11,16 +11,6 @@
 
 
 
-int8_t 	mAQuadTable[4][4] = {{ 0, +1, -1,  2},
-							 {-1,  0,  2, +1},
-							 {+1,  2,  0, -1},
-							 { 2, -1, +1,  0}};
-
-int8_t  mBQuadTable[4][4] = {{ 0, -1, +1,  2},
-							 {+1,  0,  2, -1},
-							 {-1,  2,  0, +1},
-							 { 2, +1, -1,  0}};
-
 
 void detect_reset(void){
 	//read MCUSR and determine what reset the AVR
@@ -48,6 +38,7 @@ void detect_reset(void){
 	}
 }
 
+//************ fix these 2 functions
 float readFloat(uint8_t *flMem){
 	/*
 	* Method courtesy AVR Freaks user 'clawson'
@@ -148,26 +139,45 @@ int8_t i2cWritenBytes(uint8_t *data, uint8_t address, uint8_t reg, uint16_t n){
 // LEDs
 //
 //#################################################################################################
-void LEDOff(uint8_t led){
-	if(led == 0xFF){
-		DDRD &= ~((1<<LED_R)|(1<<LED_G)|(1<<LED_B));
-		//PORTD |= (1<<LED_R)|(1<<LED_G)|(1<<LED_B);
-	}else{
-		DDRD &= ~(1<<led);
-		//PORTD |= (1<<led);//common anode so high: off
-	}
+void LEDOff(enum _leds led){
+    switch (led) {
+        case RED:
+            DDRD &= ~0x80; break;
+        case GREEN:
+            DDRD &= ~0x20; break;
+        case BLUE:
+            DDRD &= ~0x40; break;
+        case Y2:
+            DDRC &= ~0x04; break;
+        case Y3:
+            DDRC &= ~0x08; break;
+        case Y4:
+            DDRC &= ~0x20; break;
+        default:
+            break;
+    }
 }
 
-void LEDOn(uint8_t led){
-	if(led == 0xFF){
-		DDRD |= (1<<LED_R)|(1<<LED_G)|(1<<LED_B);
-		//PORTD &= ~((1<<LED_R)|(1<<LED_G)|(1<<LED_B));
-	}else{
-		DDRD |= (1<<led);
-		//PORTD &= ~(1<<led);//common anode so low: on
-	}
+void LEDOn(enum _leds led){
+    switch (led) {
+        case RED:
+            DDRD |= 0x80; break;
+        case GREEN:
+            DDRD |= 0x20; break;
+        case BLUE:
+            DDRD |= 0x40; break;
+        case Y2:
+            DDRC |= 0x04; break;
+        case Y3:
+            DDRC |= 0x08; break;
+        case Y4:
+            DDRC |= 0x20; break;
+        default:
+            break;
+    }
 }
 
+#ifdef notdef
 void redLEDPercent(uint8_t percent){
 	percent %= 100;
 	if(percent == 0){
@@ -197,6 +207,7 @@ void blueLEDPercent(uint8_t percent){
 		OCR2B = MAP(percent, 0, 100, 0, BLUE_MAX);		
 	}
 }
+#endif
 
 
 //#################################################################################################
@@ -289,29 +300,36 @@ int16_t motorPIDControl(int16_t setPoint, Motor *motor){
 	return (int16_t)result;		
 }
 
-void fn_update_motor_states( Motor *motor, uint8_t enc_1_val, uint8_t enc_2_val ){
+// encoder state transition lookup tables
+static int8_t 	mAQuadTable[4][4] = {{ 0, +1, -1,  2},
+							 {-1,  0,  2, +1},
+							 {+1,  2,  0, -1},
+							 { 2, -1, +1,  0}};
+
+static int8_t  mBQuadTable[4][4] = {{ 0, -1, +1,  2},
+							 {+1,  0,  2, -1},
+							 {-1,  2,  0, +1},
+							 { 2, +1, -1,  0}};
+
+void 
+fn_update_motor_states( Motor *motor, uint8_t enc_1_val, uint8_t enc_2_val )
+{
 	
-	if( motor->encoderMode == 0 ) {
-		//single encoder mode, on pin 1
-		//uint8_t encdiff = motor->enc1PinState ^ enc_1_val;
-		if( motor->enc1PinState ^ enc_1_val ){
+    switch(motor->encoderMode) {
+    case 0: //single encoder mode, on pin 1
+		if ( motor->enc1PinState ^ enc_1_val ){
 			if( motor->dir == 1){
 				motor->position++;
 				motor->lastDir = 1;
 			}else if( motor->dir == -1 ){
 				motor->position--;
 				motor->lastDir = -1;
-			}else{
-				//wheel slip!!
-				//probably going to still be rotating in the direction it just was, so use that past value
-				if( motor->lastDir == 1 ) 		motor->position++;
-				else if( motor->lastDir == -1 )	motor->position--;
 			}
 			motor->enc1PinState = enc_1_val;
-		}//otherwise there was a tick but it wasn't the first channel...	
-	}
-	else if(motor->encoderMode == 1){
-		//standard quadrature
+        }
+        break;
+
+    case 1: { //standard quadrature
 		uint8_t lastEncSum 	= (motor->enc1PinState<<1)|(motor->enc2PinState);
 		uint8_t encSum 		= (enc_1_val<<1)|(enc_2_val);
 		int8_t  effect;
@@ -329,10 +347,9 @@ void fn_update_motor_states( Motor *motor, uint8_t enc_1_val, uint8_t enc_2_val 
 	
 		motor->enc1PinState = enc_1_val;
 		motor->enc2PinState = enc_2_val;
-	
-	}
-	else if(motor->encoderMode == 2){
-		//x4 counting (xor'ed both channels)
+        break;
+    }
+    case 2: { //x4 counting (xor'ed both channels)
 		uint8_t x4 = enc_1_val ^ enc_2_val;
 		if(motor->enc1PinState ^ x4){
 			if(motor->dir == 1){
@@ -350,10 +367,7 @@ void fn_update_motor_states( Motor *motor, uint8_t enc_1_val, uint8_t enc_2_val 
 			motor->enc1PinState = x4;
 		}
 	}
-	else{
-		//my mode isn't specified
-		motor->encoderMode = 1;//set to default
-	}	
+        }
 }
 
 void fn_dbg_motor ( Motor *motor ){

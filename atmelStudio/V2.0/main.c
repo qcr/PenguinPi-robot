@@ -51,13 +51,12 @@ PidController pidB;
 //Always have
 Motor 		motorA;
 Motor 		motorB;
-LED 		ledR;
-LED 		ledG;
-LED 		ledB;
+
+LED     leds[6];
+
 AnalogIn 	vdiv;
 AnalogIn 	csense;
 
-volatile uint32_t    timer_counter;
 
 //HAT dependant
 Hat_s		hat;
@@ -69,8 +68,10 @@ Display 	displayA;	//remove when parsing logic changed
 uint8_t    pid_on = 3;
 
 // PID TIMER
-volatile uint16_t pid_timer_counter = 0;
 double pid_dt = 0;
+// system wide flags
+uint8_t  oled_update_now = 0;
+uint8_t  low_voltage = 0;
 
 //#################################################################################################
 //
@@ -94,82 +95,93 @@ ISR( PCINT0_vect ) {
 		fn_update_motor_states( &motorB, enc_b1_val, enc_b2_val ); 
 	
 	//Update LEDs
-        LED_DEBUG_G(100);
+        LED_DEBUG_G(5);
 }
 
-#define CONTROL_INTERVAL    1563
-volatile uint16_t tcontrol;
+volatile uint16_t t1_count = 3;
+const uint8_t   control_interval = 20; // ms
+const uint8_t   adc_interval = 10; // ms
+const uint8_t   oled_interval = 200; // ms
 
-ISR( TIMER2_OVF_vect ){
-    // period of 12.8us
 
-    // Motor control counter has been moved to the main while loop
+// initialize the counters so they are not in sync
+volatile uint8_t control_counter = 0;
+volatile uint8_t adc_counter = 10;
+volatile uint8_t oled_counter = 5;
+
+
+ISR( TIMER1_COMPA_vect ){
+    // period of 1ms
 
     system_timer++;
 
-    pid_timer_counter++;
-    timer_counter++;
-	
-	if(ledR.count > 0) 	ledR.count--;
-	else 				ledR.state = 0;
-	
-	if(ledG.count > 0) 	ledG.count--;
-	else 				ledG.state = 0;
-	
-	if(ledB.count > 0) 	ledB.count--;
-	else 				ledB.state = 0;
-    //
+    if (++t1_count > 1000) {
+        t1_count = 0;
+        leds[Y4].state = 1;
+        leds[Y4].count = 10;
+    }
 
-    if (tcontrol++ < CONTROL_INTERVAL)
+    // update all LED counters
+    for (uint8_t i=0; i<NLEDS; i++) {
+        if (leds[i].count > 0)
+            if (--leds[i].count == 0)
+                leds[i].state = 0;      // flag this LED to be turned off now
+    }
+
+    // initiate an OLED update in the main loop
+    if (++oled_counter > oled_interval) {
+        oled_counter = 0;
+        oled_update_now = 1;
+    }
+
+    // initiate ADC conversion
+    if (++adc_counter > adc_interval) {
+        adc_counter = 0;
+    }
+
+    // time for motor control?
+    if (++control_counter < control_interval)
         return;
-    tcontrol = 0;
+
+    control_counter = 0;
+    if (pid_on == 0)
+        return;
+
+    // do motor control now
+
     // enable interrupts and carry on
     sei();  
    
-    
-    // Work out motor speed for either PID or non-PID and then apply after
-    
-    if (pid_on == 0) {
-        OCR0A = mapRanges( abs(motorA.setSpeedDPS), 0, 100, 0, 255 );
-        OCR0B = mapRanges( abs(motorB.setSpeedDPS), 0, 100, 0, 255 );
-    } else {
-        // Only run PID when the timer flag is set (using motorA for both)
-        if(motorA.pidTimerFlag == 1){
-            // This measures the length of the pid loop
-            pid_dt = pid_timer_counter * 0.0000128;
-            pid_timer_counter = 0;
+    // Calculate motor speed control
+    velocityPIDLoop(motorA.setSpeedDPS * motorA.dir, &motorA, &pidA);
+    velocityPIDLoop(motorB.setSpeedDPS * motorB.dir, &motorB, &pidB);
 
-            // Calculate a new motor speed
-            velocityPIDLoop(motorA.setSpeedDPS * motorA.dir, &motorA, &pidA);
-            velocityPIDLoop(motorB.setSpeedDPS * motorB.dir, &motorB, &pidB);
-            motorA.pidTimerFlag = 0;
-        } 
+    // Set the PWM values
+    OCR0A = mapRanges( abs(pidA.motorCommand), 0, 100, 0, 255 );
+    OCR0B = mapRanges( abs(pidB.motorCommand), 0, 100, 0, 255 );
 
-        // Store the PID motor command
-        OCR0A = mapRanges( abs(pidA.motorCommand), 0, 100, 0, 255 );
-        OCR0B = mapRanges( abs(pidB.motorCommand), 0, 100, 0, 255 );
+    // Set motor driver polarities
+    switch (motorA.dir) {
+    case 1:
+        PORTB &= ~(1<<MOTOR_A_PHA); break;
+    case -1:
+        PORTB |= (1<<MOTOR_A_PHA); break;
+    case 0:
+        OCR0A = 0; break;
     }
 
-    // Update motor states
-    if( motorA.dir == 1 ){
-        PORTB &= ~(1<<MOTOR_A_PHA);
-    } else if(motorA.dir == -1) {
-        PORTB |= (1<<MOTOR_A_PHA);
-    } else {
-        OCR0A = 0;
-    }
-
-    if( motorB.dir == 1 ) {			
-        PORTB &= ~(1<<MOTOR_B_PHA);
-    } else if(motorB.dir == -1) {
-        PORTB |= (1<<MOTOR_B_PHA);
-    } else {
-        OCR0B = 0;
+    switch (motorB.dir) {
+    case 1:
+        PORTB &= ~(1<<MOTOR_B_PHA); break;
+    case -1:
+        PORTB |= (1<<MOTOR_B_PHA); break;
+    case 0:
+        OCR0B = 0; break;
     }
 }
 
 ISR( ADC_vect ) {
-    // period of 69.3333us for a standard ADC read, 2x longer for first
+    // conversion complete, 42us after initiation
 	if(vdiv.count > 1){
 		vdiv.count--;	// really this is just a counter to get a few readings before actually using the ADC value
 		ADCSRA |= (1<<ADSC);
@@ -193,6 +205,7 @@ ISR( ADC_vect ) {
 //                      Main polling loop
 //#################################################################################################
 
+    stats_t  loop_time;
 int
 main(void)
 {
@@ -206,56 +219,7 @@ main(void)
 	
 	hat_init( &hat );
 	
-//INIT Done	
-
-//TESTS
-//	//LEDs
-//		//Y0	C2
-//		//Y1	C3
-//		//Y2	C5
-    PORTC = 0x00;
-    _delay_ms(500);	
-    PORTC = 0x2C;
-    _delay_ms(500);			
-    PORTC = 0x00;
-    _delay_ms(500);	
-
-    PORTC = PORTC | (1 << 2);
-    _delay_ms(500);		
-    PORTC = PORTC | (1 << 3);
-    _delay_ms(500);		
-    PORTC = PORTC | (1 << 5);
-    _delay_ms(500);		
-
-	//RGB
-    /*
-	redLEDPercent(50);	
-	_delay_ms(500);
-	redLEDPercent(100);	
-	_delay_ms(500);
-	redLEDPercent(0);	
-	greenLEDPercent(50);
-	_delay_ms(500);
-	greenLEDPercent(100);
-	_delay_ms(500);	
-	greenLEDPercent(0);
-	blueLEDPercent(50);
-	_delay_ms(500);
-	blueLEDPercent(100);
-	_delay_ms(500);	
-	blueLEDPercent(0);
-    */
-
-	
-#ifdef notdef
-	//MOTORS	
-	motorA.dir			= -1;
-	motorA.setSpeedDPS	= 50;
-	
-	motorB.dir			= -1;
-	motorB.setSpeedDPS	= 90;	
-//END TESTS
-#endif
+    test_leds();
 	
 	vdiv.count 	= ADC_COUNT;
 	ADCSRA 		|= (1<<ADSC);		//start the first ADC conversion
@@ -267,17 +231,13 @@ main(void)
     pidB.kP = 1;
     pidB.motorCommand = 0;
 
-	static uint8_t motorControlCount = 0;
-	
     timer_t t0, tf;
 
     t0 = timer_get();
-    stats_t  loop_time;
     stats_init(&loop_time);
     debugmessage("starting main loop");
     while (1) 
     {
-
         // get timing stats for main loop
         tf = timer_get();
         stats_add(&loop_time, timer_diff(tf, t0) );
@@ -286,18 +246,9 @@ main(void)
         // Check for a new datagram
         check_datagram();
 		
-        hat_update();
-
+        // Update the hat
+        hat_update(&oled_update_now);
 		
-        if(motorControlCount < 250) {
-            motorControlCount++;
-        } else {
-            //set PID flags
-            motorA.pidTimerFlag = 1;
-            motorB.pidTimerFlag = 1;
-            motorControlCount   = 0;
-        }
-	
 #ifdef notdef
 		//cleanup buffers
 		com = 0;
@@ -309,25 +260,39 @@ main(void)
 		motorA.degrees = motorA.position; // * DEGPERCOUNT;
 		motorB.degrees = motorB.position; //  * DEGPERCOUNT;
 
+        if (pid_on == 0) {
+            OCR0A = mapRanges( abs(motorA.setSpeedDPS), 0, 100, 0, 255 );
+            OCR0B = mapRanges( abs(motorB.setSpeedDPS), 0, 100, 0, 255 );
+            
+            // Set motor driver polarities
+            switch (motorA.dir) {
+            case 1:
+                PORTB &= ~(1<<MOTOR_A_PHA); break;
+            case -1:
+                PORTB |= (1<<MOTOR_A_PHA); break;
+            case 0:
+                OCR0A = 0; break;
+            }
 
-        // CONTROL WAS HERE
-						
+            switch (motorB.dir) {
+            case 1:
+                PORTB &= ~(1<<MOTOR_B_PHA); break;
+            case -1:
+                PORTB |= (1<<MOTOR_B_PHA); break;
+            case 0:
+                OCR0B = 0; break;
+            }
+        }
+
 		//LED update
-		if(ledR.state > 0) {
-			if(ledR.brightness > 0) redLEDPercent(ledR.brightness);
-			else 					LEDOn(LED_R);
-		} else 						LEDOff(LED_R);
+        for (uint8_t i=0; i<NLEDS; i++) {
+            LED *led = &leds[i];
 
-		if(ledG.state > 0) {
-			if(ledG.brightness > 0) greenLEDPercent(ledG.brightness);
-			else 					LEDOn(LED_G);
-		} else 						LEDOff(LED_G);
-
-		if(ledB.state > 0) { 
-			if(ledB.brightness > 0) blueLEDPercent(ledB.brightness);
-			else 					LEDOn(LED_B);
-		} else 						LEDOff(LED_B);
-		
+            if(led->state > 0)
+                LEDOn(i);
+            else
+                LEDOff(i);
+        }
 
 		//Analog update
 		if(vdiv.ready && !(ADCSRA&(1<<ADSC))){
@@ -338,18 +303,19 @@ main(void)
 			//change multiplexer to csense
 			ADMUX 		|= (1<<MUX0);//change mux
 			csense.count = ADC_COUNT;
-			ADCSRA 		|= (1<<ADSC);//restart
+			ADCSRA 		|= (1<<ADSC); // start conversion
 		}
 		
 		if(csense.ready && !(ADCSRA&(1<<ADSC))){
+            // get the result
 			csense.raw   = ADC;
 			csense.value = csense.raw * csense.scale;
 			csense.ready = 0;
 
-			//change multiplexer to csense
+			//change multiplexer to vsense
 			ADMUX 	  &= ~(1<<MUX0);//change mux
 			vdiv.count = ADC_COUNT;
-			ADCSRA 	  |= (1<<ADSC);//restart
+			ADCSRA 	  |= (1<<ADSC); // start conversion
 		}
 
 		if(vdiv.value < battery.cutoff){
@@ -360,6 +326,7 @@ main(void)
 		}else battery.count = 0;
 
 
+        /*
         uint32_t  timer_counter_copy = 0;
         ATOMIC_BLOCK(ATOMIC_FORCEON) {
             if (timer_counter > 100000) {
@@ -371,7 +338,10 @@ main(void)
             debugmessage("timer counter %lu %f", timer_counter_copy, pid_dt);
             debugmessage("mean %lu, var %lu, max %lu", 
                     stats_mean(&loop_time), stats_var(&loop_time), loop_time.max );
+           leds[Y2].state = 1;
+           leds[Y2].count = 50;
         }
+        */
 		
         //main_loop_debug();
     }
@@ -448,6 +418,10 @@ void init_structs(void){
 	battery.count			= 0;
 	battery.limit 			= 5000;//about 1.5 seconds
 	
+    for (uint8_t i=0; i<NLEDS; i++) {
+        leds[i].state = 0;
+        leds[i].count = 0;
+    }
 	
 }
 
@@ -455,6 +429,10 @@ void init(void){
 //V2.0		//Power reduction register
 //V2.0		PRR0 &= ~((1<<PRTWI0)|(1<<PRTIM2)|(1<<PRTIM0)|(1<<PRUSART1)|(1<<PRTIM1)|(1<<PRADC));
 
+    cli();  // just to be sure
+
+// DDR = 1 output pin
+// DDR = 0 input pin (default)
 	//UART
 		uart_init(UART_BAUD_SELECT_DOUBLE_SPEED(BAUD, F_CPU));
 
@@ -465,9 +443,9 @@ void init(void){
 	//Motor PWM
 		//V1 was OC1A and OC1B
 		//V2  is OC0A and OC0B
-		TCCR0A |= (1<<COM0A1)|(0<<COM0A0)|			// Clear OC0A on Compare Match	Set OC0A on Bottom
-				  (1<<COM0B1)|(0<<COM0B0)|			// Clear OC0B on Compare Match	Set OC0B on Bottom
-				  (1<<WGM01) |(1<<WGM00); 			// Non-inverting, 8 bit fast PWM
+		TCCR0A |= (1<<COM0A1)|(0<<COM0A0)| // Clear OC0A on Compare Match	Set OC0A on Bottom
+				  (1<<COM0B1)|(0<<COM0B0)| // Clear OC0B on Compare Match	Set OC0B on Bottom
+				  (1<<WGM01) |(1<<WGM00);  // Non-inverting, 8 bit fast PWM
 				  
 		TCCR0B |= (0<<WGM02) |
 				  (0<<CS02)|(0<<CS01)|(1<<CS00);	// DIV1 prescaler
@@ -484,11 +462,12 @@ void init(void){
 	//LED's
 		DDRC 	|= 0x2C;	//LEDs on C5, 3:2
 		DDRD 	|= 0xE0;	//RGB on D7:5
-		
-		//LEDR	was OC0A	now OC2A
-		//LEDG	was OC0B	now OC1A
-		//LEDB	was OC2B	now OC2B
-	
+
+        // turn all LEDs off
+    for (uint8_t i=0; i<NLEDS; i++)
+        LEDOff(i);
+
+#ifdef notdef
 		//GREEN ON A
 			TCCR1A |= (1<<COM0A1)|(1<<COM0A0)|(0<<COM0B1)|(0<<COM0B0)|(1<<WGM01)|(1<<WGM00); 			// inverting, 8 bit fast PWM
 			TCCR1B |= (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
@@ -499,13 +478,28 @@ void init(void){
 			TCCR2A |= (1<<COM2A1)|(1<<COM2A0)|(1<<COM2B1)|(1<<COM2B0)|(1<<WGM21)|(1<<WGM20); 			// inverting, 8 bit fast PWM
 			TCCR2B |= (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
 
+        TCCR2A |= (0<<COM2A1)|(0<<COM2A0)|(0<<COM2B1)|(0<<COM2B0)|(0<<WGM21)|(0<<WGM20); 			// inverting, 8 bit fast PWM
+        // timer 2 counts at 20MHz (no prescaler)
+        TCCR2B |= (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
 	//8 bit controller timer
+        // enable overflow interrupt
 		TIMSK2 |= (1<<TOIE2);
+#endif
+        
+    // millisecond timer, 16 bit timer 1
+        TCCR1A |= (0<<COM0A1)|(0<<COM0A0)|(0<<COM0B1)|(0<<COM0B0)|(0<<WGM01)|(0<<WGM00);
+        TCCR1B |= (0<<WGM13)|(1<<WGM12)|    // CTC mode
+            (0<<CS02)|(0<<CS01)|(1<<CS00);  // no prescaler
+        OCR1A = 20000;
+		TIMSK1 |= (1<<OCIE1A);  // enable OCA interrupts
 
 	//ADC
 		DIDR0	= (1<<ADC6D)|(1<<ADC7D);
-		ADMUX 	= (0<<REFS1)|(1<<REFS0)|(0<<MUX4)|(0<<MUX3)|(1<<MUX2)|(1<<MUX1)|(0<<MUX0); 	//AVCC reference voltage with external cap on AREF, multiplex to channel 6
-		ADCSRA 	= (1<<ADEN) |(1<<ADIE) |(1<<ADPS2)|(1<<ADPS1)|(0<<ADPS0);					//Enable ADC, enable interrupt, prescaler of 64 (187.5kHz sample rate)
+		ADMUX 	= (0<<REFS1)|(1<<REFS0)| //Vcc reference voltage with external cap on AREF
+            (0<<MUX4)|(0<<MUX3)|(1<<MUX2)|(1<<MUX1)|(0<<MUX0); 	// multiplex to channel 6
+		ADCSRA 	= (1<<ADEN) |  // enable ADC
+            (1<<ADIE) |        // enable interrupt
+            (1<<ADPS2)|(1<<ADPS1)|(0<<ADPS0); // prescaler of 64 (312kHz sample rate)
 	
 	//I2C
 		i2c_init();
@@ -581,3 +575,52 @@ void main_loop_debug()
 		}
 }
 #endif
+
+void
+test_leds()
+{
+//TESTS
+//	//LEDs
+//		//Y0	C2
+//		//Y1	C3
+//		//Y2	C5
+
+    for (uint8_t i=0; i<NLEDS; i++) {
+        LEDOn(i);
+        _delay_ms(300);	
+        LEDOff(i);
+        _delay_ms(200);	
+    }
+    /*
+    PORTC = 0x2C;
+    _delay_ms(500);			
+    PORTC = 0x00;
+    _delay_ms(500);	
+
+    PORTC = PORTC | (1 << 2);
+    _delay_ms(500);		
+    PORTC = PORTC | (1 << 3);
+    _delay_ms(500);		
+    PORTC = PORTC | (1 << 5);
+    _delay_ms(500);		
+    */
+
+    /*
+	//RGB
+	redLEDPercent(50);	
+	_delay_ms(500);
+	redLEDPercent(100);	
+	_delay_ms(500);
+	redLEDPercent(0);	
+	greenLEDPercent(50);
+	_delay_ms(500);
+	greenLEDPercent(100);
+	_delay_ms(500);	
+	greenLEDPercent(0);
+	blueLEDPercent(50);
+	_delay_ms(500);
+	blueLEDPercent(100);
+	_delay_ms(500);	
+	blueLEDPercent(0);
+    */
+}

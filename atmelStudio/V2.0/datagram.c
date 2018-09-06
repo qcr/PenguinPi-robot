@@ -149,7 +149,7 @@ void parseDatagram( uint8_t *datagram ){
 
 	if(crcCalc != crcDgram){
 		errmessage("CRC Failed");
-        LED_DEBUG_R(1000);
+        LED_DEBUG_R(100);
 		return;
 	}
 	 
@@ -160,49 +160,41 @@ void parseDatagram( uint8_t *datagram ){
 	switch( datagram[1] ){
 		case AD_MOTOR_A:
 			parseMotorOp(datagram, &motorA);
-		break;
+            break;
 		case AD_MOTOR_B:
 			parseMotorOp(datagram, &motorB);
-		break;
-		
-//DELETE		case AD_SERVO_A:
-//DELETE			parseServoOp(datagram, &servoA);
-//DELETE		break;
-//DELETE		case AD_SERVO_B:
-//DELETE			parseServoOp(datagram, &servoB);
-//DELETE		break;
-		
+            break;
 		case AD_LED_R:
-			parseLEDOp(datagram, &ledR);
-		break;
+			parseLEDOp(datagram, &leds[RED]);
+            break;
 		case AD_LED_G:
-			parseLEDOp(datagram, &ledG);
-		break;
+			parseLEDOp(datagram, &leds[GREEN]);
+            break;
 		case AD_LED_B:
-			parseLEDOp(datagram, &ledB);
-		break;
-		
+			parseLEDOp(datagram, &leds[BLUE]);
+            break;
 		case AD_DISPLAY_A:
 			parseDisplayOp(datagram, &displayA);
-		break;
-		
+            break;
 		case AD_ADC_V:
 			parseADCOp(datagram, &vdiv);
-		break;
+            break;
 		case AD_ADC_C:
 			parseADCOp(datagram, &csense);
-		break;
-
+            break;
 		case AD_ALL:
 			parseAllOp(datagram);
-		break;
-		
-		default:
-            hat_datagram(datagram);
+            break;
+		default: {
+            uint8_t status;
+            status = hat_datagram(datagram);
 
-			errmessage("Datagram: unknown address %d", datagram[1]);
-			//flash BLUE LED
-            LED_DEBUG_R(1000);
+            if (status == 0) {
+                errmessage("Datagram: unknown address %d", datagram[1]);
+                //flash RED LED
+                LED_DEBUG_R(100);
+            }
+        }
 		break;
 	}
 }
@@ -441,16 +433,6 @@ void parseLEDOp		( uint8_t *datagram, LED *led ){
 			}else
 				errmessage("LED_SETSTATE: incorrect type %d", datagram[0]);
 		break;
-		case LED_SET_BRIGHTNESS:
-			if(datagram[0] == 4){
-				int8_t brightness = datagram[3];
-				if(brightness > 100) led->brightness = 100;
-				else if(brightness > 0) led->brightness = brightness;
-				else led->brightness = 0;
-			}else
-				errmessage("LED_SETBRIGHT: incorrect type %d", datagram[0]);
-
-		break;
 		case LED_SET_COUNT:
 			if(datagram[0] == 5){
 				led->count = (datagram[3]<<8)|datagram[4];
@@ -463,11 +445,6 @@ void parseLEDOp		( uint8_t *datagram, LED *led ){
 		case LED_GET_STATE:
 			dgrammem.ch = led->state;
 			formdatagram(datagramG, datagram[1], LED_SET_STATE, dgrammem, 'c');
-			uartputcs(datagramG);
-		break;
-		case LED_GET_BRIGHTNESS:
-			dgrammem.ch = led->brightness;
-			formdatagram(datagramG, datagram[1], LED_SET_BRIGHTNESS, dgrammem, 'c');
 			uartputcs(datagramG);
 		break;
 		case LED_GET_COUNT:
@@ -563,9 +540,9 @@ void parseAllOp		( uint8_t *datagram ){
 //DELETE			servoA.state = 0;
 //DELETE			servoB.state = 0;
 			displayA.draw = 0;
-			ledR.state = 0;
-			ledG.state = 0;
-			ledB.state = 0;
+			leds[RED].state = 0;
+			leds[GREEN].state = 0;
+			leds[BLUE].state = 0;
 			
 			
 			// FIXME hat_oled.show_option = OLED_SHUTDOWN;
