@@ -1,7 +1,7 @@
 
 void hat_init();
 uint8_t hat_datagram(uint8_t *datagram);
-void hat_update();
+void hat_update(uint8_t *update);
 void hat_lowvolts();
 void hat_show_error(char *s);
 

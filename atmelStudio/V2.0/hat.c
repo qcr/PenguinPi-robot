@@ -11,6 +11,7 @@
 
 #include "global.h"
 #include "hat.h"
+#include "timer.h"
 
 #include "PCA6416A.h"
 #include "SSD1306.h"
@@ -20,21 +21,28 @@
 // HATs
 //
 
+//OLED Screen Options
+enum _oled_screen {
+    OLED_IP_ADDR = 0,
+    OLED_USER,
+    OLED_BATTERY,
+    OLED_MOTORS, 
+    OLED_ENCODERS,
+    OLED_POSITION,
+    OLED_PID,
+    OLED_TIMING,
+    OLED_ERROR,
+    OLED_SHUTDOWN,
+    OLED_END
+};
+
+void oled_string(uint8_t x, uint8_t y, const char *fmt, ...);
+
 
 typedef struct {
 	uint8_t 			show_option;		// Selects which screen to show
 	
 	//IP Addresses
-	// int16_t				eth_addr_1;	
-	// int16_t				eth_addr_2;
-	// int16_t				eth_addr_3;
-	// int16_t				eth_addr_4;
-	
-	// int16_t				wlan_addr_1;	
-	// int16_t				wlan_addr_2;
-	// int16_t				wlan_addr_3;
-	// int16_t				wlan_addr_4;
-
 	uint8_t				eth[4];
 	uint8_t				wlan[4];
 	
@@ -53,6 +61,7 @@ typedef struct {
 Hat_oled	hat_oled;
 static uint8_t oled_frame[ SSD1306_BUFFERSIZE ];
 void parseOLEDOp( uint8_t *datagram, Hat_oled *hat_oled );
+static const uint8_t ASCII[][5];
 
 Hat_s hat_status;
 
@@ -64,7 +73,6 @@ void    oled_frame_divider  ( );
 void 	oled_write_frame_now( );
 void 	oled_write_frame	( uint8_t *phase);
 void 	oled_character		( uint8_t x, uint8_t y, char character );
-void 	oled_string			( uint8_t x, uint8_t y, char *string );
 
 void 	oled_screen    		( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *motorA, Motor *motorB, Display *display, uint8_t *datagram, PidController *pidA, PidController *pidB, uint8_t pid_on, double pid_dt);
 void    oled_next_screen	( Hat_oled *oled ); 
@@ -82,29 +90,23 @@ ISR( PCINT2_vect ) {
 }
 
 uint8_t oled_refresh_phase = 0;
-uint16_t 	oled_refresh_count 	= 0;
 
 void
-hat_update()
+hat_update(uint8_t *oled_refresh)
 {
     //Refresh OLED
-    if ( hat_status.has_oled == 1 ) {
-        if ( oled_refresh_count >= OLED_REFRESH) {
-            // time to refresh
-            oled_refresh_count	= 0;    // reset the refresh counter
-            LED_DEBUG_B(500);
-            // build the screen image
-            float pid_dt = 0.0;//FIXME
-            oled_screen( &hat_oled, &vdiv, &csense, &motorA, &motorB,
-                    &displayA, datagram_last, &pidA, &pidB, pid_on, pid_dt);
-            oled_refresh_phase = 1;  // start the progressive write to OLED
-        }
-        else
-            oled_refresh_count++;  // increment the refresh counter
-
-        if (oled_refresh_phase)
-            oled_write_frame(&oled_refresh_phase);    // progressive write
-    }		
+    if ( hat_status.has_oled == 1 && oled_refresh && oled_refresh_phase == 0) {
+        // time to refresh
+        *oled_refresh = 0;  // mark it as done
+        LED_DEBUG_B(10);
+        // build the screen image
+        float pid_dt = 0.0;//FIXME
+        oled_screen( &hat_oled, &vdiv, &csense, &motorA, &motorB,
+                &displayA, datagram_last, &pidA, &pidB, pid_on, pid_dt);
+        oled_refresh_phase = 1;  // start the progressive write to OLED
+    }
+    if (oled_refresh_phase)
+        oled_write_frame(&oled_refresh_phase);    // progressive write
 
     //HAT Interrupt
     if ( hat_status.int_07 == 1 && hat_07_int_flag == 1 ) {
@@ -389,15 +391,14 @@ void hat_init( ) {
 	data_r[1]	= 0;
 	for(uint8_t j = 0; j < 8; j++) {
 		data_r[0]	=1<<j;
-
 		i2cWritenBytes( data_r, PCA6416A_0, 0x02, 2);		
-		_delay_ms(100);		
+		_delay_ms(50);		
 	}
+    data_r[0]	= 0;
 	for(uint8_t j = 0; j < 8; j++) {
 		data_r[1]	=1<<j;
-
 		i2cWritenBytes( data_r, PCA6416A_0, 0x02, 2);		
-		_delay_ms(100);		
+		_delay_ms(50);		
 	}
 
     data_r[0]	= 0;
@@ -464,7 +465,7 @@ void init_oled () {
 	
 	//Update screen with initial Splash Screen contents
     oled_write_frame_now();
-    _delay_ms(5000);
+    _delay_ms(2000);
 	
 	
 //	oled_clear_frame();	
@@ -549,25 +550,10 @@ void oled_character( uint8_t x, uint8_t y, char character ) {
 		oled_frame[ frame_addr + 5 ] 			= 0x00;		
 }
 
-void oled_string   ( uint8_t x, uint8_t y, char *string ) {
-	//128 x 32 pixels on screen
-	//Characters are 6 pixels by 8
-	//Character display is therefore 21 x 4
-	//x and y inputs are intended to be on these terms, so y=3 is bottom line of characters
-		
-	uint8_t local_x = (6*x);
-	
-	while ( *string ) {
-		oled_character( local_x, y, *string++ );	
-		
-		local_x = local_x + 6;
-	}
-}
 
 void oled_next_screen ( Hat_oled *oled ) {
 	
-    oled->show_option += 1;     // next screen
-	if ( oled->show_option > OLED_LAST ) 
+	if ( ++oled->show_option >= OLED_END)
 		oled->show_option = 0;		
 }
 
@@ -604,30 +590,17 @@ void oled_screen   ( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *mo
 	
 	switch ( oled->show_option ) {
         case OLED_PID :
-            sprintf(fstring, "   A    B  On? %d", pid_on);
-            oled_string( 0, 0, fstring);
-            oled_string( 0, 0, "   A    B  " ); 
+            oled_string( 0, 0, "   A    B  On? %d", pid_on);
 
-			sprintf(fstring, "e  %d", pidA->error );
-            oled_string( 0, 1, fstring);
-			sprintf(fstring, "mc %d", pidA->motorCommand );
-            oled_string( 0, 2, fstring);
-            sprintf(fstring, "de %d", pidA->dt );
-            oled_string( 0, 3, fstring);
+            oled_string( 0, 1, "e  %d", pidA->error );
+            oled_string( 0, 2, "mc %d", pidA->motorCommand );
+            oled_string( 0, 3, "de %d", pidA->dt );
 
+            oled_string( 8, 1, "%d", pidB->error );
+            oled_string( 8, 2, "%d", pidB->motorCommand );
+            oled_string( 8, 3, "%d", pidB->dt );
 
-
-			sprintf(fstring, "%d", pidB->error );
-            oled_string( 8, 1, fstring);
-			sprintf(fstring, "%d", pidB->motorCommand );
-            oled_string( 8, 2, fstring);
-            sprintf(fstring, "%d", pidB->dt );
-            oled_string( 8, 3, fstring);
-
-            sprintf(fstring, "dt:%f", pid_dt );
-            oled_string( 11, 3, fstring);
-
-
+            oled_string( 11, 3, "dt:%f", pid_dt );
             break;
 
 		/* case OLED_DISPLAY :  */
@@ -649,21 +622,12 @@ void oled_screen   ( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *mo
 		
 		case OLED_BATTERY :
 			oled_string( 0, 0, "BATTERY" ); 
-			
-			oled_string( 0, 1, "V = " );
-			oled_string( 0, 2, "I = " );
-
-			sprintf  	( fstring, "%1.3f V\n", vdiv->value);
-			oled_string ( 6,1,fstring ); 	
-			
-			sprintf  	( fstring, "%3.3f mA\n", csense->value);
-			oled_string ( 4,2,fstring );			
-			
+			oled_string( 0, 1, "  %1.3f V", vdiv->value);
+			oled_string( 0, 2, "  %3.3f mA", csense->value);
 			break;	
 
 		case OLED_MOTORS :
 			oled_string( 0, 0, "MOTORS" );
-			
 			//DIR
 			oled_string( 0, 1, "dir:" );
 				if ( motorA->dir == -1 ) 		oled_string( 8, 1, " CW" );
@@ -675,88 +639,61 @@ void oled_screen   ( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *mo
 				else 							oled_string( 16, 1, "OFF" );			
 			
 			//DPS
-			oled_string( 0, 2, "dps:" );
-				sprintf(fstring, "%6d", motorA->setSpeedDPS);
-				oled_string ( 5,2,fstring );			
-			
-				sprintf(fstring, "%6d", motorB->setSpeedDPS);
-				oled_string ( 13,2,fstring );			
+			oled_string( 5, 2, "dps: %6d", motorA->setSpeedDPS);
+            oled_string ( 13,2, "%6d", motorB->setSpeedDPS);
 		
-			//Divide screen
-				oled_frame_divider();
+            oled_frame_divider(); //Divide screen
 			break;
 
 		case OLED_ENCODERS :
 			oled_string( 0, 0, "ENCODERS" );
 
       //Encoders RAW
-			oled_string( 0, 1, "enc1:" );
-				sprintf(fstring, "%6d", motorA->enc_raw1);
-				oled_string ( 5,1,fstring );			
-			
-				sprintf(fstring, "%6d", motorB->enc_raw1);
-				oled_string ( 13,1,fstring );
+			oled_string( 0, 1, "enc1: %6d", motorA->enc_raw1);
+            oled_string ( 13,1, "%6d", motorB->enc_raw1);
 
-			oled_string( 0, 2, "enc2:" );
-				sprintf(fstring, "%6d", motorA->enc_raw2);
-				oled_string ( 5,2,fstring );			
-			
-				sprintf(fstring, "%6d", motorB->enc_raw2);
-				oled_string ( 13,2,fstring );
+			oled_string( 0, 2, "enc2: %6d", motorA->enc_raw2);
+            oled_string ( 13,2, "%6d", motorB->enc_raw2);
         	
-			//Divide screen
-				oled_frame_divider();				
+            oled_frame_divider();	//Divide screen
 			break;
       
 		case OLED_POSITION :
 			oled_string( 0, 0, "POSITION" );
         
 			//position
-			oled_string( 0, 1, "pos:" );
-				sprintf(fstring, "%6d", motorA->position);
-				oled_string ( 5,1,fstring );			
-			
-				sprintf(fstring, "%6d", motorB->position);
-				oled_string ( 13,1,fstring );						
+			oled_string( 0, 1, "pos: %6d", motorA->position);
+            oled_string(13, 1, "%6d", motorB->position);
 
 			//degrees
-			oled_string( 0, 2, "deg:" );
-				sprintf(fstring, "%6d", motorA->degrees);
-				oled_string ( 5,2,fstring );			
-			
-				sprintf(fstring, "%6d", motorB->degrees);
-				oled_string ( 13,2,fstring );
-				
+			oled_string( 0, 2, "deg: %6d", motorA->degrees);
+            oled_string(13, 2, "%6d", motorB->degrees);
 				
 			//Divide screen
-				oled_frame_divider();				
+            oled_frame_divider();				
 			break;
 			
 		case OLED_IP_ADDR :
 			oled_string( 0, 0, "IP Addresses" );
-			
-			oled_string( 0, 1, "eth      .   .   ." );			
-				sprintf(fstring, "%3d", oled->eth[0] );
-				oled_string (  6,1,fstring );			
-				sprintf(fstring, "%3d", oled->eth[1] );
-				oled_string ( 10,1,fstring );
-				sprintf(fstring, "%3d", oled->eth[2] );
-				oled_string ( 14,1,fstring );
-				sprintf(fstring, "%3d", oled->eth[3] );
-				oled_string ( 18,1,fstring );			
-			
-			oled_string( 0, 2, "wlan     .   .   ." );
-				sprintf(fstring, "%3d", oled->wlan[0] );
-				oled_string (  6,2,fstring );			
-				sprintf(fstring, "%3d", oled->wlan[1] );
-				oled_string ( 10,2,fstring );
-				sprintf(fstring, "%3d", oled->wlan[2] );
-				oled_string ( 14,2,fstring );
-				sprintf(fstring, "%3d", oled->wlan[3] );
-				oled_string ( 18,2,fstring );						
-			
-		
+			oled_string( 0, 1, "eth  %3d.%3d.%3d.%3d",
+                    oled->eth[0],
+                    oled->eth[1],
+                    oled->eth[2],
+                    oled->eth[3]);
+			oled_string( 0, 2, "wlan %3d.%3d.%3d.%3d",
+                    oled->wlan[0],
+                    oled->wlan[1],
+                    oled->wlan[2],
+                    oled->wlan[3]);
 			break;
+
+        case OLED_TIMING:
+            oled_string( 0, 0, "Timing stats");
+            oled_string( 0, 1, "mean %lu", stats_mean(&loop_time));
+            oled_string( 0, 2, "var  %lu", stats_var(&loop_time));
+            oled_string( 0, 3, "max  %lu", loop_time.max);
+            break;
+
 		/* 	 */
 		/* case OLED_DATAGRAM : */
 		/* 	oled_string( 0, 0, "Datagram (hex)" ); */
@@ -802,6 +739,26 @@ void oled_screen   ( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *mo
 	}			
 }
 
+void oled_string(uint8_t x, uint8_t y, const char *fmt, ...)
+{
+    va_list ap;
+    char    buf[33];
+
+    va_start(ap, fmt);
+
+    vsnprintf(buf, 33, fmt, ap);
+    
+	//128 x 32 pixels on screen
+	//Characters are 6 pixels by 8
+	//Character display is therefore 21 x 4
+	//x and y inputs are intended to be on these terms, so y=3 is bottom line of characters
+	
+    for (uint8_t i=0; buf[i]; i++)
+		oled_character(x+6*i, y, buf[i]);	
+
+    va_end(ap);
+}
+
 //OLED FRAME	
 static uint8_t oled_frame[ SSD1306_BUFFERSIZE ] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xF8, 0xF8, 0xF8, 0xF8,
@@ -840,3 +797,105 @@ static uint8_t oled_frame[ SSD1306_BUFFERSIZE ] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+
+
+static const uint8_t ASCII[][5] =
+{
+ {0x00, 0x00, 0x00, 0x00, 0x00} // 20  
+,{0x00, 0x00, 0x5f, 0x00, 0x00} // 21 !
+,{0x00, 0x07, 0x00, 0x07, 0x00} // 22 "
+,{0x14, 0x7f, 0x14, 0x7f, 0x14} // 23 #
+,{0x24, 0x2a, 0x7f, 0x2a, 0x12} // 24 $
+,{0x23, 0x13, 0x08, 0x64, 0x62} // 25 %
+,{0x36, 0x49, 0x55, 0x22, 0x50} // 26 &
+,{0x00, 0x05, 0x03, 0x00, 0x00} // 27 '
+,{0x00, 0x1c, 0x22, 0x41, 0x00} // 28 (
+,{0x00, 0x41, 0x22, 0x1c, 0x00} // 29 )
+,{0x14, 0x08, 0x3e, 0x08, 0x14} // 2a *
+,{0x08, 0x08, 0x3e, 0x08, 0x08} // 2b +
+,{0x00, 0x50, 0x30, 0x00, 0x00} // 2c ,
+,{0x08, 0x08, 0x08, 0x08, 0x08} // 2d -
+,{0x00, 0x60, 0x60, 0x00, 0x00} // 2e .
+,{0x20, 0x10, 0x08, 0x04, 0x02} // 2f /
+,{0x3e, 0x51, 0x49, 0x45, 0x3e} // 30 0
+,{0x00, 0x42, 0x7f, 0x40, 0x00} // 31 1
+,{0x42, 0x61, 0x51, 0x49, 0x46} // 32 2
+,{0x21, 0x41, 0x45, 0x4b, 0x31} // 33 3
+,{0x18, 0x14, 0x12, 0x7f, 0x10} // 34 4
+,{0x27, 0x45, 0x45, 0x45, 0x39} // 35 5
+,{0x3c, 0x4a, 0x49, 0x49, 0x30} // 36 6
+,{0x01, 0x71, 0x09, 0x05, 0x03} // 37 7
+,{0x36, 0x49, 0x49, 0x49, 0x36} // 38 8
+,{0x06, 0x49, 0x49, 0x29, 0x1e} // 39 9
+,{0x00, 0x36, 0x36, 0x00, 0x00} // 3a :
+,{0x00, 0x56, 0x36, 0x00, 0x00} // 3b ;
+,{0x08, 0x14, 0x22, 0x41, 0x00} // 3c <
+,{0x14, 0x14, 0x14, 0x14, 0x14} // 3d =
+,{0x00, 0x41, 0x22, 0x14, 0x08} // 3e >
+,{0x02, 0x01, 0x51, 0x09, 0x06} // 3f ?
+,{0x32, 0x49, 0x79, 0x41, 0x3e} // 40 @
+,{0x7e, 0x11, 0x11, 0x11, 0x7e} // 41 A
+,{0x7f, 0x49, 0x49, 0x49, 0x36} // 42 B
+,{0x3e, 0x41, 0x41, 0x41, 0x22} // 43 C
+,{0x7f, 0x41, 0x41, 0x22, 0x1c} // 44 D
+,{0x7f, 0x49, 0x49, 0x49, 0x41} // 45 E
+,{0x7f, 0x09, 0x09, 0x09, 0x01} // 46 F
+,{0x3e, 0x41, 0x49, 0x49, 0x7a} // 47 G
+,{0x7f, 0x08, 0x08, 0x08, 0x7f} // 48 H
+,{0x00, 0x41, 0x7f, 0x41, 0x00} // 49 I
+,{0x20, 0x40, 0x41, 0x3f, 0x01} // 4a J
+,{0x7f, 0x08, 0x14, 0x22, 0x41} // 4b K
+,{0x7f, 0x40, 0x40, 0x40, 0x40} // 4c L
+,{0x7f, 0x02, 0x0c, 0x02, 0x7f} // 4d M
+,{0x7f, 0x04, 0x08, 0x10, 0x7f} // 4e N
+,{0x3e, 0x41, 0x41, 0x41, 0x3e} // 4f O
+,{0x7f, 0x09, 0x09, 0x09, 0x06} // 50 P
+,{0x3e, 0x41, 0x51, 0x21, 0x5e} // 51 Q
+,{0x7f, 0x09, 0x19, 0x29, 0x46} // 52 R
+,{0x46, 0x49, 0x49, 0x49, 0x31} // 53 S
+,{0x01, 0x01, 0x7f, 0x01, 0x01} // 54 T
+,{0x3f, 0x40, 0x40, 0x40, 0x3f} // 55 U
+,{0x1f, 0x20, 0x40, 0x20, 0x1f} // 56 V
+,{0x3f, 0x40, 0x38, 0x40, 0x3f} // 57 W
+,{0x63, 0x14, 0x08, 0x14, 0x63} // 58 X
+,{0x07, 0x08, 0x70, 0x08, 0x07} // 59 Y
+,{0x61, 0x51, 0x49, 0x45, 0x43} // 5a Z
+,{0x00, 0x7f, 0x41, 0x41, 0x00} // 5b [
+,{0x02, 0x04, 0x08, 0x10, 0x20} // 5c ¥
+,{0x00, 0x41, 0x41, 0x7f, 0x00} // 5d ]
+,{0x04, 0x02, 0x01, 0x02, 0x04} // 5e ^
+,{0x40, 0x40, 0x40, 0x40, 0x40} // 5f _
+,{0x00, 0x01, 0x02, 0x04, 0x00} // 60 `
+,{0x20, 0x54, 0x54, 0x54, 0x78} // 61 a
+,{0x7f, 0x48, 0x44, 0x44, 0x38} // 62 b
+,{0x38, 0x44, 0x44, 0x44, 0x20} // 63 c
+,{0x38, 0x44, 0x44, 0x48, 0x7f} // 64 d
+,{0x38, 0x54, 0x54, 0x54, 0x18} // 65 e
+,{0x08, 0x7e, 0x09, 0x01, 0x02} // 66 f
+,{0x0c, 0x52, 0x52, 0x52, 0x3e} // 67 g
+,{0x7f, 0x08, 0x04, 0x04, 0x78} // 68 h
+,{0x00, 0x44, 0x7d, 0x40, 0x00} // 69 i
+,{0x20, 0x40, 0x44, 0x3d, 0x00} // 6a j 
+,{0x7f, 0x10, 0x28, 0x44, 0x00} // 6b k
+,{0x00, 0x41, 0x7f, 0x40, 0x00} // 6c l
+,{0x7c, 0x04, 0x18, 0x04, 0x78} // 6d m
+,{0x7c, 0x08, 0x04, 0x04, 0x78} // 6e n
+,{0x38, 0x44, 0x44, 0x44, 0x38} // 6f o
+,{0x7c, 0x14, 0x14, 0x14, 0x08} // 70 p
+,{0x08, 0x14, 0x14, 0x18, 0x7c} // 71 q
+,{0x7c, 0x08, 0x04, 0x04, 0x08} // 72 r
+,{0x48, 0x54, 0x54, 0x54, 0x20} // 73 s
+,{0x04, 0x3f, 0x44, 0x40, 0x20} // 74 t
+,{0x3c, 0x40, 0x40, 0x20, 0x7c} // 75 u
+,{0x1c, 0x20, 0x40, 0x20, 0x1c} // 76 v
+,{0x3c, 0x40, 0x30, 0x40, 0x3c} // 77 w
+,{0x44, 0x28, 0x10, 0x28, 0x44} // 78 x
+,{0x0c, 0x50, 0x50, 0x50, 0x3c} // 79 y
+,{0x44, 0x64, 0x54, 0x4c, 0x44} // 7a z
+,{0x00, 0x08, 0x36, 0x41, 0x00} // 7b {
+,{0x00, 0x00, 0x7f, 0x00, 0x00} // 7c |
+,{0x00, 0x41, 0x36, 0x08, 0x00} // 7d }
+,{0x10, 0x08, 0x08, 0x10, 0x08} // 7e ?
+,{0x78, 0x46, 0x41, 0x46, 0x78} // 7f ?
+};
+
