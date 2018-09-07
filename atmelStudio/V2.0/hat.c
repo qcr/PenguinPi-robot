@@ -29,6 +29,7 @@ enum _oled_screen {
     OLED_PERFORMANCE,
     OLED_TIMING,
     OLED_ERROR,
+    OLED_DATAGRAM,
     OLED_END,
     OLED_SHUTDOWN
 };
@@ -38,10 +39,9 @@ enum _oled_polarity {
     INVERSE
 };
 
-#define OLED_REFRESH 1000	//How often should the main loop run before OLED refresh. If too fast information cannot be seen
 
 Hat_oled	hat_oled;
-static uint8_t oled_frame[ SSD1306_BUFFERSIZE ];
+uint8_t hat_user_button;
 
 Hat_s hat_status;
 
@@ -59,14 +59,13 @@ void oled_next_screen(Hat_oled *oled );
 void oled_string(uint8_t x, uint8_t y, enum _oled_polarity, const char *fmt, ...) 
         __attribute__ ((format (printf, 4, 5)));
 void parseOLEDOp(uint8_t *datagram, Hat_oled *hat_oled);
-static const uint8_t ASCII[][5];
 void usertext_init();
 
 // local variables
 static volatile uint8_t		hat_07_int_flag = 0;
 static uint8_t oled_refresh_phase = 0;
-static uint8_t user_button;
 static uint8_t scrollnext;
+static uint8_t oled_frame[ SSD1306_BUFFERSIZE ];
 
 ISR( PCINT2_vect ) {
 	//PCINT2 contains the interrupt from HAT07 on PCINT23 which is PC7
@@ -150,7 +149,7 @@ hat_update(volatile uint8_t *oled_refresh)
                         break;
                     case 3 : 	//Button S4 has been pressed
                         // free for user
-                        user_button++;
+                        hat_user_button++;
                         break;
                 }
             }
@@ -226,10 +225,6 @@ void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
                 hat_oled->wlan[i] = datagram[i+3];
             break;
 		
-        case OLED_GET_BUTTON:
-            datagram_validate(datagram, 0, "OLED_GET_BUTTON");
-            datagram_return(datagram, 'c', user_button);
-            break;
 		default:
 			errmessage("bad OLED opcode %d", datagram[2]);
             break;
@@ -479,6 +474,7 @@ void oled_screen(Hat_oled *oled)
             oled_string( 0, 2, NORMAL, "pkts %6ui %6uo", performance.packets_in, performance.packets_out);
             oled_string( 0, 3, NORMAL, "err  %6u", performance.errors);
             break;
+
         case OLED_TIMING: {
             oled_string( 0, 0, INVERSE, "LOOP TIMING");
             oled_string( 0, 1, NORMAL, "mean %12lu us", stats_mean(&performance.loop_time));
@@ -487,35 +483,20 @@ void oled_screen(Hat_oled *oled)
             oled_string( 0, 3, NORMAL, "max  %12lu us", performance.loop_time.max);
             break;
         }
-		/* 	 */
-		/* case OLED_DATAGRAM : */
-		/* 	oled_string( 0, 0, "Datagram (hex)" ); */
-        /*  */
-		/* 	sprintf(fstring, "%x", datagram[0] ); */
-		/* 	oled_string (  0,1,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[1] ); */
-		/* 	oled_string (  5,1,fstring );			 */
-		/* 	sprintf(fstring, "%x", datagram[2] ); */
-		/* 	oled_string ( 10,1,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[3] ); */
-		/* 	oled_string ( 15,1,fstring ); */
-        /*  */
-		/* 	sprintf(fstring, "%x", datagram[4] ); */
-		/* 	oled_string (  0,2,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[5] ); */
-		/* 	oled_string (  5,2,fstring );			 */
-		/* 	sprintf(fstring, "%x", datagram[6] ); */
-		/* 	oled_string ( 10,2,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[7] ); */
-		/* 	oled_string ( 15,2,fstring ); */
-		/* 	 */
-		/* 	sprintf(fstring, "%x", datagram[8] ); */
-		/* 	oled_string (  0,3,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[9] ); */
-		/* 	oled_string (  5,3,fstring ); */
-		/* 	 */
-		/* 	break; */
-			
+
+		case OLED_DATAGRAM: {
+            uint8_t i, x = 0, y = 2;
+            oled_string( 0, 0, INVERSE, "DATAGRAM (hex)" );
+            for (i=0; i<=datagram_last[0]; i++) {
+                oled_string (x, y, NORMAL, "%02x", datagram_last[i] );
+                x += 3;
+                if (x >= 20) {
+                    x = 0; y++;
+                }
+            }
+            break;
+        }
+
 		case OLED_ERROR:
 			oled_string( 0, 0, INVERSE, "ERROR" );
             oled_string( 0, 1, NORMAL, hat_oled.err_msg[0] );
@@ -673,6 +654,15 @@ void oled_string(uint8_t x, uint8_t y, enum _oled_polarity polarity, const char 
     va_start(ap, fmt);
 
     vsnprintf(buf, 33, fmt, ap);
+
+    if (x > 21) {
+        errmessage("oled_string: x=%d too big", x);
+        return;
+    }
+    if (y > 3) {
+        errmessage("oled_string: y=%d too big", y);
+        return;
+    }
     
 	//128 x 32 pixels on screen
 	//Characters are 6 pixels by 8

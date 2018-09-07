@@ -34,5 +34,6 @@ typedef struct {
 } Hat_oled;
 
 extern Hat_s hat_status;
+extern uint8_t hat_user_button;
 
 #endif
