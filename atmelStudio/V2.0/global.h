@@ -25,7 +25,6 @@
 void errmessage(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 void debugmessage(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
-
 // globals
 extern Motor       motorL;
 extern Motor       motorR;
@@ -39,7 +38,16 @@ extern volatile uint32_t seconds_counter;  // wraps every 18 hours
 extern volatile uint16_t milliseconds_counter; 
 
 #include "timer.h"
-extern stats_t loop_time;
+
+typedef struct {
+    uint16_t packets_in;
+    uint16_t packets_out;
+    uint16_t errors;
+    stats_t loop_time;
+} Performance;
+
+extern Performance performance;
+
 
 // refactor into hat1.h, hat2.h etc.
 //
