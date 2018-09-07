@@ -42,11 +42,11 @@ count = 0;
 def home():
     if request.method == 'POST':
         if "refresh" in request.form:
-            print("refresh")
+            app.logging.debug("refresh")
         elif "test_l" in request.form:
-            print("testL")
+            app.logging.debug("testL")
         elif "test_r" in request.form:
-            print("testR")
+            app.logging.debug("testR")
 
     # read the robot state
     ea = mLeft.get_encoder()
@@ -100,20 +100,20 @@ sp2 = 0
 def speed():
     global sp1, sp2
     if args.debug:
-        print('--- set velocity\n');
+        app.logging.debug('--- set velocity\n');
     if request.method == 'POST':
         if "Set" in request.form:
             sp1 = request.form['Left']
             sp2 = request.form['Right']
             sp1 = int(sp1)
             sp2 = int(sp2)
-            mLeft.set_power(sp1);
-            mRight.set_power(sp2);
+            mLeft.set_speed(sp1);
+            mRight.set_speed(sp2);
         elif "STOP" in request.form:
             sp1 = 0
             sp2 = 0
-            mLeft.set_power(sp1);
-            mRight.set_power(sp2);
+            mLeft.set_speed(sp1);
+            mRight.set_speed(sp2);
     return render_template('speed.html', speed_l=sp1, speed_r=sp2);
 
 @app.route('/camera', methods = ['POST', 'GET'])
@@ -123,15 +123,15 @@ def camera():
         if request.form[s] != camera_state[s]:
             setattr(camera, s, int(request.form[s]))
             camera_state[s] = request.form[s]
-            print('Updating camera parameter %s' % s)
+            app.logging.debug('Updating camera parameter %s' % s)
     def update(s):
         if request.form[s] != camera_state[s]:
             setattr(camera, s, request.form[s])
             camera_state[s] = request.form[s] 
-            print('Updating camera parameter %s' % s)
+            app.logging.debug('Updating camera parameter %s' % s)
             
     if request.method == 'POST':
-        print('Camera POST', request.form)
+        app.logging.debug('Camera POST', request.form)
         update_int('rotation')
         update('awb_mode')
         #update('dynamic_range')
@@ -164,12 +164,10 @@ def picam():
 @app.route('/get/encoders')
 def getencoders():
     global mLeft, mRight
-    comms_mutex.acquire()
     ea = mLeft.get_encoder()
     eb = mRight.get_encoder()
-    comms_mutex.release()
     if args.debug:
-        print('--- get encoders: %d %d\n' % (ea,eb));
+        app.logging.debug('--- get encoders: %d %d\n' % (ea,eb));
     return "%d,%d" % (ea, eb)
 
 @app.route('/set/motors')
@@ -261,18 +259,14 @@ def stop():
 def setspeed(speed, fraction=1.0):
     global mLeft, mRight
 
-    comms_mutex.acquire()
-    mLeft.set_power(int(speed[0]*fraction))
-    mRight.set_power(int(speed[1]*fraction))
-    comms_mutex.release()
+    mLeft.set_speed(int(speed[0]*fraction))
+    mRight.set_speed(int(speed[1]*fraction))
 
 def stop_all():
     global mLeft, mRight
 
-    comms_mutex.acquire()
-    mLeft.set_power(0)
-    mRight.set_power(0)
-    comms_mutex.release()
+    mLeft.set_speed(0)
+    mRight.set_speed(0)
 
 def robot_state_json():
     state = { 'encoder' : {
@@ -293,13 +287,10 @@ def robot_state_json():
 """
 def HeartBeat():
 
-    led = ppi.LED(ppi.AD_LED_R)
+    led = ppi.LED('AD_LED_R')
 
     while True:
-        comms_mutex.acquire()
-        led.set_state(1);
-        led.set_count(30000);
-        comms_mutex.release()
+        led.set_count(200);
         time.sleep(5);
 
 """
@@ -308,16 +299,14 @@ def HeartBeat():
 def PoseEstimator():
     global x, y, theta
 
-    dt = 0.1   # sample interval
+    dt = 0.2   # sample interval
     W = 0.156  # lateral wheel separation
     wheelDiam = 0.065;
     encScale = math.pi * wheelDiam /384 
 
     # read the initial encoders 
-    comms_mutex.acquire()
     left = mLeft.get_encoder()
     right = mRight.get_encoder()
-    comms_mutex.release()
 
     def encoder_difference(a, b):
         d = a - b
@@ -329,14 +318,12 @@ def PoseEstimator():
 
     while True:
         # read the encoders 
-        comms_mutex.acquire()
         new_left = mLeft.get_encoder()
         new_right = mRight.get_encoder()
-        comms_mutex.release()
 
         # check if bad read value
         if new_left is None or new_right is None:
-            print('bad encoder read')
+            app.logging.error('bad encoder read')
             continue
 
         # compute the difference since last sample and handle 16-bit wrapping
@@ -387,18 +374,14 @@ if __name__ == '__main__':
     parser.add_argument("-g", "--gain", dest="gain", action="store", help="set white balance gain manually: rbgain OR rgain,bgain")
     args = parser.parse_args()
 
-    mLeft = ppi.Motor(ppi.AD_MOTOR_B)
-    mRight = ppi.Motor(ppi.AD_MOTOR_A)
-    display = ppi.Display(ppi.AD_DISPLAY_A)
-    voltage = ppi.AnalogIn(ppi.AD_ADC_V)
+    mLeft = ppi.Motor('AD_MOTOR_L')
+    mRight = ppi.Motor('AD_MOTOR_R')
+    voltage = ppi.AnalogIn('AD_ADC_V')
 
     #initialise serial, and retrieve initial values from the Atmega
     ppi.init()
     mLeft.get_all()
     mRight.get_all()
-
-    # create a comms mutex
-    comms_mutex = threading.Lock()
 
     # launch the heartbeat thread
     heartbeat_thread = threading.Thread(target=HeartBeat, daemon=True)
@@ -425,14 +408,14 @@ if __name__ == '__main__':
             "meter_mode": camera.meter_mode,
             "zoom": camera.zoom
             }
-    print(camera_state)
+    logging.debug(camera_state)
     #camera.start_preview()
 
     if args.awb:
             camera.awb_mode = args.awb
     if args.gain:
             camera.awb_gains = tuple(float(x) for x in args.gain.split(','))
-    print('white balance mode is ', camera.awb_mode)
+    logging.debug('white balance mode is ', camera.awb_mode)
 
     # open a non-priviliged port
     app.jinja_env.lstrip_blocks = True
