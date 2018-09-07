@@ -34,43 +34,46 @@
 #include <util/crc16.h>
 #include <util/atomic.h>
 
-#include    "timer.h"
 #include "i2cmaster.h"
 #include "uart.h"
 
+#include "global.h"
 #include "PenguinPi.h"
 #include "hat.h"
-
-#include "global.h"
+#include "datagram.h"
+#include "motor.h"
+#include    "timer.h"
 
 #define ERRMSGLEN   80
 
-PidController pidA;
-PidController pidB;
 
-//Always have
-Motor 		motorA;
-Motor 		motorB;
-
-LED     leds[6];
-
+// global variables
+Motor 		motorR;
+Motor 		motorL;
+LED         leds[6];
 AnalogIn 	vdiv;
 AnalogIn 	csense;
 
+#define ADC_REF (0<<REFS1)|(1<<REFS0) //Vcc reference voltage with external cap on AREF
+
+// forward defines
+void test_leds();
 
 //HAT dependant
 Hat_s		hat;
 
-Display 	displayA;	//remove when parsing logic changed
+//Display 	displayA;	//remove when parsing logic changed
 
 
 //PID FLAG
 uint8_t    pid_on = 3;
 
 // PID TIMER
-double pid_dt = 0;
 // system wide flags
-uint8_t  oled_update_now = 0;
+volatile uint8_t  oled_update_now = 0;
+volatile uint8_t  second_now = 0;
+volatile uint32_t seconds_counter;  // wraps every 18 hours
+
 uint8_t  low_voltage = 0;
 
 //#################################################################################################
@@ -79,26 +82,6 @@ uint8_t  low_voltage = 0;
 //
 //#################################################################################################
 
-ISR( PCINT0_vect ) {
-	//All encoders are now on one PCINT vector
-	//Externally on PCINT{3:0} which is PA3:0
-
-	//detect which pin triggered the interrupt
-		uint8_t PINA_val   = PINA;
-		uint8_t enc_a1_val = ( PINA_val & (1<<MOTOR_A_ENC_1) )>>MOTOR_A_ENC_1; 	//store the current state
-		uint8_t enc_a2_val = ( PINA_val & (1<<MOTOR_A_ENC_2) )>>MOTOR_A_ENC_2;
-		uint8_t enc_b1_val = ( PINA_val & (1<<MOTOR_B_ENC_1) )>>MOTOR_B_ENC_1; 	//store the current state
-		uint8_t enc_b2_val = ( PINA_val & (1<<MOTOR_B_ENC_2) )>>MOTOR_B_ENC_2;
-		
-	//Update Motor states
-		fn_update_motor_states( &motorA, enc_a1_val, enc_a2_val ); 
-		fn_update_motor_states( &motorB, enc_b1_val, enc_b2_val ); 
-	
-	//Update LEDs
-        LED_DEBUG_G(5);
-}
-
-volatile uint16_t t1_count = 3;
 const uint8_t   control_interval = 20; // ms
 const uint8_t   adc_interval = 10; // ms
 const uint8_t   oled_interval = 200; // ms
@@ -108,17 +91,16 @@ const uint8_t   oled_interval = 200; // ms
 volatile uint8_t control_counter = 0;
 volatile uint8_t adc_counter = 10;
 volatile uint8_t oled_counter = 5;
+volatile uint16_t milliseconds_counter = 12;
 
-
-ISR( TIMER1_COMPA_vect ){
+ISR( TIMER1_COMPA_vect ) {
     // period of 1ms
 
-    system_timer++;
-
-    if (++t1_count > 1000) {
-        t1_count = 0;
-        leds[Y4].state = 1;
-        leds[Y4].count = 10;
+    // 1 second heartbeat on green LED
+    if (++milliseconds_counter >= 1000) {
+        milliseconds_counter = 0;
+        seconds_counter++;
+        second_now = 1;
     }
 
     // update all LED counters
@@ -129,7 +111,7 @@ ISR( TIMER1_COMPA_vect ){
     }
 
     // initiate an OLED update in the main loop
-    if (++oled_counter > oled_interval) {
+    if (++oled_counter >= oled_interval) {
         oled_counter = 0;
         oled_update_now = 1;
     }
@@ -137,6 +119,9 @@ ISR( TIMER1_COMPA_vect ){
     // initiate ADC conversion
     if (++adc_counter > adc_interval) {
         adc_counter = 0;
+
+        ADMUX = ADC_REF | vdiv.channel;    // select volts
+		ADCSRA |= (1<<ADSC);            // start conversion
     }
 
     // time for motor control?
@@ -153,51 +138,61 @@ ISR( TIMER1_COMPA_vect ){
     sei();  
    
     // Calculate motor speed control
-    velocityPIDLoop(motorA.setSpeedDPS * motorA.dir, &motorA, &pidA);
-    velocityPIDLoop(motorB.setSpeedDPS * motorB.dir, &motorB, &pidB);
+    motor_velocity_control(&motorR);
+    motor_velocity_control(&motorL);
 
     // Set the PWM values
-    OCR0A = mapRanges( abs(pidA.motorCommand), 0, 100, 0, 255 );
-    OCR0B = mapRanges( abs(pidB.motorCommand), 0, 100, 0, 255 );
+    OCR0A = mapRanges( abs(motorR.command), 0, 100, 0, 255 );
+    OCR0B = mapRanges( abs(motorL.command), 0, 100, 0, 255 );
 
     // Set motor driver polarities
-    switch (motorA.dir) {
-    case 1:
-        PORTB &= ~(1<<MOTOR_A_PHA); break;
-    case -1:
-        PORTB |= (1<<MOTOR_A_PHA); break;
-    case 0:
-        OCR0A = 0; break;
-    }
+    if (motorR.command >= 0)
+        PORTB &= ~(1<<MOTOR_A_PHA); 
+    else if (motorR.command < 0)
+        PORTB |= (1<<MOTOR_A_PHA); 
 
-    switch (motorB.dir) {
-    case 1:
-        PORTB &= ~(1<<MOTOR_B_PHA); break;
-    case -1:
-        PORTB |= (1<<MOTOR_B_PHA); break;
-    case 0:
-        OCR0B = 0; break;
-    }
+    if (motorL.command >= 0)
+        PORTB &= ~(1<<MOTOR_B_PHA);
+    else if (motorL.command < 0)
+        PORTB |= (1<<MOTOR_B_PHA);
 }
+
+ISR( PCINT0_vect ) {
+	//All encoders are now on one PCINT vector
+	//Externally on PCINT{3:0} which is PA3:0
+
+	//detect which pin triggered the interrupt
+		uint8_t PINA_val   = PINA;
+		uint8_t encA1 = ( PINA_val & (1<<MOTOR_A_ENC_1) )>>MOTOR_A_ENC_1; 	//store the current state
+		uint8_t encB1 = ( PINA_val & (1<<MOTOR_A_ENC_2) )>>MOTOR_A_ENC_2;
+		uint8_t encA2 = ( PINA_val & (1<<MOTOR_B_ENC_1) )>>MOTOR_B_ENC_1; 	//store the current state
+		uint8_t encB2 = ( PINA_val & (1<<MOTOR_B_ENC_2) )>>MOTOR_B_ENC_2;
+		
+	//Update Motor states
+		motor_encoder_update( &motorR, encA1, encB1 ); 
+		motor_encoder_update( &motorL, encA2, encB2 ); 
+	
+	//Update LEDs
+        LED_DEBUG_G(2);
+}
+
+uint16_t            adc[8];
+volatile uint8_t   adc_done;
 
 ISR( ADC_vect ) {
     // conversion complete, 42us after initiation
-	if(vdiv.count > 1){
-		vdiv.count--;	// really this is just a counter to get a few readings before actually using the ADC value
-		ADCSRA |= (1<<ADSC);
-	}
-	else if(vdiv.count == 1){
-		vdiv.ready = 1;
-		vdiv.count = 0;
-	}
-	if(csense.count > 1){
-		csense.count--;
-		ADCSRA |= (1<<ADSC);
-	}
-	else if(csense.count == 1){
-		csense.ready = 1;
-		csense.count = 0;
-	}
+
+    uint8_t chan = ADMUX & 0x1f;    // which channel did we just read?
+
+    adc[chan] = ADC;     // get the value and stash it
+
+
+    if (chan == vdiv.channel) {
+        // just read volts, ask for current
+        ADMUX = ADC_REF | csense.channel;  // select current
+        ADCSRA |= (1<<ADSC);            // start conversion
+    } else
+        adc_done = 1;
 }
 
 
@@ -205,143 +200,106 @@ ISR( ADC_vect ) {
 //                      Main polling loop
 //#################################################################################################
 
-    stats_t  loop_time;
+stats_t  loop_time;
+
 int
 main(void)
 {
+    timer_t t0, tf;
 	 
 	init_structs();
 	init();	
+    // Set up velocity PID
+    motor_init(&motorR, 0);
+    motor_init(&motorL, 1);
 	
 	uart_puts_P("PenguinPi v2.0\n");
-		
 	detect_reset();	
-	
 	hat_init( &hat );
-	
     test_leds();
 	
-	vdiv.count 	= ADC_COUNT;
-	ADCSRA 		|= (1<<ADSC);		//start the first ADC conversion
-
-    // Set up velocity PID
-    pidA.kP = 1;
-    pidA.motorCommand = 0;
-
-    pidB.kP = 1;
-    pidB.motorCommand = 0;
-
-    timer_t t0, tf;
-
-    t0 = timer_get();
     stats_init(&loop_time);
     debugmessage("starting main loop");
+    timer_get(&t0);
     while (1) 
     {
         // get timing stats for main loop
-        tf = timer_get();
-        stats_add(&loop_time, timer_diff(tf, t0) );
+        timer_get(&tf);
+        uint32_t dt = timer_diff_us(&tf, &t0);
+        stats_add(&loop_time, dt);
+        if (dt > 2000) {
+            //debugmessage("dt = %lu", dt);
+            //debugmessage("%lu %u %u %lu %u %u", tf.sec, tf.ms, tf.clock, t0.sec, t0.ms, t0.clock);
+            uint32_t t= 5000000;
+        }
         t0 = tf;
 
         // Check for a new datagram
-        check_datagram();
+        datagram_poll();
 		
-        // Update the hat
-        hat_update(&oled_update_now);
-		
-#ifdef notdef
-		//cleanup buffers
-		com = 0;
-		for(uint8_t j = 0; j < DGRAM_MAX_LENGTH; j++) datagramG[j] = 0;
-		dgrammem.fl = 0;
-#endif
-
-        // Ratio is now 1
-		motorA.degrees = motorA.position; // * DEGPERCOUNT;
-		motorB.degrees = motorB.position; //  * DEGPERCOUNT;
-
-        if (pid_on == 0) {
-            OCR0A = mapRanges( abs(motorA.setSpeedDPS), 0, 100, 0, 255 );
-            OCR0B = mapRanges( abs(motorB.setSpeedDPS), 0, 100, 0, 255 );
-            
-            // Set motor driver polarities
-            switch (motorA.dir) {
-            case 1:
-                PORTB &= ~(1<<MOTOR_A_PHA); break;
-            case -1:
-                PORTB |= (1<<MOTOR_A_PHA); break;
-            case 0:
-                OCR0A = 0; break;
-            }
-
-            switch (motorB.dir) {
-            case 1:
-                PORTB &= ~(1<<MOTOR_B_PHA); break;
-            case -1:
-                PORTB |= (1<<MOTOR_B_PHA); break;
-            case 0:
-                OCR0B = 0; break;
-            }
-        }
-
 		//LED update
         for (uint8_t i=0; i<NLEDS; i++) {
             LED *led = &leds[i];
 
-            if(led->state > 0)
+            if(led->state)
                 LEDOn(i);
             else
                 LEDOff(i);
         }
 
 		//Analog update
-		if(vdiv.ready && !(ADCSRA&(1<<ADSC))){
-			vdiv.raw   = ADC;
-			vdiv.value = vdiv.raw * vdiv.scale/1000;
-			vdiv.ready = 0;
+        if (adc_done) {
+            adc_done = 0;
 
-			//change multiplexer to csense
-			ADMUX 		|= (1<<MUX0);//change mux
-			csense.count = ADC_COUNT;
-			ADCSRA 		|= (1<<ADSC); // start conversion
+            analogFilter(&vdiv, adc[6]);
+            analogFilter(&csense, adc[7]);
+        }
+
+		if(vdiv.smooth < battery.mvolts_warning) {
+            // battery volts are below warning level
+            if (battery.warning == 0) {
+                battery.warning = 1;
+                oled_invert_display(1); // invert the display if not already done
+            }
+
+            if (vdiv.smooth < battery.mvolts_shutdown)
+                hat_lowvolts();
 		}
+
+        // Update the hat
+        hat_update(&oled_update_now);
 		
-		if(csense.ready && !(ADCSRA&(1<<ADSC))){
-            // get the result
-			csense.raw   = ADC;
-			csense.value = csense.raw * csense.scale;
-			csense.ready = 0;
+        if (pid_on == 0) {
+            // no velocity control, command PWM directly
+            OCR0A = mapRanges( abs(motorR.speed_dmd), 0, 100, 0, 255 );
+            OCR0B = mapRanges( abs(motorL.speed_dmd), 0, 100, 0, 255 );
+            
+            // Set motor driver polarities
+            if (motorR.command >= 0)
+                PORTB &= ~(1<<MOTOR_A_PHA); 
+            else if (motorR.command < 0)
+                PORTB |= (1<<MOTOR_A_PHA); 
 
-			//change multiplexer to vsense
-			ADMUX 	  &= ~(1<<MUX0);//change mux
-			vdiv.count = ADC_COUNT;
-			ADCSRA 	  |= (1<<ADSC); // start conversion
-		}
-
-		if(vdiv.value < battery.cutoff){
-			if(battery.count < battery.limit) battery.count++;
-			else{
-                //FIXMEhat_lowvolts();
-			}
-		}else battery.count = 0;
-
-
-        /*
-        uint32_t  timer_counter_copy = 0;
-        ATOMIC_BLOCK(ATOMIC_FORCEON) {
-            if (timer_counter > 100000) {
-                timer_counter_copy = timer_counter;
-                timer_counter = 0;
+            if (motorL.command >= 0)
+                PORTB &= ~(1<<MOTOR_B_PHA);
+            else if (motorL.command < 0)
+                PORTB |= (1<<MOTOR_B_PHA);
+        }
+        if (second_now) {
+            second_now = 0;
+            // debug message here
+            //debugmessage("mean %lu max %lu", stats_mean(&loop_time), loop_time.max);
+            if ((seconds_counter % 60) == 0) {
+                stats_init(&loop_time);
+                loop_time.max = 0;
+                //debugmessage("reset stats");
+            }
+            if ((seconds_counter % 60) == 20) {
+                //debugmessage("n=%lu, sx=%lu, sx2=%lu", loop_time.n, loop_time.sum, loop_time.sum2);
+                //debugmessage("mean=%lu, std=%lu, mx=%lu", 
+                        //stats_mean(&loop_time), stats_std(&loop_time), loop_time.max);
             }
         }
-        if (timer_counter_copy > 0) {
-            debugmessage("timer counter %lu %f", timer_counter_copy, pid_dt);
-            debugmessage("mean %lu, var %lu, max %lu", 
-                    stats_mean(&loop_time), stats_var(&loop_time), loop_time.max );
-           leds[Y2].state = 1;
-           leds[Y2].count = 50;
-        }
-        */
 		
         //main_loop_debug();
     }
@@ -389,34 +347,15 @@ void debugmessage(const char *fmt, ...)
 //#################################################################################################
 
 void init_structs(void){
-	float kP 				= 70.0;
-	float kI 				= 0.0075;
-	float kD 				= 2.0;
 	
-	motorA.which_motor		= 0;
-	motorA.gainP 			= kP*PID_SCALE;
-	motorA.gainI 			= kI*PID_SCALE;
-	motorA.gainD 			= kD*PID_SCALE;
-	motorA.maxError 		= INT16_MAX / (motorA.gainP + 1);
-	motorA.maxErrorSum 		= (INT32_MAX / 2) / (motorA.gainI + 1);
-	motorA.encoderMode 		= 0;
-	
-	motorB.which_motor		= 1;
-	motorB.gainP 			= kP*PID_SCALE;
-	motorB.gainI 			= kI*PID_SCALE;
-	motorB.gainD 			= kD*PID_SCALE;
-	motorB.maxError 		= INT16_MAX / (motorB.gainP + 1);
-	motorB.maxErrorSum 		= (INT32_MAX / 2) / (motorB.gainI + 1);
-	motorB.encoderMode 		= 0;
-	
-	vdiv.count 				= 0;
 	vdiv.scale 				= 16.018497;//mV per div
-	csense.count 			= 0;
+    vdiv.channel = 6;
 	csense.scale 			= 3.2226562;//mA per div
+    csense.channel = 7;
 	
-	battery.cutoff 			= 6.5;
-	battery.count			= 0;
-	battery.limit 			= 5000;//about 1.5 seconds
+	battery.mvolts_warning 			= 7000;  // millivolts
+    battery.warning = 0;
+    battery.mvolts_shutdown            = 6500;  // millivolts
 	
     for (uint8_t i=0; i<NLEDS; i++) {
         leds[i].state = 0;
@@ -540,14 +479,14 @@ void main_loop_debug()
 			
 				//Motors
 					uart_puts_P("M:A\n");
-						fn_dbg_motor ( &motorA );					
+						fn_dbg_motor ( &motorR );					
 					uart_puts_P("M:B\n");
-						fn_dbg_motor ( &motorB );				
+						fn_dbg_motor ( &motorL );				
 						
 				//Timers
-					sprintf(fstring, "OC MA: %5d\n", OCR0B );	//Motor A on OCR0B
+					sprintf(fstring, "OC MA: %5d\n", OCR0B );	//Motor R on OCR0B
 					uart_puts(fstring);			
-					sprintf(fstring, "OC MB: %5d\n", OCR0A ); 	//Motor B on OCR0A
+					sprintf(fstring, "OC MB: %5d\n", OCR0A ); 	//Motor L on OCR0A
 					uart_puts(fstring);		
 
 				//Display
@@ -579,12 +518,6 @@ void main_loop_debug()
 void
 test_leds()
 {
-//TESTS
-//	//LEDs
-//		//Y0	C2
-//		//Y1	C3
-//		//Y2	C5
-
     for (uint8_t i=0; i<NLEDS; i++) {
         LEDOn(i);
         _delay_ms(300);	
@@ -603,24 +536,5 @@ test_leds()
     _delay_ms(500);		
     PORTC = PORTC | (1 << 5);
     _delay_ms(500);		
-    */
-
-    /*
-	//RGB
-	redLEDPercent(50);	
-	_delay_ms(500);
-	redLEDPercent(100);	
-	_delay_ms(500);
-	redLEDPercent(0);	
-	greenLEDPercent(50);
-	_delay_ms(500);
-	greenLEDPercent(100);
-	_delay_ms(500);	
-	greenLEDPercent(0);
-	blueLEDPercent(50);
-	_delay_ms(500);
-	blueLEDPercent(100);
-	_delay_ms(500);	
-	blueLEDPercent(0);
     */
 }

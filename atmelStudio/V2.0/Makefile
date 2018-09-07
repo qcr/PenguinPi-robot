@@ -1,6 +1,6 @@
 
 BIN=main
-OBJS=main.o datagram.o hat.o timer.o lib/uart.o lib/twimaster.o lib/PenguinPi.o
+OBJS=main.o datagram.o motor.o hat.o timer.o lib/uart.o lib/twimaster.o lib/PenguinPi.o
 MCU=atmega644p
 
 CC=avr-gcc

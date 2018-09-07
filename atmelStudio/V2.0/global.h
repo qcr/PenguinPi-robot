@@ -1,3 +1,5 @@
+#ifndef __global_h__
+#define __global_h__
 #define  LED_DEBUG
 
 #ifdef  LED_DEBUG
@@ -16,27 +18,29 @@
   #define   LED_DEBUG_B(duration)
 #endif
 
-void errmessage(const char *fmt, ...);
-void debugmessage(const char *fmt, ...);
+#include "motor.h"
+#include "PenguinPi.h"
 
-void check_datagram();  // create datagram.h ??
+// forward defines
+void errmessage(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void debugmessage(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
-PidController pidA;
-PidController pidB;
-extern uint8_t    pid_on;
 
-//Always have
-extern Motor       motorA;
-extern Motor       motorB;
+// globals
+extern Motor       motorL;
+extern Motor       motorR;
 extern LED         leds[NLEDS];
 extern AnalogIn    vdiv;
 extern AnalogIn    csense;
-//HAT dependant
-extern Display     displayA;   //remove when parsing logic changed
+extern uint8_t      pid_on;
 
-extern uint8_t   datagram_last[];
+extern volatile uint8_t  second_now;
+extern volatile uint32_t seconds_counter;  // wraps every 18 hours
+extern volatile uint16_t milliseconds_counter; 
 
 #include "timer.h"
 extern stats_t loop_time;
 
 // refactor into hat1.h, hat2.h etc.
+//
+#endif
