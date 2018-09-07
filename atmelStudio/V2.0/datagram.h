@@ -9,15 +9,14 @@ void datagram_return(uint8_t *datagram, uint8_t type, ...);
 
 //Communications Defines
 #define STARTBYTE 0x11 //Device Control 1
-#define STOPBYTE  0x12 //Device Control 2
-
-//#define LITTLE_ENDIAN
 #define BIG_ENDIAN //NETWORK BYTE ORDER
-
-#define UART_INTERBYTE_WAIT 80 	//us
-#define CRC_8_POLY 0xAE 		//generator polynomial
+#define CRC_8_POLY 0x97 		//generator polynomial
+#define DGRAM_MAX_LENGTH 10 	//bytes
+#define BAUD  115200
 
 extern uint8_t   	datagram_last[];  // previous datagram
+
+void datagram_init();
 
 //device addresses
 enum _addresses {
@@ -45,29 +44,22 @@ enum _addresses {
     AD_ALL =		0x60
 };
 
-
 //device opcodes
 //MOTOR
 
 enum _motor {
     MOTOR_SET_SPEED = 1,
-    MOTOR_SET_KP,
-    MOTOR_SET_KI,
-    MOTOR_SET_KD,
     MOTOR_SET_KVP,
     MOTOR_SET_KVI,
-    MOTOR_SET_ENC_MODE,
     MOTOR_SET_ENC_ZERO,
+    MOTOR_SET_ENC_MODE,
     MOTOR_SET_CONTROL_MODE,
 
     MOTOR_GET_SPEED = 0x81,
-    MOTOR_GET_KP,
-    MOTOR_GET_KD,
-    MOTOR_GET_KI,
+    MOTOR_GET_ENC,
     MOTOR_GET_KVP,
     MOTOR_GET_KVI,
     MOTOR_GET_ENC_MODE,
-    MOTOR_GET_ENC,
     MOTOR_GET_CONTROL_MODE
 };
 
@@ -87,8 +79,10 @@ enum _oled {
 //ADC
 enum _adc {
     ADC_SET_SCALE = 1,
+    ADC_SET_POLE,
 
     ADC_GET_SCALE =  0x81,
+    ADC_GET_POLE,
     ADC_GET_VALUE,
     ADC_GET_SMOOTH
 };
@@ -119,14 +113,5 @@ enum _servo {
     SERVO_GET_MIN_PWM,
     SERVO_GET_MAX_PWM
 };
-
-#ifdef notdef
-#define AD_DISPLAY_A 	0x10
-
-#define AD_BTNS  		0x05
-#define AD_BTN_A 		0x14
-#define AD_BTN_B 		0x15
-#define AD_BTN_C 		0x16
-#endif
 
 #endif

@@ -19,6 +19,9 @@
 
 #include "oled_data.h"
 
+#define HAT_DIP_PI  1
+#define HAT_DIP_BEACON 2
+
 //OLED Screen Options
 enum _oled_screen {
     OLED_IP_ADDR = 0,
@@ -39,14 +42,35 @@ enum _oled_polarity {
     INVERSE
 };
 
+// types
+typedef struct _hat_s {
+	int8_t 				config;				// -1 if no HAT present
+	uint8_t				dir;				// Set bit to 1 if direction of bit needs to be an output
+	uint8_t				int_07;				// Set bit to a 1 if interrupt enabled on HAT07
+	uint8_t				has_oled;			// Set bit to a 1 if the I2C OLED is on the hat
+} Hat_s;
 
-Hat_oled	hat_oled;
+typedef struct {
+	uint8_t 			show_option;		// Selects which screen to show
+	
+	//IP Addresses
+	uint8_t				eth[4];
+	uint8_t				wlan[4];
+	
+	//Error messages
+	char				err_msg[3][OLED_LINELEN];
+
+	// User messages
+	char				user_msg[4][OLED_LINELEN];
+} Hat_oled;
+
+static Hat_s hat_status;
+static Hat_oled	hat_oled;
 uint8_t hat_user_button;
-
-Hat_s hat_status;
+static uint8_t oled_frame[SSD1306_BUFFERSIZE];  // OLED screen buffer
+uint8_t hat_DIP;
 
 // forward defines
-void init_hat(Hat_s *hat);
 void init_oled(void);
 
 void oled_clear_frame();
@@ -65,7 +89,6 @@ void usertext_init();
 static volatile uint8_t		hat_07_int_flag = 0;
 static uint8_t oled_refresh_phase = 0;
 static uint8_t scrollnext;
-static uint8_t oled_frame[ SSD1306_BUFFERSIZE ];
 
 ISR( PCINT2_vect ) {
 	//PCINT2 contains the interrupt from HAT07 on PCINT23 which is PC7
@@ -102,11 +125,11 @@ hat_update(volatile uint8_t *oled_refresh)
         i2cReadnBytes(data_r, PCA6416A_1, 0x00, 2 );					
             
         //data_r[0][7:4] contains the DIP switch which may have changed
-        hat_status.dip			= data_r[0] & 0xF0;
+        hat_DIP	= (data_r[0] & 0xF0) >> 4;
 
         // Bit 4 controls the global pid_on flag
-        if (hat_status.dip & 0x10)
-            pid_on = 1; //PID ON!
+        if (hat_DIP & HAT_DIP_PI)
+            pid_on = 1; //PI ON!
         else
             pid_on = 0;
 
@@ -156,7 +179,7 @@ hat_update(volatile uint8_t *oled_refresh)
         }		
 
         // Bit 3 controls the beacon
-        if (hat_status.dip & 0x20) {
+        if (hat_DIP & HAT_DIP_BEACON) {
             data_r[0] = 8; // display the beacon
             data_r[1] = 0x90;
         } else {
@@ -203,11 +226,12 @@ hat_lowvolts()
     //lockout most functions
     PRR0 |= (1<<PRTIM2)|(1<<PRTIM0)|(1<<PRTIM1);//|(1<<PRADC);
   
+    //loop until the battery really is flat...
     while(1) {
         //send shutdown command
-        uart_puts_P("Low battery shutdown request");
+        uart_puts_P("Low battery shutdown\n");
         PORTB &= ~(1<<PB5);//pull the pin low
-        //loop until the battery really is flat...
+        _delay_ms(5000);
     }			
 }
 
@@ -238,7 +262,6 @@ void hat_init( ) {
     Hat_s   *hat = &hat_status;
 	
 	hat_status.config				= -1;
-	hat_status.dip	    			= -1;
 	hat_status.dir					= 0x00;		//Inputs by default
 	hat_status.int_07				= 0;		//No interrupts by default
 	hat_status.has_oled			= 0;		//No OLED by default
@@ -272,7 +295,7 @@ void hat_init( ) {
 			uart_puts_P("HAT ID 1 : LEDs and OLED\n");			
 			//This is the OLED and LED HAT made for EGB439
 			//Has a DIP switch
-				hat->dip		= data_r[0] & 0xF0;
+				hat_DIP		= data_r[0] & 0xF0;
 			//4 buttons on data_r[1][3:0]
 				
 			//GPIO : All inupts
@@ -294,7 +317,7 @@ void hat_init( ) {
 			uart_puts_P("HAT ID 2 : IMU and OLED\n");			
 			//This is the OLED and IMU made for EGB445 ( Segway Robot )
 			//Has a DIP switch
-				hat->dip		= data_r[0] & 0xF0;
+				hat_DIP		= data_r[0] & 0xF0;
 			//4 buttons on data_r[1][3:0]
 			
 			//GPIO : All inupts
@@ -338,9 +361,7 @@ void hat_init( ) {
 		init_oled();
 	}
 
-	
-
-//Debug test to set LEDs on HAT	
+    //Debug test to set LEDs on HAT	
 	data_r[0]	= 0;
 	data_r[1]	= 0;
 	for(uint8_t j = 0; j < 8; j++) {
@@ -519,7 +540,6 @@ void oled_screen(Hat_oled *oled)
 }
 
 void init_oled () {
-//	uart_puts_P("INIT OLED\n");
 	
 	i2cWriteByte( SSD1306_DISPLAYOFF, 			SSD1306_DEFAULT_ADDRESS, 0x00 );
 	
@@ -568,16 +588,9 @@ void init_oled () {
     i2cWriteByte( SSD1306_DISPLAYON, 			SSD1306_DEFAULT_ADDRESS, 0x00 );
 	
 	//Update screen with initial Splash Screen contents
+    memcpy(oled_frame, splash_frame, SSD1306_BUFFERSIZE);
     oled_write_frame_now();
     _delay_ms(2000);
-	
-	
-//	oled_clear_frame();	
-//	oled_string( 0, 0, "PenguinPi" );	
-//	oled_string( 1, 1, "111111111" );
-//	oled_string( 2, 2, "222222222" );
-//	oled_string( 3, 3, "333333333" );
-//	oled_write_frame();	
 }
 
 void oled_invert_display(uint8_t inv)

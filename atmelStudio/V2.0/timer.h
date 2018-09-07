@@ -15,7 +15,6 @@ typedef struct {
 
 
 // global
-
 void timer_get(timer_t *t);
 uint32_t timer_diff_us(timer_t *t1, timer_t *t0);
 

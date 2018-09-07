@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 
 #include "i2cmaster.h"
@@ -10,7 +11,7 @@
 #include "io.h"
 
 
-void analogFilter(AnalogIn *chan, uint16_t value)
+void io_analog_filter_step(AnalogIn *chan, uint16_t value)
 {
     // convert to physical unit
     chan->value = value * chan->scale;
@@ -19,6 +20,87 @@ void analogFilter(AnalogIn *chan, uint16_t value)
     chan->smooth = chan->alpha * chan->smooth + (1.0 - chan->alpha) * chan->value;
 }
 
+void io_init(void)
+{
+//V2.0		//Power reduction register
+//V2.0		PRR0 &= ~((1<<PRTWI0)|(1<<PRTIM2)|(1<<PRTIM0)|(1<<PRUSART1)|(1<<PRTIM1)|(1<<PRADC));
+
+    cli();  // just to be sure
+
+// DDR = 1 output pin
+// DDR = 0 input pin (default)
+
+	//Motor Pins
+		DDRB |= (1<<MOTOR_A_PWM) | (1<<MOTOR_B_PWM);
+		DDRB |= (1<<MOTOR_A_PHA) | (1<<MOTOR_B_PHA);
+
+	//Motor PWM
+		//V1 was OC1A and OC1B
+		//V2  is OC0A and OC0B
+		TCCR0A |= (1<<COM0A1)|(0<<COM0A0)| // Clear OC0A on Compare Match	Set OC0A on Bottom
+				  (1<<COM0B1)|(0<<COM0B0)| // Clear OC0B on Compare Match	Set OC0B on Bottom
+				  (1<<WGM01) |(1<<WGM00);  // Non-inverting, 8 bit fast PWM
+				  
+		TCCR0B |= (0<<WGM02) |
+				  (0<<CS02)|(0<<CS01)|(1<<CS00);	// DIV1 prescaler
+
+
+	//Encoders
+		//V1 was PC2, PC3, PE0, PE1 ... PCINT 10,11,24,25
+		//V2  is PA0, PA1, PA2, PA3 ... PCINT 0:3
+		DDRA 	&= ~((1<<MOTOR_A_ENC_1)|(1<<MOTOR_A_ENC_2)|(1<<MOTOR_B_ENC_1)|(1<<MOTOR_B_ENC_2));		//Direction to INPUT
+		PORTA 	|=   (1<<MOTOR_A_ENC_1)|(1<<MOTOR_A_ENC_2)|(1<<MOTOR_B_ENC_1)|(1<<MOTOR_B_ENC_2);		//Enable internal PULLUPs
+		PCMSK0   =   (1<<PCINT0)|(1<<PCINT1)|(1<<PCINT2)|(1<<PCINT3);									//Enable Pin Change Mask
+		PCICR 	|=   (1<<PCIE0);																		//Enable interrupt on pin change
+			
+	//LED's
+		DDRC 	|= 0x2C;	//LEDs on C5, 3:2
+		DDRD 	|= 0xE0;	//RGB on D7:5
+
+        // turn all LEDs off
+    for (uint8_t i=0; i<NLEDS; i++)
+        LEDOff(i);
+
+#ifdef notdef
+		//GREEN ON A
+			TCCR1A |= (1<<COM0A1)|(1<<COM0A0)|(0<<COM0B1)|(0<<COM0B0)|(1<<WGM01)|(1<<WGM00); 			// inverting, 8 bit fast PWM
+			TCCR1B |= (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
+		
+        // 20MGHz 256/20
+        // 0.0000128
+		//RED on A and BLUE on B
+			TCCR2A |= (1<<COM2A1)|(1<<COM2A0)|(1<<COM2B1)|(1<<COM2B0)|(1<<WGM21)|(1<<WGM20); 			// inverting, 8 bit fast PWM
+			TCCR2B |= (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
+
+        TCCR2A |= (0<<COM2A1)|(0<<COM2A0)|(0<<COM2B1)|(0<<COM2B0)|(0<<WGM21)|(0<<WGM20); 			// inverting, 8 bit fast PWM
+        // timer 2 counts at 20MHz (no prescaler)
+        TCCR2B |= (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
+	//8 bit controller timer
+        // enable overflow interrupt
+		TIMSK2 |= (1<<TOIE2);
+#endif
+        
+    // millisecond timer, 16 bit timer 1
+        TCCR1A |= (0<<COM0A1)|(0<<COM0A0)|(0<<COM0B1)|(0<<COM0B0)|(0<<WGM01)|(0<<WGM00);
+        TCCR1B |= (0<<WGM13)|(1<<WGM12)|    // CTC mode
+            (0<<CS02)|(0<<CS01)|(1<<CS00);  // no prescaler
+        OCR1A = 20000;
+		TIMSK1 |= (1<<OCIE1A);  // enable OCA interrupts
+
+	//ADC
+		DIDR0	= (1<<ADC6D)|(1<<ADC7D);
+		ADMUX 	= (0<<REFS1)|(1<<REFS0)| //Vcc reference voltage with external cap on AREF
+            (0<<MUX4)|(0<<MUX3)|(1<<MUX2)|(1<<MUX1)|(0<<MUX0); 	// multiplex to channel 6
+		ADCSRA 	= (1<<ADEN) |  // enable ADC
+            (1<<ADIE) |        // enable interrupt
+            (1<<ADPS2)|(1<<ADPS1)|(0<<ADPS0); // prescaler of 64 (312kHz sample rate)
+	
+	//I2C
+		i2c_init();
+
+	//Enable Interrupts
+		sei();
+}
 
 void detect_reset(void){
 	//read MCUSR and determine what reset the AVR

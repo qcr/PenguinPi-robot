@@ -236,28 +236,12 @@ datagram_validate(uint8_t *datagram, uint8_t paylen, char *msg)
    ISCHAR  etc
  */
 static void parseMotorOp	( uint8_t *datagram, Motor *motor ){
-    uint8_t flMem[4];
 
 	switch(datagram[2]) {
 		//SETTERS
 		case MOTOR_SET_SPEED:
             datagram_validate(datagram, 2, "MOTOR_SET_SPEED");
             motor->speed_dmd = (datagram[3]<<8) | datagram[4];
-            break;
-		case MOTOR_SET_KP:
-            datagram_validate(datagram, 4, "MOTOR_SET_KP");
-            for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
-            motor->Kp = char2float(flMem) * PID_SCALE;
-            break;
-		case MOTOR_SET_KI:
-            datagram_validate(datagram, 4, "MOTOR_SET_KI");
-            for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
-            motor->Ki = char2float(flMem) * PID_SCALE;
-            break;
-		case MOTOR_SET_KD:
-            datagram_validate(datagram, 4, "MOTOR_SET_KD");
-            for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
-            motor->Kd = char2float(flMem) * PID_SCALE;
             break;
 		case MOTOR_SET_KVP:
             datagram_validate(datagram, 2, "MOTOR_SET_KVP");
@@ -296,17 +280,6 @@ static void parseMotorOp	( uint8_t *datagram, Motor *motor ){
             datagram_validate(datagram, 0, "MOTOR_GET_SPEED");
 			datagram_return(datagram, 'i', motor->speed_dmd);
             break;	
-		case MOTOR_GET_KP:
-            datagram_validate(datagram, 0, "MOTOR_GET_KP");
-			datagram_return(datagram, 'f', motor->Kp/PID_SCALE);
-            break;	
-		case MOTOR_GET_KI:
-            datagram_validate(datagram, 0, "MOTOR_GET_KI");
-			datagram_return(datagram, 'f', motor->Ki/PID_SCALE);
-        case MOTOR_GET_KD:
-            datagram_validate(datagram, 0, "MOTOR_GET_KD");
-			datagram_return(datagram, 'f', motor->Kd/PID_SCALE);
-            break;
 		case MOTOR_GET_KVP:
             datagram_validate(datagram, 0, "MOTOR_GET_KVP");
 			datagram_return(datagram, 'i', motor->Kvp);
@@ -368,14 +341,11 @@ static void parseLEDOp( uint8_t *datagram, LED *led )
 
 static void parseADCOp( uint8_t *datagram, AnalogIn *adc )
 {
-    uint8_t flMem[4];
-
 	switch(datagram[2]) {
 		//SETTERS
 		case ADC_SET_SCALE:
             datagram_validate(datagram, 4, "ADC_SET_SCALE");
-            for(uint8_t i=0; i<4; i++) flMem[i] = datagram[3+i];
-            adc->scale = char2float(flMem);
+            adc->scale = char2float(&datagram[3]);
             break;
 		
 		//GETTERS
@@ -410,7 +380,7 @@ static void parseAllOp( uint8_t *datagram )
             break;
         case ALL_GET_DIP:
             datagram_validate(datagram, 0, "ALL_GET_DIP");
-			datagram_return(datagram, 'c', (uint8_t) ((hat_status.dip >> 4) & 0x0f));
+			datagram_return(datagram, 'c', (uint8_t) hat_DIP);
             break;
         case ALL_GET_BUTTON:
             datagram_validate(datagram, 0, "ALL_GET_BUTTON");
@@ -603,13 +573,13 @@ static float char2float(uint8_t *flMem)
 	* http://www.avrfreaks.net/forum/converting-4-bytes-float-help
 	*/
 	for(uint8_t i=0; i<4; i++){
-		#ifdef LITTLE_ENDIAN
+#ifdef LITTLE_ENDIAN
 		// fill in 0, 1, 2, 3
 		floatChar.c[i] = flMem[i];
-		#else
+#else
 		// fill in 3, 2, 1, 0
 		floatChar.c[3-i] = flMem[i];
-		#endif
+#endif
 	}
 	return floatChar.f;
 }
@@ -625,4 +595,10 @@ datagram_print(uint8_t *datagram, char *label)
     for( uint8_t j = 0; j < datagram[0]; j++)
         k += sprintf(buf+k, "%02x ", datagram[j] );
     debugmessage(buf);
+}
+
+void
+datagram_init()
+{
+    uart_init(UART_BAUD_SELECT_DOUBLE_SPEED(BAUD, F_CPU));
 }
