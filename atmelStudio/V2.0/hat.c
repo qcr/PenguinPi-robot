@@ -12,23 +12,17 @@
 #include "global.h"
 #include "hat.h"
 #include "timer.h"
+#include "datagram.h"
 
 #include "PCA6416A.h"
 #include "SSD1306.h"
-
-//#################################################################################################
-//
-// HATs
-//
 
 //OLED Screen Options
 enum _oled_screen {
     OLED_IP_ADDR = 0,
     OLED_USER,
     OLED_BATTERY,
-    OLED_MOTORS, 
     OLED_ENCODERS,
-    OLED_POSITION,
     OLED_PID,
     OLED_TIMING,
     OLED_ERROR,
@@ -36,73 +30,54 @@ enum _oled_screen {
     OLED_END
 };
 
-void oled_string(uint8_t x, uint8_t y, const char *fmt, ...);
-
-
-typedef struct {
-	uint8_t 			show_option;		// Selects which screen to show
-	
-	//IP Addresses
-	uint8_t				eth[4];
-	uint8_t				wlan[4];
-	
-	//Error messages
-	uint8_t				err_line_1[21];
-	uint8_t 			err_line_2[21];
-	uint8_t				err_line_3[21];
-
-	// User messages
-	uint8_t				user_msg[4][21];
-	
-} Hat_oled;
 
 #define OLED_REFRESH 1000	//How often should the main loop run before OLED refresh. If too fast information cannot be seen
 
 Hat_oled	hat_oled;
 static uint8_t oled_frame[ SSD1306_BUFFERSIZE ];
-void parseOLEDOp( uint8_t *datagram, Hat_oled *hat_oled );
-static const uint8_t ASCII[][5];
 
 Hat_s hat_status;
 
-void 	init_hat			( Hat_s *hat );
-void 	init_oled			( void );
+// forward defines
+void init_hat(Hat_s *hat);
+void init_oled(void);
 
-void 	oled_clear_frame	( );
-void    oled_frame_divider  ( );
-void 	oled_write_frame_now( );
-void 	oled_write_frame	( uint8_t *phase);
-void 	oled_character		( uint8_t x, uint8_t y, char character );
+void oled_clear_frame();
+void oled_frame_divider();
+void oled_write_frame_now();
+void oled_write_frame( uint8_t *phase);
+void oled_character(uint8_t x, uint8_t y, char character );
+void oled_screen(Hat_oled *oled );
+void oled_next_screen(Hat_oled *oled ); 
+void oled_string(uint8_t x, uint8_t y, const char *fmt, ...) 
+        __attribute__ ((format (printf, 3, 4)));
+void parseOLEDOp(uint8_t *datagram, Hat_oled *hat_oled);
+static const uint8_t ASCII[][5];
 
-void 	oled_screen    		( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *motorA, Motor *motorB, Display *display, uint8_t *datagram, PidController *pidA, PidController *pidB, uint8_t pid_on, double pid_dt);
-void    oled_next_screen	( Hat_oled *oled ); 
-
-uint8_t		hat_07_int_flag = 0;
+// globals
+static volatile uint8_t		hat_07_int_flag = 0;
+static uint8_t oled_refresh_phase = 0;
 
 ISR( PCINT2_vect ) {
 	//PCINT2 contains the interrupt from HAT07 on PCINT23 which is PC7
 	
-	if ( bit_is_clear( PINC, 7 ) ) { 							// detect falling edge on PC7
-		
-		//Need main loop to handle this as clearing INT will cause I2C clashes if not handled appropriately
+	if ( bit_is_clear( PINC, 7 ) ) {
+        // detect falling edge on PC7
+		//Need main loop to handle this as clearing INT will cause I2C clashes 
+        //if not handled appropriately
 		hat_07_int_flag = 1;
 	}
 }
 
-uint8_t oled_refresh_phase = 0;
-
 void
-hat_update(uint8_t *oled_refresh)
+hat_update(volatile uint8_t *oled_refresh)
 {
     //Refresh OLED
-    if ( hat_status.has_oled == 1 && oled_refresh && oled_refresh_phase == 0) {
+    if ( hat_status.has_oled == 1 && *oled_refresh && oled_refresh_phase == 0) {
         // time to refresh
         *oled_refresh = 0;  // mark it as done
-        LED_DEBUG_B(10);
         // build the screen image
-        float pid_dt = 0.0;//FIXME
-        oled_screen( &hat_oled, &vdiv, &csense, &motorA, &motorB,
-                &displayA, datagram_last, &pidA, &pidB, pid_on, pid_dt);
+        oled_screen( &hat_oled);
         oled_refresh_phase = 1;  // start the progressive write to OLED
     }
     if (oled_refresh_phase)
@@ -111,48 +86,45 @@ hat_update(uint8_t *oled_refresh)
     //HAT Interrupt
     if ( hat_status.int_07 == 1 && hat_07_int_flag == 1 ) {
         uint8_t 	data_r[2]  			= {0, 0};
-        //Have to act upon it here else we get I2C clashes between clearing the INT and OLED update
+        //Have to act upon it here else we get I2C clashes between clearing 
+        //the INT and OLED update
                     
         //Clear Interrupt by reading the device 
-            i2cReadnBytes(data_r, PCA6416A_1, 0x00, 2 );					
+        i2cReadnBytes(data_r, PCA6416A_1, 0x00, 2 );					
             
         //data_r[0][7:4] contains the DIP switch which may have changed
-            hat_status.dip			= data_r[0] & 0xF0;
+        hat_status.dip			= data_r[0] & 0xF0;
 
-            // Bit 4 controls the global pid_on flag
-            if ((hat_status.dip & 0x10) == 0x10) {
-                //PID ON!
-                pid_on = 1;
-            } else {
-                pid_on = 0;
-            }
+        // Bit 4 controls the global pid_on flag
+        if ((hat_status.dip & 0x10) == 0x10) {
+            //PID ON!
+            pid_on = 1;
+        } else {
+            pid_on = 0;
+        }
         
         //data_r[1][3:0] contains the buttons
-            for(uint8_t i = 0; i < 4; i++) {
-                if ( bit_is_clear( data_r[1], i ) ) {	
+        for (uint8_t i = 0; i < 4; i++) {
+            if ( bit_is_clear( data_r[1], i ) ) {	
 
-                    switch ( i ) {
-                        case 0 :	//Button S1 has been pressed											
-                            oled_next_screen ( &hat_oled );
-                            break;
-                        case 1 : 	//Button S2 has been pressed											
-                            motorA.dir			=   0;
-                            motorA.setSpeedDPS	=   0;
-                            motorB.dir			=   0;
-                            motorB.setSpeedDPS	=   0;
-                            break;
-                        case 2 : 	//Button S3 has been pressed											
-                            motorA.dir			=  -1;
-                            motorA.setSpeedDPS	=  50;
-                            break;
-                        case 3 : 	//Button S4 has been pressed											
-                            motorB.dir			=   1;
-                            motorB.setSpeedDPS	= 100;
-                            break;
-                    }
+                switch ( i ) {
+                    case 0 :	//Button S1 has been pressed
+                        oled_next_screen ( &hat_oled );
+                        break;
+                    case 1 : 	//Button S2 has been pressed -- ALL STOP
+                        motorR.speed_dmd	=   0;
+                        motorL.speed_dmd	=   0;
+                        break;
+                    case 2 : 	//Button S3 has been pressed
+                        motorR.speed_dmd	=  30;
+                        motorL.speed_dmd	= -30;
+                        break;
+                    case 3 : 	//Button S4 has been pressed
+                        // free for user
+                        break;
                 }
-            }		
-                                    
+            }
+        }		
         hat_07_int_flag = 0;
     }
 }
@@ -181,15 +153,16 @@ hat_datagram(uint8_t *datagram)
 void
 hat_lowvolts()
 {
+    //display low battery warning on OLED
+	oled_clear_frame();	
+    oled_string( 0, 1, "LOW VOLTAGE SHUTDOWN");
+    oled_write_frame_now();
+    _delay_ms(2000);
+
     //lockout most functions
     PRR0 |= (1<<PRTIM2)|(1<<PRTIM0)|(1<<PRTIM1);//|(1<<PRADC);
-    //display low battery warning
-    uint8_t reg[2] = {0, 0};
-    reg[0] = DIGIT0_B;
-    reg[1] = DIGIT1_F;
-    i2cWritenBytes(reg, displayA.address, OUTPUT_0, 2);
-                    
-    while(1){
+  
+    while(1) {
         //send shutdown command
         uart_puts_P("Low battery shutdown request");
         PORTB &= ~(1<<PB5);//pull the pin low
@@ -200,80 +173,20 @@ hat_lowvolts()
 void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
 
 	switch( datagram[2] ){
-		//SETTERS
-		case OLED_SET_IP_ETH_1:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[0] = (datagram[3]<<8) | datagram[4];
-			}
-			else			
-				errmessage("OLED_SET_IP1: incorrect type %d", datagram[0]);		
-		break;
-		case OLED_SET_IP_ETH_2:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[1] =  (datagram[3]<<8) | datagram[4];
-			} else
-				errmessage("OLED_SETIP2: incorrect type %d", datagram[0]);
-		break;
-		case OLED_SET_IP_ETH_3:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[2] = (datagram[3]<<8) | datagram[4];
-			} else
-				errmessage("OLED_SETIP3: incorrect type %d", datagram[0]);
-		break;
-		case OLED_SET_IP_ETH_4:
-			if( datagram[0] == 5 ){
-				hat_oled->eth[3] = (datagram[3]<<8) | datagram[4];
-			} else
-				errmessage("OLED_SETIP4: incorrect type %d", datagram[0]);
-
-		break;
-		case OLED_SET_IP_WLAN_1:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[0] = (datagram[3]<<8) | datagram[4];
-			}
-			else				
-				errmessage("OLED_SETIPWLAN1: incorrect type %d", datagram[0]);			
-		break;
-		case OLED_SET_IP_WLAN_2:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[1] =  (datagram[3]<<8) | datagram[4];
-			}else
-				errmessage("OLED_SETIPWLAN2: incorrect type %d", datagram[0]);
-
-		break;
-		case OLED_SET_IP_WLAN_3:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[2] = (datagram[3]<<8) | datagram[4];
-			}else
-				errmessage("OLED_SETIPWLAN3: incorrect type %d", datagram[0]);
-
-		break;
-		case OLED_SET_IP_WLAN_4:
-			if( datagram[0] == 5 ){
-				hat_oled->wlan[3] = (datagram[3]<<8) | datagram[4];
-			}else
-				errmessage("OLED_SETIPWLAN4: incorrect type %d", datagram[0]);
-
-		break;	
         case OLED_SET_IP_ETH:
-			if( datagram[0] == 7 ){
-				for (uint8_t i=0; i<4; i++)
-					hat_oled->eth[i] = datagram[i];
-			}else
-				errmessage("OLED_SETIPETH: incorrect type %d", datagram[0]);
-
-		break;
+            datagram_validate(datagram, 4, "OLED_SET_IP_ETH");
+            for (uint8_t i=0; i<4; i++)
+                hat_oled->eth[i] = datagram[i+3];
+            break;
         case OLED_SET_IP_WLAN:
-			if( datagram[0] == 7 ){
-				for (uint8_t i=0; i<4; i++)
-					hat_oled->wlan[i] = datagram[i];
-			}else
-				errmessage("OLED_SETIPWLAN: incorrect type %d", datagram[0]);
-		break;
+            datagram_validate(datagram, 4, "OLED_SET_IP_WLAN");
+            for (uint8_t i=0; i<4; i++)
+                hat_oled->wlan[i] = datagram[i+3];
+            break;
 		
 		default:
 			errmessage("bad OLED opcode %d", datagram[2]);
-		break;
+            break;
 	}	
 }
 
@@ -414,6 +327,122 @@ void hat_init( ) {
 //
 //#################################################################################################
 
+void oled_screen(Hat_oled *oled)
+{
+	
+	oled_clear_frame();	
+	
+	switch ( oled->show_option ) {
+        case OLED_PID :
+            oled_string( 0, 0, "VEL:  L    R  On? %d", pid_on);
+
+            oled_string( 0, 1, "v*  %3d", motorR.speed_dmd);
+            oled_string( 0, 2, "ve  %3d", motorR.verror);
+            oled_string( 0, 3, "mc  %3d", motorR.command);
+
+            oled_string( 9, 1, "%3d", motorL.speed_dmd);
+            oled_string( 9, 2, "%3d", motorL.verror);
+            oled_string( 9, 3, "%3d", motorL.command);
+            break;
+
+		/* case OLED_DISPLAY :  */
+		/* 	oled_string( 0, 0, "DISPLAY" ); */
+		/* 	sprintf(fstring, "%d", display.address ); */
+		/* 	oled_string ( 0,1,fstring ); 	 */
+		/* 	sprintf(fstring, "%d", display.draw ); */
+		/* 	oled_string ( 10,1,fstring ); 	 */
+		/* 	sprintf(fstring, "%d", display.value ); */
+		/* 	oled_string ( 0,2,fstring ); 	 */
+		/* 	sprintf(fstring, "%d", display.mode ); */
+		/* 	oled_string ( 10,2,fstring ); 				 */
+		/* 	sprintf(fstring, "%d", display.digit0 ); */
+		/* 	oled_string ( 0,3,fstring ); 	 */
+		/* 	sprintf(fstring, "%d", display.digit1 ); */
+		/* 	oled_string ( 10,3,fstring ); 	 */
+		/*  */
+		/* 	break; */
+		
+		case OLED_BATTERY :
+			oled_string( 0, 0, "BATTERY:" ); 
+			oled_string( 0, 1, "  %.2f V", vdiv.smooth/1000);
+			oled_string( 0, 2, "  %.0f mA", csense.smooth);
+			break;	
+
+		case OLED_ENCODERS :
+			oled_string( 0, 0, "ENCODERS" );
+
+      //Encoders RAW
+			oled_string( 0, 1, "encL: %6d", motorL.position);
+
+			oled_string( 0, 2, "encR: %6d", motorR.position);
+        	
+            oled_frame_divider();	//Divide screen
+			break;
+      
+		case OLED_IP_ADDR :
+			oled_string( 0, 0, "IP Addresses" );
+			oled_string( 0, 1, "eth  %3d.%3d.%3d.%3d",
+                    hat_oled.eth[0],
+                    hat_oled.eth[1],
+                    hat_oled.eth[2],
+                    hat_oled.eth[3]);
+			oled_string( 0, 2, "wlan %3d.%3d.%3d.%3d",
+                    hat_oled.wlan[0],
+                    hat_oled.wlan[1],
+                    hat_oled.wlan[2],
+                    hat_oled.wlan[3]);
+			break;
+
+        case OLED_TIMING: {
+            oled_string( 0, 0, "LOOP TIMING:");
+            oled_string( 0, 1, "mean %12lu us", stats_mean(&loop_time));
+            uint32_t std = stats_std(&loop_time);
+            oled_string( 0, 2, "std  %12lu us", std);
+            oled_string( 0, 3, "max  %12lu us", loop_time.max);
+            break;
+        }
+		/* 	 */
+		/* case OLED_DATAGRAM : */
+		/* 	oled_string( 0, 0, "Datagram (hex)" ); */
+        /*  */
+		/* 	sprintf(fstring, "%x", datagram[0] ); */
+		/* 	oled_string (  0,1,fstring ); */
+		/* 	sprintf(fstring, "%x", datagram[1] ); */
+		/* 	oled_string (  5,1,fstring );			 */
+		/* 	sprintf(fstring, "%x", datagram[2] ); */
+		/* 	oled_string ( 10,1,fstring ); */
+		/* 	sprintf(fstring, "%x", datagram[3] ); */
+		/* 	oled_string ( 15,1,fstring ); */
+        /*  */
+		/* 	sprintf(fstring, "%x", datagram[4] ); */
+		/* 	oled_string (  0,2,fstring ); */
+		/* 	sprintf(fstring, "%x", datagram[5] ); */
+		/* 	oled_string (  5,2,fstring );			 */
+		/* 	sprintf(fstring, "%x", datagram[6] ); */
+		/* 	oled_string ( 10,2,fstring ); */
+		/* 	sprintf(fstring, "%x", datagram[7] ); */
+		/* 	oled_string ( 15,2,fstring ); */
+		/* 	 */
+		/* 	sprintf(fstring, "%x", datagram[8] ); */
+		/* 	oled_string (  0,3,fstring ); */
+		/* 	sprintf(fstring, "%x", datagram[9] ); */
+		/* 	oled_string (  5,3,fstring ); */
+		/* 	 */
+		/* 	break; */
+			
+		case OLED_ERROR :
+			oled_string( 0, 0, "ERROR" );
+				oled_string (  0,1, hat_oled.err_line_1 );
+				oled_string (  0,2, hat_oled.err_line_2 );
+				oled_string (  0,3, hat_oled.err_line_3 );
+			break;
+			
+		case OLED_SHUTDOWN : 
+			oled_string( 0, 0, "SHUTDOWN" );
+			break;
+	}			
+}
+
 void init_oled () {
 //	uart_puts_P("INIT OLED\n");
 	
@@ -476,6 +505,16 @@ void init_oled () {
 //	oled_write_frame();	
 }
 
+void oled_invert_display(uint8_t inv)
+{
+	i2cWriteByte( SSD1306_DISPLAYOFF, SSD1306_DEFAULT_ADDRESS, 0x00 );
+    if (inv)
+        i2cWriteByte( SSD1306_INVERTDISPLAY, SSD1306_DEFAULT_ADDRESS, 0x00 );
+    else
+        i2cWriteByte( SSD1306_NORMALDISPLAY, SSD1306_DEFAULT_ADDRESS, 0x00 );
+    i2cWriteByte( SSD1306_DISPLAYON, SSD1306_DEFAULT_ADDRESS, 0x00 );
+}
+
 void oled_clear_frame () {
 	
 	for ( uint16_t i=0; i < SSD1306_BUFFERSIZE ; i++) {
@@ -532,24 +571,38 @@ void oled_write_frame (uint8_t *phase) {
 	}
 }
 
-void oled_character( uint8_t x, uint8_t y, char character ) {
+void oled_string(uint8_t x, uint8_t y, const char *fmt, ...)
+{
+    va_list ap;
+    char    buf[33];
 
-	int 		char_in_ascii 	= character;
-	uint16_t 	frame_addr 		= x + (128*y);		//128 added as oled_frame is 512 bytes or 128 columns x 4 rows
+    va_start(ap, fmt);
+
+    vsnprintf(buf, 33, fmt, ap);
+    
+	//128 x 32 pixels on screen
+	//Characters are 6 pixels by 8
+	//Character display is therefore 21 x 4
+	//x and y inputs are intended to be on these terms, so y=3 is bottom line of characters
 	
-//	sprintf(fstring, "%d\n", char_in_ascii );
-//	uart_puts(fstring);	
+    for (uint8_t i=0; buf[i]; i++)
+		oled_character(6*(x+i), y, buf[i]);	
+    va_end(ap);
+}
+
+void oled_character( uint8_t x, uint8_t y, char character )
+{
+	int 		char_in_ascii 	= character;
+    //128 added as oled_frame is 512 bytes or 128 columns x 4 rows
+	uint16_t 	frame_addr 		= x + (128*y);
 	
 	//Take 5 entries from the ASCII array and put into the frame
 		for (int index = 0; index < 5; index++)
-		{
 			oled_frame[ frame_addr + index ]	= ASCII[ char_in_ascii - 0x20][index];
-		}	
 		
 		//space between characters
 		oled_frame[ frame_addr + 5 ] 			= 0x00;		
 }
-
 
 void oled_next_screen ( Hat_oled *oled ) {
 	
@@ -584,180 +637,10 @@ hat_show_error( char *msg )
 	oled->show_option = OLED_ERROR;
 }
 
-void oled_screen   ( Hat_oled *oled, AnalogIn *vdiv, AnalogIn *csense, Motor *motorA, Motor *motorB, Display *display, uint8_t *datagram, PidController *pidA, PidController *pidB, uint8_t pid_on, double pid_dt) {
-	
-	oled_clear_frame();	
-	
-	switch ( oled->show_option ) {
-        case OLED_PID :
-            oled_string( 0, 0, "   A    B  On? %d", pid_on);
-
-            oled_string( 0, 1, "e  %d", pidA->error );
-            oled_string( 0, 2, "mc %d", pidA->motorCommand );
-            oled_string( 0, 3, "de %d", pidA->dt );
-
-            oled_string( 8, 1, "%d", pidB->error );
-            oled_string( 8, 2, "%d", pidB->motorCommand );
-            oled_string( 8, 3, "%d", pidB->dt );
-
-            oled_string( 11, 3, "dt:%f", pid_dt );
-            break;
-
-		/* case OLED_DISPLAY :  */
-		/* 	oled_string( 0, 0, "DISPLAY" ); */
-		/* 	sprintf(fstring, "%d", display->address ); */
-		/* 	oled_string ( 0,1,fstring ); 	 */
-		/* 	sprintf(fstring, "%d", display->draw ); */
-		/* 	oled_string ( 10,1,fstring ); 	 */
-		/* 	sprintf(fstring, "%d", display->value ); */
-		/* 	oled_string ( 0,2,fstring ); 	 */
-		/* 	sprintf(fstring, "%d", display->mode ); */
-		/* 	oled_string ( 10,2,fstring ); 				 */
-		/* 	sprintf(fstring, "%d", display->digit0 ); */
-		/* 	oled_string ( 0,3,fstring ); 	 */
-		/* 	sprintf(fstring, "%d", display->digit1 ); */
-		/* 	oled_string ( 10,3,fstring ); 	 */
-		/*  */
-		/* 	break; */
-		
-		case OLED_BATTERY :
-			oled_string( 0, 0, "BATTERY" ); 
-			oled_string( 0, 1, "  %1.3f V", vdiv->value);
-			oled_string( 0, 2, "  %3.3f mA", csense->value);
-			break;	
-
-		case OLED_MOTORS :
-			oled_string( 0, 0, "MOTORS" );
-			//DIR
-			oled_string( 0, 1, "dir:" );
-				if ( motorA->dir == -1 ) 		oled_string( 8, 1, " CW" );
-				else if ( motorA->dir == 1 )	oled_string( 8, 1, "CCW" );
-				else 							oled_string( 8, 1, "OFF" );	
-
-				if ( motorB->dir == -1 ) 		oled_string( 16, 1, " CW" );
-				else if ( motorB->dir == 1 )	oled_string( 16, 1, "CCW" );
-				else 							oled_string( 16, 1, "OFF" );			
-			
-			//DPS
-			oled_string( 5, 2, "dps: %6d", motorA->setSpeedDPS);
-            oled_string ( 13,2, "%6d", motorB->setSpeedDPS);
-		
-            oled_frame_divider(); //Divide screen
-			break;
-
-		case OLED_ENCODERS :
-			oled_string( 0, 0, "ENCODERS" );
-
-      //Encoders RAW
-			oled_string( 0, 1, "enc1: %6d", motorA->enc_raw1);
-            oled_string ( 13,1, "%6d", motorB->enc_raw1);
-
-			oled_string( 0, 2, "enc2: %6d", motorA->enc_raw2);
-            oled_string ( 13,2, "%6d", motorB->enc_raw2);
-        	
-            oled_frame_divider();	//Divide screen
-			break;
-      
-		case OLED_POSITION :
-			oled_string( 0, 0, "POSITION" );
-        
-			//position
-			oled_string( 0, 1, "pos: %6d", motorA->position);
-            oled_string(13, 1, "%6d", motorB->position);
-
-			//degrees
-			oled_string( 0, 2, "deg: %6d", motorA->degrees);
-            oled_string(13, 2, "%6d", motorB->degrees);
-				
-			//Divide screen
-            oled_frame_divider();				
-			break;
-			
-		case OLED_IP_ADDR :
-			oled_string( 0, 0, "IP Addresses" );
-			oled_string( 0, 1, "eth  %3d.%3d.%3d.%3d",
-                    oled->eth[0],
-                    oled->eth[1],
-                    oled->eth[2],
-                    oled->eth[3]);
-			oled_string( 0, 2, "wlan %3d.%3d.%3d.%3d",
-                    oled->wlan[0],
-                    oled->wlan[1],
-                    oled->wlan[2],
-                    oled->wlan[3]);
-			break;
-
-        case OLED_TIMING:
-            oled_string( 0, 0, "Timing stats");
-            oled_string( 0, 1, "mean %lu", stats_mean(&loop_time));
-            oled_string( 0, 2, "var  %lu", stats_var(&loop_time));
-            oled_string( 0, 3, "max  %lu", loop_time.max);
-            break;
-
-		/* 	 */
-		/* case OLED_DATAGRAM : */
-		/* 	oled_string( 0, 0, "Datagram (hex)" ); */
-        /*  */
-		/* 	sprintf(fstring, "%x", datagram[0] ); */
-		/* 	oled_string (  0,1,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[1] ); */
-		/* 	oled_string (  5,1,fstring );			 */
-		/* 	sprintf(fstring, "%x", datagram[2] ); */
-		/* 	oled_string ( 10,1,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[3] ); */
-		/* 	oled_string ( 15,1,fstring ); */
-        /*  */
-		/* 	sprintf(fstring, "%x", datagram[4] ); */
-		/* 	oled_string (  0,2,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[5] ); */
-		/* 	oled_string (  5,2,fstring );			 */
-		/* 	sprintf(fstring, "%x", datagram[6] ); */
-		/* 	oled_string ( 10,2,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[7] ); */
-		/* 	oled_string ( 15,2,fstring ); */
-		/* 	 */
-		/* 	sprintf(fstring, "%x", datagram[8] ); */
-		/* 	oled_string (  0,3,fstring ); */
-		/* 	sprintf(fstring, "%x", datagram[9] ); */
-		/* 	oled_string (  5,3,fstring ); */
-		/* 	 */
-		/* 	break; */
-			
-		case OLED_ERROR :
-			oled_string( 0, 0, "ERROR" );
-				sprintf(fstring, "%s", oled->err_line_1 );
-				oled_string (  0,1,fstring );			
-				sprintf(fstring, "%s", oled->err_line_2 );
-				oled_string (  0,2,fstring );
-				sprintf(fstring, "%s", oled->err_line_3 );
-				oled_string (  0,3,fstring );
-			break;
-			
-		case OLED_SHUTDOWN : 
-			oled_string( 0, 0, "SHUTDOWN" );
-			break;
-	}			
-}
-
-void oled_string(uint8_t x, uint8_t y, const char *fmt, ...)
-{
-    va_list ap;
-    char    buf[33];
-
-    va_start(ap, fmt);
-
-    vsnprintf(buf, 33, fmt, ap);
-    
-	//128 x 32 pixels on screen
-	//Characters are 6 pixels by 8
-	//Character display is therefore 21 x 4
-	//x and y inputs are intended to be on these terms, so y=3 is bottom line of characters
-	
-    for (uint8_t i=0; buf[i]; i++)
-		oled_character(x+6*i, y, buf[i]);	
-
-    va_end(ap);
-}
+/*
+        oled_screen( &hat_oled, &vdiv, &csense, &motorR, &motorL,
+                &displayA, datagram_last, &pidA, &pidB, pid_on, pid_dt);
+                */
 
 //OLED FRAME	
 static uint8_t oled_frame[ SSD1306_BUFFERSIZE ] = {
@@ -799,6 +682,11 @@ static uint8_t oled_frame[ SSD1306_BUFFERSIZE ] = {
 };
 
 
+/*
+ * Each character is 6x8, six columns of 8 bits or 1 byte.
+ * Each row of this table is a column of the font.
+ * Only 5 columns, 6th column is blank, the inter-character space/
+ */
 static const uint8_t ASCII[][5] =
 {
  {0x00, 0x00, 0x00, 0x00, 0x00} // 20  
@@ -898,4 +786,3 @@ static const uint8_t ASCII[][5] =
 ,{0x10, 0x08, 0x08, 0x10, 0x08} // 7e ?
 ,{0x78, 0x46, 0x41, 0x46, 0x78} // 7f ?
 };
-
