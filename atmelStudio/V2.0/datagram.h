@@ -2,8 +2,9 @@
 #define __datagram_h__
 
 // function signatures
-void datagram_poll();  // create datagram.h ??
+uint8_t datagram_poll();  // create datagram.h ??
 void datagram_validate(uint8_t *datagram, uint8_t paylen, char *msg);
+void datagram_return(uint8_t *datagram, uint8_t type, ...);
 
 
 //Communications Defines
@@ -124,8 +125,9 @@ enum _led {
 #define OLED_SET_IP_WLAN_4	0x08
 
 enum _oled {
-OLED_SET_IP_ETH = 0x10,
-OLED_SET_IP_WLAN
+    OLED_SET_IP_ETH = 0x10,
+    OLED_SET_IP_WLAN,
+    OLED_GET_BUTTON = 0x80
 };
 
 #ifdef notdef

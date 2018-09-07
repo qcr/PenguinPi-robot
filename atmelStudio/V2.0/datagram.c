@@ -22,13 +22,20 @@
 //
 //#################################################################################################
 
+enum _serial {
+    SERIAL_ERROR = -1,
+    SERIAL_NODATA = -2,
+    SERIAL_TIMEOUT = -3
+};
+
+
 // forward defines
-static uint8_t checkBuffer(void);
 static void datagram_parse( uint8_t *datagram );
 static uint8_t crc8(uint8_t *word, uint8_t length);
-static uint8_t checkBuffer(void);
-static void uartputcs(uint8_t *datagram);
-static void datagram_return(uint8_t *dgram, uint8_t type, ...);
+static int16_t serial_getchar(void);
+static void serial_send(uint8_t *datagram);
+static uint8_t serial_waitchar();
+static int16_t serial_getchar();
 static void datagram_parse(uint8_t *datagram);
 static void datagram_print(uint8_t *datagram, char *label);
 
@@ -48,25 +55,25 @@ static uint8_t   	datagram_last[DGRAM_MAX_LENGTH+1];  // previous datagram
 static jmp_buf bad_datagram;
 
 
-void
+uint8_t
 datagram_poll()
 {
-	uint8_t com;
+    uint16_t com;
 
-    com = checkBuffer();					
-    if(com != STARTBYTE)
-        return;
-
-    datagram_parse( datagramG );
-    LED_DEBUG_B(2);
-    
-    //datagram_print(datagram, "DG");
-    //Save a copy of datagram for OLED display
-        memcpy(&datagram_last, &datagramG, DGRAM_MAX_LENGTH);		
+    switch ( com = serial_getchar() ) {
+    case SERIAL_ERROR:
+    case SERIAL_NODATA:
+        return 0;
+    case STARTBYTE:
+        datagram_parse( datagramG );
+        break;
+    default:
+        return com & 0xff;
+    }
 }
 
 // create a return datagram in place, reusing the address and opCode
-static void datagram_return(uint8_t *datagram, uint8_t type, ...)
+void datagram_return(uint8_t *datagram, uint8_t type, ...)
 {
     va_list ap;
 
@@ -118,26 +125,30 @@ static void datagram_return(uint8_t *datagram, uint8_t type, ...)
 	datagram[0] = 4 + paylen;
 	datagram[3+paylen] = crc8(datagram, datagram[0]-1);
 
-    uartputcs(datagram);
+    serial_send(datagram);
+
+    performance.packets_out++;
 }
 
 static void datagram_parse( uint8_t *datagram ){
-	//flash RED LED
-    LED_DEBUG_B(250);
 	
-	_delay_us(UART_INTERBYTE_WAIT);
-	uint8_t dlen = checkBuffer();
+    if (setjmp(bad_datagram) < 0)
+        return;
+
+    // read and check the length
+	uint8_t dlen = serial_waitchar();
+    if(dlen >= DGRAM_MAX_LENGTH) {
+        errmessage("Datagram too long %d", dlen);
+        LED_DEBUG_R(250);
+        return;
+    }
 	datagram[0] = dlen; //length of the datagram
-	for(uint8_t i = 1; i < dlen; i++){
-		_delay_us(UART_INTERBYTE_WAIT);
-		
-		datagram[i] = checkBuffer();
-		if(i >= DGRAM_MAX_LENGTH){
-			errmessage("Datagram Buffer Overflow");
-            LED_DEBUG_R(250);
-			return;
-		}
-	}
+
+    // read rest of datagram
+	for(uint8_t i = 1; i < dlen; i++)
+		datagram[i] = serial_waitchar();
+
+    // read and compare the CRC
 	uint8_t crcDgram = datagram[dlen-1];
 	datagram[dlen-1] = 0;
 	uint8_t crcCalc = crc8(datagram, dlen-1);
@@ -149,6 +160,9 @@ static void datagram_parse( uint8_t *datagram ){
         LED_DEBUG_R(100);
 		return;
 	}
+
+    //Save a copy of datagram for OLED display
+    memcpy(&datagram_last, &datagramG, DGRAM_MAX_LENGTH);		
 
     // set up a longjmp return to here
     //   return value 1 -> bad payload length
@@ -198,10 +212,14 @@ static void datagram_parse( uint8_t *datagram ){
                 errmessage("Datagram: unknown address %d", datagram[1]);
                 //flash RED LED
                 LED_DEBUG_R(100);
+                return;
             }
         }
 		break;
 	}
+    // indicate successful receive and processing of datagram
+    LED_DEBUG_B(2);
+    performance.packets_in++;
 }
 
 void 
@@ -285,7 +303,6 @@ static void parseMotorOp	( uint8_t *datagram, Motor *motor ){
 		case MOTOR_GET_KP:
             datagram_validate(datagram, 0, "MOTOR_GET_KP");
 			datagram_return(datagram, 'f', motor->Kp/PID_SCALE);
-			uartputcs(datagramG);
             break;	
 		case MOTOR_GET_KI:
             datagram_validate(datagram, 0, "MOTOR_GET_KI");
@@ -433,7 +450,7 @@ static uint8_t crc8(uint8_t *word, uint8_t length){
 	return crc;
 }
 
-static void uartputcs(uint8_t *datagram){
+static void serial_send(uint8_t *datagram){
 	uart_putc(STARTBYTE);
 	for(uint8_t i = 0; i < datagram[0]; i++){
 		uart_putc(datagram[i]);
@@ -441,18 +458,38 @@ static void uartputcs(uint8_t *datagram){
 	//uart_putc(STOPBYTE);
 }
 
-static uint8_t checkBuffer(void){
+static uint8_t serial_waitchar()
+{
+    uint16_t com;
+
+    // poll the UART for data, but with upper bound of 200us (3 char times)
+    for (uint8_t i=0; i<10; i++)
+        switch( com = serial_getchar() ) {
+        case SERIAL_NODATA:
+            _delay_us(20);
+            break;
+        case SERIAL_ERROR:
+            longjmp(bad_datagram, SERIAL_ERROR);
+            break;
+        default:
+            return com & 0xFF;
+        }
+    errmessage("Serial timeout");
+    LED_DEBUG_R(250);
+    longjmp(bad_datagram, SERIAL_TIMEOUT);
+}
+
+static int16_t serial_getchar(void){
 	uint16_t com = uart_getc();
 	
-	if( com & UART_NO_DATA ) {
-		// there's no data available		
-		return 0;
+    if( com & UART_NO_DATA ) {
+        // there's no data available            
+        return -2;
 	} else {
 		//check for errors
         if(com & UART_FRAME_ERROR){
             /* Framing Error detected, i.e no stop bit detected */
-            errmessage("Bad UART Frame");
-			//flash Blue LED
+            errmessage("Bad UART frame");
             LED_DEBUG_R(250);
 			return 0;
         }
@@ -462,8 +499,7 @@ static uint8_t checkBuffer(void){
                 * not read by the interrupt handler before the next character arrived,
                 * one or more received characters have been dropped
                 */
-            errmessage("UART Buffer Overrun");
-			//flash BLUE LED
+            errmessage("UART hardware buffer overrun");
             LED_DEBUG_R(250);
 			return 0;
         }
@@ -472,12 +508,11 @@ static uint8_t checkBuffer(void){
                 * We are not reading the receive buffer fast enough,
                 * one or more received character have been dropped 
                 */
-            errmessage("UART Buffer Overflow");
-			//flash BLUE LED
+            errmessage("UART ringbuffer overflow");
             LED_DEBUG_R(250);
 			return 0;
         }
-		return com & 0xFF;//return lowbyte
+		return com & 0xFF; //return lowbyte
 	}
 }
 
