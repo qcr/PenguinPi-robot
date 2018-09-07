@@ -19,7 +19,7 @@
 #endif
 
 #include "motor.h"
-#include "PenguinPi.h"
+#include "io.h"
 
 // forward defines
 void errmessage(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));

@@ -7,7 +7,7 @@
 #include "i2cmaster.h"
 #include "uart.h"
 
-#include "PenguinPi.h"
+#include "io.h"
 
 
 void analogFilter(AnalogIn *chan, uint16_t value)

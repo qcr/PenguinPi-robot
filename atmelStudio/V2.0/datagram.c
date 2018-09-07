@@ -8,7 +8,6 @@
 #include    <util/atomic.h>
 #include <setjmp.h>
 
-#include "PenguinPi.h"
 #include "hat.h"
 #include "global.h"
 #include "datagram.h"

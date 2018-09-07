@@ -9,6 +9,8 @@
 #ifndef PENGUINPI_H_
 #define PENGUINPI_H_
 
+#include <stdint.h>
+
 #define DGRAM_MAX_LENGTH 10 	//bytes
 
 #define I2C_IMU	0b01101000

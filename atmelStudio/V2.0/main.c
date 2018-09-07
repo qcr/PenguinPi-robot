@@ -38,7 +38,6 @@
 #include "uart.h"
 
 #include "global.h"
-#include "PenguinPi.h"
 #include "hat.h"
 #include "datagram.h"
 #include "motor.h"
