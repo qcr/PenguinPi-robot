@@ -6,6 +6,7 @@ void hat_update(volatile uint8_t *update);
 void hat_lowvolts();
 void hat_show_error(char *s);
 void oled_invert_display(uint8_t inv);
+void hat_usertext_add(char c);
 
 typedef struct _hat_s {
 	int8_t 				config;				// -1 if no HAT present
@@ -15,6 +16,8 @@ typedef struct _hat_s {
 	uint8_t				has_oled;			// Set bit to a 1 if the I2C OLED is on the hat
 } Hat_s;
 
+#define OLED_LINELEN 21
+
 typedef struct {
 	uint8_t 			show_option;		// Selects which screen to show
 	
@@ -23,12 +26,10 @@ typedef struct {
 	uint8_t				wlan[4];
 	
 	//Error messages
-	char				err_line_1[21];
-	char     			err_line_2[21];
-	char				err_line_3[21];
+	char				err_msg[3][OLED_LINELEN];
 
 	// User messages
-	char				user_msg[4][21];
+	char				user_msg[4][OLED_LINELEN];
 	
 } Hat_oled;
 

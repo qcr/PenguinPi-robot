@@ -5,6 +5,7 @@
 #include "PenguinPi.h"
 #include <avr/io.h>
 #include <util/delay.h>
+#include <util/atomic.h>
 #include <avr/interrupt.h>
 #include "lib/uart.h"
 #include "lib/i2cmaster.h"
@@ -29,8 +30,8 @@ enum _oled_screen {
     OLED_PERFORMANCE,
     OLED_TIMING,
     OLED_ERROR,
-    OLED_SHUTDOWN,
-    OLED_END
+    OLED_END,
+    OLED_SHUTDOWN
 };
 
 enum _oled_polarity {
@@ -60,10 +61,13 @@ void oled_string(uint8_t x, uint8_t y, enum _oled_polarity, const char *fmt, ...
         __attribute__ ((format (printf, 4, 5)));
 void parseOLEDOp(uint8_t *datagram, Hat_oled *hat_oled);
 static const uint8_t ASCII[][5];
+void usertext_init();
 
-// globals
+// local variables
 static volatile uint8_t		hat_07_int_flag = 0;
 static uint8_t oled_refresh_phase = 0;
+static uint8_t user_button;
+static uint8_t scrollnext;
 
 ISR( PCINT2_vect ) {
 	//PCINT2 contains the interrupt from HAT07 on PCINT23 which is PC7
@@ -103,35 +107,67 @@ hat_update(volatile uint8_t *oled_refresh)
         hat_status.dip			= data_r[0] & 0xF0;
 
         // Bit 4 controls the global pid_on flag
-        if ((hat_status.dip & 0x10) == 0x10) {
-            //PID ON!
-            pid_on = 1;
-        } else {
+        if (hat_status.dip & 0x10)
+            pid_on = 1; //PID ON!
+        else
             pid_on = 0;
-        }
-        
+
         //data_r[1][3:0] contains the buttons
         for (uint8_t i = 0; i < 4; i++) {
             if ( bit_is_clear( data_r[1], i ) ) {	
 
                 switch ( i ) {
                     case 0 :	//Button S1 has been pressed
+                        // move to next screen
                         oled_next_screen ( &hat_oled );
                         break;
                     case 1 : 	//Button S2 has been pressed -- ALL STOP
+                        // stop all motors
                         motorR.speed_dmd	=   0;
                         motorL.speed_dmd	=   0;
                         break;
                     case 2 : 	//Button S3 has been pressed
-                        motorR.speed_dmd	=  30;
-                        motorL.speed_dmd	= -30;
+                        // the function of this button depends on the screen state
+                        switch ( hat_oled.show_option ) {
+                        case OLED_ENCODERS:
+                            ATOMIC_BLOCK(ATOMIC_FORCEON) {
+                                motorR.position = 0;
+                                motorL.position = 0;
+                                motorR.position_prev = 0;
+                                motorL.position_prev = 0;
+                            };
+                            break;
+                        case OLED_PID:
+                            motorR.speed_dmd	=  30;
+                            motorL.speed_dmd	= -30;
+                            break;
+                        case OLED_ERROR:
+                            memset((void *)hat_oled.err_msg, 0, 3*OLED_LINELEN);
+                            break;
+                        case OLED_USER:
+                            usertext_init();
+                            break;
+                        }
                         break;
                     case 3 : 	//Button S4 has been pressed
                         // free for user
+                        user_button++;
                         break;
                 }
             }
         }		
+
+        // Bit 3 controls the beacon
+        if (hat_status.dip & 0x20) {
+            data_r[0] = 8; // display the beacon
+            data_r[1] = 0x90;
+        } else {
+            data_r[0] = 0; // beacon is off
+            data_r[1] = 0;
+        }
+        i2cWritenBytes( data_r, PCA6416A_0, 0x02, 2);		
+        
+        // clear the interrupt flag
         hat_07_int_flag = 0;
     }
 }
@@ -191,6 +227,10 @@ void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
                 hat_oled->wlan[i] = datagram[i+3];
             break;
 		
+        case OLED_GET_BUTTON:
+            datagram_validate(datagram, 0, "OLED_GET_BUTTON");
+            datagram_return(datagram, 'c', user_button);
+            break;
 		default:
 			errmessage("bad OLED opcode %d", datagram[2]);
             break;
@@ -325,8 +365,40 @@ void hat_init( ) {
     data_r[1]	= 0;
     i2cWritenBytes( data_r, PCA6416A_0, 0x02, 2);		
     _delay_ms(100);		
+
+    usertext_init();
 }
 
+void hat_usertext_add(char c)
+{
+    switch (c) {
+    case '\n':
+        scrollnext = 1;
+        return;
+        break;
+    case '\f':
+        usertext_init();
+        return;
+        break;
+    default:
+        if (strlen(hat_oled.user_msg[3]) >= (OLED_LINELEN-1) || scrollnext) {
+            scrollnext = 0;
+            // scroll up
+            memmove(hat_oled.user_msg[0], hat_oled.user_msg[1], 3*OLED_LINELEN);
+            memset(hat_oled.user_msg[3], 0, OLED_LINELEN);
+        }
+        uint8_t k = strlen(hat_oled.user_msg[3]);
+        hat_oled.user_msg[3][k] = c;
+        hat_oled.user_msg[3][k+1] = 0;
+        break;
+    }
+}
+
+void usertext_init()
+{
+    strncpy((char *)hat_oled.user_msg, "USER TEXT", 4*OLED_LINELEN);
+
+}
 
 //#################################################################################################
 //
@@ -341,7 +413,8 @@ void oled_screen(Hat_oled *oled)
 	
 	switch ( oled->show_option ) {
         case OLED_PID :
-            oled_string( 0, 0, INVERSE, "VEL:  L    R  On? %d", pid_on);
+            oled_string( 0, 0, INVERSE, "VEL   L    R");
+            oled_string( 15, 0, NORMAL, "On? %d", pid_on);
 
             oled_string( 0, 1, NORMAL, "v*  %3d", motorR.speed_dmd);
             oled_string( 0, 2, NORMAL, "ve  %3d", motorR.verror);
@@ -350,6 +423,7 @@ void oled_screen(Hat_oled *oled)
             oled_string( 9, 1, NORMAL, "%3d", motorL.speed_dmd);
             oled_string( 9, 2, NORMAL, "%3d", motorL.verror);
             oled_string( 9, 3, NORMAL, "%3d", motorL.command);
+            oled_string( 15, 3, INVERSE, "test");
             break;
 
 		/* case OLED_DISPLAY :  */
@@ -370,24 +444,24 @@ void oled_screen(Hat_oled *oled)
 		/* 	break; */
 		
 		case OLED_BATTERY :
-			oled_string( 0, 0, INVERSE, "BATTERY:" ); 
-			oled_string( 0, 1, NORMAL, "  %.2f V", vdiv.smooth/1000);
-			oled_string( 0, 2, NORMAL, "  %.0f mA", csense.smooth);
+			oled_string( 0, 0, INVERSE, "BATTERY" ); 
+			oled_string( 0, 2, NORMAL, "%.2fV", vdiv.smooth/1000);
+			oled_string( 12, 2, NORMAL, "%.0fmA", csense.smooth);
 			break;	
 
 		case OLED_ENCODERS :
 			oled_string( 0, 0, INVERSE, "ENCODERS" );
 
       //Encoders RAW
-			oled_string( 0, 1, NORMAL, "encL: %6d", motorL.position);
+			oled_string( 0, 2, NORMAL, "encL: %6d", motorL.position);
 
-			oled_string( 0, 2, NORMAL, "encR: %6d", motorR.position);
+			oled_string( 0, 3, NORMAL, "encR: %6d", motorR.position);
         	
-            oled_frame_divider();	//Divide screen
+            oled_string( 15, 3, INVERSE, "reset");
 			break;
       
 		case OLED_IP_ADDR :
-			oled_string( 0, 0, INVERSE, "IP Addresses" );
+			oled_string( 0, 0, INVERSE, "IP Address" );
 			oled_string( 0, 1, NORMAL, "eth  %3d.%3d.%3d.%3d",
                     hat_oled.eth[0],
                     hat_oled.eth[1],
@@ -401,13 +475,13 @@ void oled_screen(Hat_oled *oled)
 			break;
 
         case OLED_PERFORMANCE:
-            oled_string( 0, 0, INVERSE, "PERFORMANCE:");
-            oled_string( 0, 1, NORMAL, "up   %8lu s", seconds_counter);
-            oled_string( 0, 2, NORMAL, "pkts %8ui %8uo", performance.packets_in, performance.packets_out);
-            oled_string( 0, 3, NORMAL, "err  %8u", performance.errors);
+            oled_string( 0, 0, INVERSE, "PERFORMANCE");
+            oled_string( 0, 1, NORMAL, "up   %6lu s", seconds_counter);
+            oled_string( 0, 2, NORMAL, "pkts %6ui %6uo", performance.packets_in, performance.packets_out);
+            oled_string( 0, 3, NORMAL, "err  %6u", performance.errors);
             break;
         case OLED_TIMING: {
-            oled_string( 0, 0, NORMAL, "LOOP TIMING:");
+            oled_string( 0, 0, INVERSE, "LOOP TIMING");
             oled_string( 0, 1, NORMAL, "mean %12lu us", stats_mean(&performance.loop_time));
             uint32_t std = stats_std(&performance.loop_time);
             oled_string( 0, 2, NORMAL, "std  %12lu us", std);
@@ -443,14 +517,22 @@ void oled_screen(Hat_oled *oled)
 		/* 	 */
 		/* 	break; */
 			
-		case OLED_ERROR :
+		case OLED_ERROR:
 			oled_string( 0, 0, INVERSE, "ERROR" );
-            oled_string( 0, 1, NORMAL, hat_oled.err_line_1 );
-            oled_string( 0, 2, NORMAL, hat_oled.err_line_2 );
-            oled_string( 0, 3, NORMAL, hat_oled.err_line_3 );
+            oled_string( 0, 1, NORMAL, hat_oled.err_msg[0] );
+            oled_string( 0, 2, NORMAL, hat_oled.err_msg[1] );
+            oled_string( 0, 3, NORMAL, hat_oled.err_msg[2] );
+            oled_string( 15, 3, INVERSE, "clear");
 			break;
+
+        case OLED_USER:
+            oled_string( 0, 0, NORMAL, hat_oled.user_msg[0] );
+            oled_string( 0, 1, NORMAL, hat_oled.user_msg[1] );
+            oled_string( 0, 2, NORMAL, hat_oled.user_msg[2] );
+            oled_string( 0, 3, NORMAL, hat_oled.user_msg[3] );
+            break;
 			
-		case OLED_SHUTDOWN : 
+		case OLED_SHUTDOWN: 
 			oled_string( 0, 0, INVERSE, "SHUTDOWN" );
 			break;
 	}			
@@ -644,13 +726,13 @@ hat_show_error( char *msg )
 			//ERROR TOO LONG => ignore rest			
 		}
 		else if ( char_count<21 ) {
-			oled->err_line_1[char_count]	= *msg++;
+			oled->err_msg[0][char_count]	= *msg++;
 		}
 		else if ( char_count<42 ) {
-			oled->err_line_2[char_count-21]	= *msg++;
+			oled->err_msg[1][char_count-21]	= *msg++;
 		}
 		else {
-			oled->err_line_3[char_count-42]	= *msg++;
+			oled->err_msg[2][char_count-42]	= *msg++;
 		}
 		
 		char_count++;
@@ -658,9 +740,3 @@ hat_show_error( char *msg )
 	
 	oled->show_option = OLED_ERROR;
 }
-
-/*
-        oled_screen( &hat_oled, &vdiv, &csense, &motorR, &motorL,
-                &displayA, datagram_last, &pidA, &pidB, pid_on, pid_dt);
-                */
-
