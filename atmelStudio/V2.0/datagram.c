@@ -27,6 +27,7 @@ enum _serial {
     SERIAL_TIMEOUT = -3
 };
 
+uint8_t   	datagram_last[DGRAM_MAX_LENGTH+1];  // previous datagram
 
 // forward defines
 static void datagram_parse( uint8_t *datagram );
@@ -50,7 +51,6 @@ static float char2float(uint8_t *datagram);
 	
 // local variables
 static uint8_t      datagramG[DGRAM_MAX_LENGTH+1];      // current datagram
-static uint8_t   	datagram_last[DGRAM_MAX_LENGTH+1];  // previous datagram
 static jmp_buf bad_datagram;
 
 
@@ -62,13 +62,14 @@ datagram_poll()
     switch ( com = serial_getchar() ) {
     case SERIAL_ERROR:
     case SERIAL_NODATA:
-        return 0;
+        break;
     case STARTBYTE:
         datagram_parse( datagramG );
         break;
     default:
         return com & 0xff;
     }
+    return 0;
 }
 
 // create a return datagram in place, reusing the address and opCode
@@ -169,10 +170,6 @@ static void datagram_parse( uint8_t *datagram ){
     if (setjmp(bad_datagram) > 0)
         return;
 	 
-//	sprintf(fstring, "PDG %x\n", datagram[1] );
-//	uart_puts(fstring);		 
-	
-
 	switch( datagram[1] ){
 		case AD_MOTOR_R:
 			parseMotorOp(datagram, &motorR);
@@ -352,7 +349,7 @@ static void parseLEDOp( uint8_t *datagram, LED *led )
             break;
 		case LED_SET_COUNT:
             datagram_validate(datagram, 1, "LED_SET_COUNT");
-            led->count = (datagram[3]<<8)|datagram[4];
+            led->count = datagram[3];
             led->state = 1;
             break;
 
@@ -407,13 +404,18 @@ static void parseAllOp( uint8_t *datagram )
 	switch(datagram[2]){
         case ALL_GET_ENC_SET_SPEED:
             datagram_validate(datagram, 2, "ALL_GET_ENC_SET_SPEED");
-            motorR.speed_dmd = datagram[3];
-            motorL.speed_dmd = datagram[4];
+            motorR.speed_dmd = (int8_t) datagram[3];
+            motorL.speed_dmd = (int8_t) datagram[4];
 			datagram_return(datagram, 'h', motorL.position, motorR.position);
             break;
         case ALL_GET_DIP:
             datagram_validate(datagram, 0, "ALL_GET_DIP");
 			datagram_return(datagram, 'c', (uint8_t) ((hat_status.dip >> 4) & 0x0f));
+            break;
+        case ALL_GET_BUTTON:
+            datagram_validate(datagram, 0, "ALL_GET_BUTTON");
+			datagram_return(datagram, 'c', hat_user_button);
+            hat_user_button = 0;
             break;
 		case ALL_STOP:
             datagram_validate(datagram, 0, "ALL_STOP");
@@ -424,10 +426,14 @@ static void parseAllOp( uint8_t *datagram )
             break;
 		case ALL_CLEAR_DATA:
             datagram_validate(datagram, 0, "ALL_CLEAR_DATA");
-			motorR.position = 0;
-			motorR.speed_dmd = 0;
-            motorL.position = 0;
-			motorL.speed_dmd = 0;
+            motorR.speed_dmd = 0;
+            motorL.speed_dmd = 0;
+            ATOMIC_BLOCK(ATOMIC_FORCEON) {
+                motorL.position = 0;
+                motorL.position_prev = 0;
+                motorR.position = 0;
+                motorR.position_prev = 0;
+            }
             break;
 		
 		default:
