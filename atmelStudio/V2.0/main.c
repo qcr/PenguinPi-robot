@@ -53,6 +53,7 @@ Motor 		motorL;
 LED         leds[6];
 AnalogIn 	vdiv;
 AnalogIn 	csense;
+Performance performance;
 
 #define ADC_REF (0<<REFS1)|(1<<REFS0) //Vcc reference voltage with external cap on AREF
 
@@ -200,7 +201,6 @@ ISR( ADC_vect ) {
 //                      Main polling loop
 //#################################################################################################
 
-stats_t  loop_time;
 
 int
 main(void)
@@ -218,7 +218,7 @@ main(void)
 	hat_init( &hat );
     test_leds();
 	
-    stats_init(&loop_time);
+    stats_init(&performance.loop_time);
     debugmessage("starting main loop");
     timer_get(&t0);
     while (1) 
@@ -226,16 +226,19 @@ main(void)
         // get timing stats for main loop
         timer_get(&tf);
         uint32_t dt = timer_diff_us(&tf, &t0);
-        stats_add(&loop_time, dt);
+        stats_add(&performance.loop_time, dt);
+        /*
         if (dt > 2000) {
-            //debugmessage("dt = %lu", dt);
-            //debugmessage("%lu %u %u %lu %u %u", tf.sec, tf.ms, tf.clock, t0.sec, t0.ms, t0.clock);
-            uint32_t t= 5000000;
+            debugmessage("dt = %lu", dt);
+            debugmessage("%lu %u %u %lu %u %u", tf.sec, tf.ms, tf.clock, t0.sec, t0.ms, t0.clock);
         }
+        */
         t0 = tf;
 
         // Check for a new datagram
-        datagram_poll();
+        uint8_t c = datagram_poll();
+        if (c)
+            hat_usertext_add(c);
 		
 		//LED update
         for (uint8_t i=0; i<NLEDS; i++) {
@@ -288,16 +291,16 @@ main(void)
         if (second_now) {
             second_now = 0;
             // debug message here
-            //debugmessage("mean %lu max %lu", stats_mean(&loop_time), loop_time.max);
+            //debugmessage("mean %lu max %lu", stats_mean(&performance.loop_time), performance.loop_time.max);
             if ((seconds_counter % 60) == 0) {
-                stats_init(&loop_time);
-                loop_time.max = 0;
+                stats_init(&performance.loop_time);
+                performance.loop_time.max = 0;
                 //debugmessage("reset stats");
             }
             if ((seconds_counter % 60) == 20) {
-                //debugmessage("n=%lu, sx=%lu, sx2=%lu", loop_time.n, loop_time.sum, loop_time.sum2);
+                //debugmessage("n=%lu, sx=%lu, sx2=%lu", performance.loop_time.n, performance.loop_time.sum, performance.loop_time.sum2);
                 //debugmessage("mean=%lu, std=%lu, mx=%lu", 
-                        //stats_mean(&loop_time), stats_std(&loop_time), loop_time.max);
+                        //stats_mean(&performance.loop_time), stats_std(&performance.loop_time), performance.loop_time.max);
             }
         }
 		
@@ -321,6 +324,8 @@ void errmessage(const char *fmt, ...)
     hat_show_error(buf);
 
     va_end(ap);
+
+    performance.errors++;
 }
 
 void debugmessage(const char *fmt, ...)
