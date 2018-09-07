@@ -14,8 +14,6 @@ import penguinPi as ppi
 
 mA = ppi.Motor(ppi.AD_MOTOR_A)
 mB = ppi.Motor(ppi.AD_MOTOR_B)
-display = ppi.Display(ppi.AD_DISPLAY_A)
-display.set_mode('u');
 
 #initialise serial, and retrieve initial values from the Atmega
 ppi.init()
@@ -24,12 +22,16 @@ mB.get_all()
 
 motor = mA;  # test motor A
 
-for speed in range(9,100,10):
+T = 10
+
+speeds = range(10,105,10)
+
+for speed in speeds:
     motor.set_power(speed)
     time.sleep(1)
     e1 = motor.get_encoder()
-    time.sleep(5)
+    time.sleep(T)
     e2 = motor.get_encoder()
-    print('demand, actual ', speed, (e2-e1)/5)
+    print(speed, e1, e2, (e2-e1)/T)
 
 motor.set_power(0)
