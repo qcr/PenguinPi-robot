@@ -15,29 +15,29 @@
 
 
 //Global variables
-uint8_t datagramG[DGRAM_MAX_LENGTH+1];
-char 	fstring[32];
 
 //Structs
 typedef struct {
-	volatile uint8_t 	enc1PinState;
-	volatile uint8_t 	enc2PinState;
-	volatile int16_t 	position;  			// the "encoder" value
-	int8_t 			 	encoderMode;		// mode 0: single encoder, mode 1: quadrature, mode 2: x4 counting (xor quadrature)
+    // motor id: 0 for MotorA, 1 for MotorB
+	int8_t				which;		
+
+    // encoder 
+	uint8_t 	encA_prev;
+	uint8_t 	encB_prev;
+	int16_t 	position;  			// the "encoder" value
+    // mode 0: single encoder, mode 1: quadrature, mode 2: x4 counting (xor quadrature)
+	int8_t      encoderMode;		
  
+    /*
   int16_t      enc_raw1;
   int16_t      enc_raw2; 
-	
-	int16_t 			speedDPS;
-	int16_t 			degrees;
-	
-	int8_t				which_motor;		// 0 for MotorA, 1 for MotorB, so different quadrature maps can be used when encoder changes.
-	int8_t  			dir;
-	int8_t  			lastDir;
-	int16_t 			setSpeedDPS;
 	int16_t 			setDegrees;
+	int16_t 			setSpeedDPS;
+  */
 	
-	volatile uint8_t 	pidTimerFlag;
+	int16_t 			speed_dmd;
+	
+    /*
 	int16_t 			gainP;
 	int16_t 			gainI;
 	int16_t 			gainD;
@@ -45,7 +45,25 @@ typedef struct {
 	int16_t 			lastVal;
 	int16_t 			maxError;
 	int32_t 			maxErrorSum;
-    int8_t  			controlMode; 		// 0=set speed mode, 1=PID control mode
+    */
+    uint8_t             controlMode;    // not quite sure what this might be for
+    // GAINS
+    int16_t Kp;
+    int16_t Ki;
+    int16_t Kd;
+    int16_t Kv;
+
+    int16_t position_prev;
+
+    // ERROR
+    int16_t error;
+    int16_t error_prev;
+
+    int16_t integralError;
+    int16_t velocity;
+
+    // Out
+    int16_t command;
 } Motor;
 
 typedef struct {
@@ -61,10 +79,11 @@ enum _leds  {
     RED = 0, BLUE, GREEN, Y2, Y3, Y4, NLEDS
 };
 typedef struct {
-	volatile int8_t 	state; 				// 1 on, 0 off
-	volatile uint16_t 	count; 				// multiple of 32 us
+	volatile uint8_t 	state; 				// 1 on, 0 off
+	volatile uint8_t 	count; 				// milliseconds
 } LED;
 
+#ifdef notdef
 typedef struct {
 	int8_t 				address;			// TWI address
 	int8_t 				draw;
@@ -81,14 +100,14 @@ typedef struct {
 	uint8_t 			programMode;		// mode 0: state is cleared after update code is run. mode 1: state is maintained after update (continuously updates)
 	volatile int16_t 	debounceCount;
 } Button;
+#endif
 
 typedef struct {
-	int16_t 			raw;
 	float 				value;
+    float               smooth;
 	float 				scale;
-
-	volatile uint8_t 	count;
-	volatile uint8_t 	ready;
+    float               alpha;
+    uint8_t             channel;
 } AnalogIn;
 
 struct Battery {
@@ -115,38 +134,8 @@ union dgramMem {
 
 
 
-//PID PROTO
 
-typedef struct PidController {
-    // GAINS
-    int16_t kP;
-    int16_t kI;
-    int16_t kD;
-
-    // TERMS
-    int16_t p;
-    int16_t i;
-    int16_t d;
-
-    // ERROR
-    int16_t error;
-    int16_t prevError;
-
-    int16_t integralError;
-
-    int16_t motorErrorScale;
-
-    // Conversion
-    int16_t prevDegrees;
-
-    int16_t dt;
-
-    // Out
-    int16_t output;
-    int16_t motorCommand;
-} PidController;
-
-int16_t velocityPIDLoop(int16_t setPoint, Motor *motor, PidController *pid);
+int16_t velocityControl(int16_t setPoint, Motor *motor);
 
 
 
@@ -173,8 +162,8 @@ int8_t 	i2cWriteByte	(uint8_t data, uint8_t address, uint8_t reg);
 void parseMotorOp		( uint8_t *datagram, Motor *motor);
 void parseServoOp		( uint8_t *datagram, Servo *servo);
 void parseLEDOp			( uint8_t *datagram, LED *led);
-void parseDisplayOp		( uint8_t *datagram, Display *display);
-void parseButtonOp		( uint8_t *datagram, Button *btn);
+//void parseDisplayOp		( uint8_t *datagram, Display *display);
+//void parseButtonOp		( uint8_t *datagram, Button *btn);
 void parseADCOp			( uint8_t *datagram, AnalogIn *adc);
 void parseAllOp			( uint8_t *datagram);
 
@@ -185,13 +174,13 @@ void 	fn_dbg_motor			( Motor *motor );
 void LEDOff(enum _leds led);
 void LEDOn(enum _leds led);
 
+void analogFilter(AnalogIn *chan, uint16_t value);
+
+#ifdef notdef
 void update_dd7s(Display *display);
 void displayBase10(uint8_t *reg, int16_t value);
-
 void buttonLogic(Button *button, uint8_t btnVal);
-
-
-
+#endif
 
 
 //#################################################################################################
@@ -256,148 +245,6 @@ void buttonLogic(Button *button, uint8_t btnVal);
 #define SERVO_PWM_RANGE_MAX 3000
 
 #define ADC_COUNT 6 //number of dummy readings before accepting an ADC read. Recommend between 1-10 (more and strange results occur)
-
-//Communications Defines
-#define STARTBYTE 0x11 //Device Control 1
-#define STOPBYTE  0x12 //Device Control 2
-
-//#define LITTLE_ENDIAN
-#define BIG_ENDIAN //NETWORK BYTE ORDER
-
-
-#define UART_INTERBYTE_WAIT 80 	//us
-#define CRC_8_POLY 0xAE 		//generator polynomial
-
-//device addresses
-#define AD_MOTORS  		0x01
-#define AD_MOTOR_A 		0x04
-#define AD_MOTOR_B 		0x05
-		
-#define AD_SERVOS  		0x02
-#define AD_SERVO_A 		0x08
-#define AD_SERVO_B 		0x09
-
-#define AD_LEDS  		0x03
-#define AD_LED_R 		0x0C
-#define AD_LED_G 		0x0D
-#define AD_LED_B 		0x0E
-
-//#define AD_DISPLAYS  	0x04	--same as MOTOR A !!!
-#define AD_DISPLAY_A 	0x10
-
-#define AD_BTNS  		0x05
-#define AD_BTN_A 		0x14
-#define AD_BTN_B 		0x15
-#define AD_BTN_C 		0x16
-
-#define AD_ADCS 		0x06
-#define AD_ADC_V 		0x18
-#define AD_ADC_C 		0x19
-
-#define AD_OLED			0x07
-
-#define AD_ALL 			0xFF
-
-//device opcodes
-//MOTOR
-#define MOTOR_SET_SPEED_DPS 	0x01
-#define MOTOR_SET_DEGREES 		0x02
-#define MOTOR_SET_DIRECTION 	0x03
-#define MOTOR_SET_GAIN_P 		0x04
-#define MOTOR_SET_GAIN_I 		0x05
-#define MOTOR_SET_GAIN_D 		0x06
-#define MOTOR_SET_ENC_MODE 		0x07
-#define MOTOR_SET_ENC 			0x08
-#define MOTOR_SET_CONTROL_MODE 	0x09
-
-#define MOTOR_GET_SPEED_DPS 	0x81
-#define MOTOR_GET_DEGREES 		0x82
-#define MOTOR_GET_DIRECTION 	0x83
-#define MOTOR_GET_GAIN_P 		0x84
-#define MOTOR_GET_GAIN_I 		0x85
-#define MOTOR_GET_GAIN_D 		0x86
-#define MOTOR_GET_ENC_MODE 		0x87
-#define MOTOR_GET_ENC 			0x88
-#define MOTOR_GET_CONTROL_MODE 	0x89
-
-//SERVO
-#define SERVO_SET_POSITION 		0x01
-#define SERVO_SET_STATE 		0x02
-#define SERVO_SET_MIN_RANGE 	0x03
-#define SERVO_SET_MAX_RANGE 	0x04
-#define SERVO_SET_MIN_PWM 		0x05
-#define SERVO_SET_MAX_PWM 		0x06
-
-#define SERVO_GET_POSITION 		0x81
-#define SERVO_GET_STATE 		0x82
-#define SERVO_GET_MIN_RANGE 	0x83
-#define SERVO_GET_MAX_RANGE 	0x84
-#define SERVO_GET_MIN_PWM 		0x85
-#define SERVO_GET_MAX_PWM 		0x86
-
-//LED
-#define LED_SET_STATE 0x01
-#define LED_SET_BRIGHTNESS 0x02
-#define LED_SET_COUNT 0x03
-
-#define LED_GET_STATE 0x81
-#define LED_GET_BRIGHTNESS 0x82
-#define LED_GET_COUNT 0x83
-
-//DISPLAY
-#define DISPLAY_SET_VALUE 	0x01
-#define DISPLAY_SET_DIGIT_1 0x02
-#define DISPLAY_SET_DIGIT_0 0x03
-#define DISPLAY_SET_MODE 	0x04
-
-#define DISPLAY_GET_VALUE 	0x81
-#define DISPLAY_GET_DIGIT_1 0x82
-#define DISPLAY_GET_DIGIT_0 0x83
-#define DISPLAY_GET_MODE 	0x84
-
-//OLED
-#define OLED_SET_IP_ETH_1 	0x01
-#define OLED_SET_IP_ETH_2 	0x02
-#define OLED_SET_IP_ETH_3 	0x03
-#define OLED_SET_IP_ETH_4	0x04
-#define OLED_SET_IP_WLAN_1 	0x05
-#define OLED_SET_IP_WLAN_2 	0x06
-#define OLED_SET_IP_WLAN_3 	0x07
-#define OLED_SET_IP_WLAN_4	0x08
-
-#define OLED_SET_IP_ETH    0x10
-#define OLED_SET_IP_WLAN   0x11
-
-#define OLED_SET_USER_TEXT1 0x20
-#define OLED_SET_USER_TEXT2 0x21
-#define OLED_SET_USER_TEXT3 0x22
-#define OLED_SET_USER_TEXT4 0x23
-
-//BUTTON
-#define BUTTON_SET_PROGRAM_MODE 0x01
-#define BUTTON_SET_PIN_MODE 0x02
-
-#define BUTTON_GET_PROGRAM_MODE 0x81
-#define BUTTON_GET_PIN_MODE 0x82
-
-//ADC
-#define ADC_SET_SCALE 0x01
-#define ADC_SET_RAW 0x02
-#define ADC_SET_READING 0x03
-
-#define ADC_GET_SCALE 0x81
-#define ADC_GET_RAW 0x82
-#define ADC_GET_READING 0x83
-
-//GLOBAL
-#define ALL_STOP 0xFF
-#define CLEAR_DATA 0xEE
-#define SET_RESET 0xDD
-#define GET_RESET 0x11
-#define ALL_SET_DIP 0x20
-#define ALL_GET_DIP 0xA0
-#define ALL_SET_MOTORS 0x23
-#define ALL_GET_MOTORS 0xA3
 
 
 #endif /* PENGUINPI_H_ */
