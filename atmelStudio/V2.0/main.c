@@ -345,7 +345,6 @@ void debugmessage(const char *fmt, ...)
 //#################################################################################################
 
 void init_structs(void){
-	
 	vdiv.scale 				= 16.018497;//mV per div
     vdiv.channel = 6;
 	csense.scale 			= 3.2226562;//mA per div
