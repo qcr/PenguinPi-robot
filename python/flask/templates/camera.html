@@ -16,77 +16,90 @@
 <form action="" method="post" id="camera">
   <table>
     <tr>
-      <td>Rotation</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.rotation">Rotation</a></td>
       <td>
           <select name="rotation">
-              {{ Option('0', rotation) }}
-              {{ Option('90', rotation) }}
-              {{ Option('180', rotation) }}
-              {{ Option('270', rotation) }}
+              {{ Option(0,   rotation) }}
+              {{ Option(90,  rotation) }}
+              {{ Option(180, rotation) }}
+              {{ Option(270, rotation) }}
         </select>
       </td>
     </tr>
+
     <tr>
-      <td>White balance mode</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode">White balance mode</a></td>
       <td>
           <select name="awb_mode">
-              {{ Option('off', awb_mode) }}
-              {{ Option('auto', awb_mode) }}
-              {{ Option('sunlight', awb_mode) }}
-              {{ Option('cloudy', awb_mode) }}
-              {{ Option('shade', awb_mode) }}
-              {{ Option('tungsten', awb_mode) }}
-              {{ Option('fluorescent', awb_mode) }}
+              {{ Option('off',          awb_mode) }}
+              {{ Option('auto',         awb_mode) }}
+              {{ Option('sunlight',     awb_mode) }}
+              {{ Option('cloudy',       awb_mode) }}
+              {{ Option('shade',        awb_mode) }}
+              {{ Option('tungsten',     awb_mode) }}
+              {{ Option('fluorescent',  awb_mode) }}
               {{ Option('incandescent', awb_mode) }}
-              {{ Option('flash', awb_mode) }}
-              {{ Option('horizon', awb_mode) }}
+              {{ Option('flash',        awb_mode) }}
+              {{ Option('horizon',      awb_mode) }}
         </select>
       </td>
     </tr>
+
     <tr>
-      <td>Meter mode</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.meter_mode">Meter mode</a></td>
       <td>
-          <select name="exposure">
+          <select name="meter_mode">
               {{ Option('average', meter_mode) }}
-              {{ Option('spot', meter_mode) }}
+              {{ Option('spot',    meter_mode) }}
               {{ Option('backlit', meter_mode) }}
-              {{ Option('matrix', meter_mode) }}
+              {{ Option('matrix',  meter_mode) }}
         </select>
       </td>
     </tr>
+
     <tr>
-      <td>Dynamic range</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.drc_strength">Dynamic range compression</a></td>
       <td>
-        <select name="exposure">
-              {{ Option('off', exposure_mode) }}
-              {{ Option('low', exposure_mode) }}
-              {{ Option('medium', exposure_mode) }}
-              {{ Option('high', exposure_mode) }}
+        <select name="drc_strength">
+              {{ Option('off',    drc_strength) }}
+              {{ Option('low',    drc_strength) }}
+              {{ Option('medium', drc_strength) }}
+              {{ Option('high',   drc_strength) }}
         </select>
       </td>
     </tr>
+
     <tr>
-        <td>ISO</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.iso">ISO</a></td>
         <td><input type="text" value="{{ iso }}" name="iso" /></td>
     </tr>
     <tr>
-        <td>Brightness</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.brightness">Brightness</a></td>
         <td><input type="text" value="{{ brightness }}" name="brightness" /></td>
     </tr>
     <tr>
-        <td>Exposure speed</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.exposure_speed">Exposure speed</a></td>
         <td><input type="text" value="{{ exposure_speed }}" name="exposure_speed" /></td>
     </tr>
     <tr>
-        <td>Shutter speed</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.shutter_speed">Shutter speed</a></td>
         <td><input type="text" value="{{ shutter_speed}}" name="shutter_speed" /></td>
     </tr>
     <tr>
-        <td>Zoom</td>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.zoom" title="(xstart, ystart, width, height) in range [0,1]">Zoom</a></td>
         <td><input type="text" value="{{ zoom }}" name="zoom" /></td>
     </tr>
+    <tr>
+        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.start_preview" title="show camera image on HDMI port">Preview</a></td>
+        <td>
+            <select name="preview">
+              {{ Option('off', preview) }}
+              {{ Option('on',  preview) }}
+            </select>
+        </td>
+    </tr>
   </table>
-        <input type="submit" name="refresh" value="Refresh" />
+  <input type="submit" name="refresh" value="Update" />
 </form>
 
  #endblock
