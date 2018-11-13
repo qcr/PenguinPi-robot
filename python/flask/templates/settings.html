@@ -1,0 +1,82 @@
+#extends 'base.html'
+
+# macro OnOff(value,label,var)
+#  if var == value
+    <option value="{{ value }}" selected>{{ label|capitalize }}</option>
+#  else
+    <option value="{{ value }}">{{ label|capitalize }}</option>
+#  endif
+# endmacro 
+
+#block content
+
+<h1>PenguinPi settings</h1>
+<form action="" method="post" id="settings">
+  <table>
+    <tr>
+        <td>Kvp</td>
+        <td><input type="text" value="{{ kvp }}" name="kvp" /></td>
+    </tr>
+    <tr>
+        <td>Kvi</td>
+        <td><input type="text" value="{{ kvi }}" name="kvi" /></td>
+    </tr>
+    <tr>
+        <td>ADC pole</td>
+        <td><input type="text" value="{{ adcpole|float(4) }}" name="adcpole" /></td>
+    </tr>
+    <tr>
+           <td colspan="2"><hr/></td>
+    </tr>
+    <tr>
+        <td>LED 2</td>
+        <td>
+            <select name="led2">
+              {{ OnOff(0, 'off', led2) }}
+              {{ OnOff(1, 'on',  led2) }}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>LED 3</td>
+        <td>
+            <select name="led3">
+              {{ OnOff(0, 'off', led3) }}
+              {{ OnOff(1, 'on',  led3) }}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>LED 4</td>
+        <td>
+            <select name="led4">
+              {{ OnOff(0, 'off', led4) }}
+              {{ OnOff(1, 'on',  led4) }}
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+           <td colspan="2"><hr/></td>
+    </tr>
+    <tr>
+           <td colspan="2">HAT</td>
+    </tr>
+    <tr>
+        <td>LED array</td>
+        <td><input type="text" value="{{ led|hex(4) }}" name="led" /></td>
+    </tr>
+    <tr>
+        <td>DIP switch</td>
+        <td>{{ dip|hex(2) }}</td>
+    </tr>
+    <tr>
+        <td>User button</td>
+        <td>{{ button }}</td>
+    </tr>
+
+  </table>
+        <input type="submit" name="refresh" value="Update" />
+</form>
+
+#endblock
