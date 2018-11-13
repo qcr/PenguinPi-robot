@@ -42,7 +42,7 @@ static void datagram_print(uint8_t *datagram, char *label);
 static void parseMotorOp		( uint8_t *datagram, Motor *motor);
 static void parseLEDOp			( uint8_t *datagram, LED *led);
 static void parseADCOp			( uint8_t *datagram, AnalogIn *adc);
-static void parseAllOp			( uint8_t *datagram);
+static void parseMultiOp			( uint8_t *datagram, Motor *left, Motor *right);
 //static void parseServoOp		( uint8_t *datagram, Servo *servo);
 //void parseDisplayOp		( uint8_t *datagram, Display *display);
 //void parseButtonOp		( uint8_t *datagram, Button *btn);
@@ -84,35 +84,39 @@ void datagram_return(uint8_t *datagram, uint8_t type, ...)
 	switch(type) {
 		case 'C':
 		case 'c':
-			datagram[3] = va_arg(ap, int);  // uint8_t is promoted to int by ...
+            // 8-bit integer
+			PAYLOAD(0) = va_arg(ap, int);  // uint8_t is promoted to int by ...
 			paylen = 1;
             break;
 		case 'I':
 		case 'i': {
+            // 16-bit integer
             uint16_t val = va_arg(ap, uint16_t);
-			datagram[3] = (val >> 8);
-			datagram[4] = val & 0xFF;
+			PAYLOAD(0) = (val >> 8);
+			PAYLOAD(1) = val & 0xFF;
 			paylen = 2;
             break;
             }
 		case 'H':
 		case 'h': {
+            // 2 x 16-bit integers
             uint16_t val = va_arg(ap, uint16_t);
-			datagram[3] = (val >> 8);
-			datagram[4] = val & 0xFF;
+			PAYLOAD(0) = (val >> 8);
+			PAYLOAD(1) = val & 0xFF;
 
             val = va_arg(ap, uint16_t);
-			datagram[5] = val >> 8;
-			datagram[6] = val & 0xFF;
+			PAYLOAD(2) = val >> 8;
+			PAYLOAD(3) = val & 0xFF;
 			paylen = 4;
             break;
             }
 		case 'f': {
+            // 32-bit single precision float
             union { float f; uint8_t c[4]; } fc;
 
             fc.f = (float) va_arg(ap, double);  // float is promoted to double by ...
 			for(uint8_t i = 0; i < 4; i++)
-				datagram[3+i] = fc.c[3-i];//avr stores as little endian
+				PAYLOAD(i) = fc.c[3-i];//avr stores as little endian
 			paylen = 4;
             break;
             }
@@ -186,6 +190,15 @@ static void datagram_parse( uint8_t *datagram ){
 		case AD_LED_B:
 			parseLEDOp(datagram, &leds[BLUE]);
             break;
+		case AD_LED_2:
+			parseLEDOp(datagram, &leds[Y2]);
+            break;
+		case AD_LED_3:
+			parseLEDOp(datagram, &leds[Y3]);
+            break;
+		case AD_LED_4:
+			parseLEDOp(datagram, &leds[Y4]);
+            break;
 #ifdef notdef
 		case AD_DISPLAY_A:
 			parseDisplayOp(datagram, &displayA);
@@ -197,8 +210,8 @@ static void datagram_parse( uint8_t *datagram ){
 		case AD_ADC_C:
 			parseADCOp(datagram, &csense);
             break;
-		case AD_ALL:
-			parseAllOp(datagram);
+		case AD_MULTI:
+			parseMultiOp(datagram, &motorL, &motorR);
             break;
 		default: {
             uint8_t status;
@@ -239,17 +252,17 @@ static void parseMotorOp	( uint8_t *datagram, Motor *motor ){
 
 	switch(datagram[2]) {
 		//SETTERS
-		case MOTOR_SET_SPEED:
-            datagram_validate(datagram, 2, "MOTOR_SET_SPEED");
-            motor->speed_dmd = (datagram[3]<<8) | datagram[4];
+		case MOTOR_SET_VEL:
+            datagram_validate(datagram, 2, "MOTOR_SET_VEL");
+            motor->velocity_dmd = PAYLOAD16(0);
             break;
 		case MOTOR_SET_KVP:
             datagram_validate(datagram, 2, "MOTOR_SET_KVP");
-            motor->Kvp = (datagram[3]<<8) | datagram[4];
+            motor->Kvp = PAYLOAD16(0);
             break;
 		case MOTOR_SET_KVI:
             datagram_validate(datagram, 2, "MOTOR_SET_KVI");
-            motor->Kvi = (datagram[3]<<8) | datagram[4];
+            motor->Kvi = PAYLOAD16(0);
             break;
         case MOTOR_SET_ENC_ZERO:
             datagram_validate(datagram, 0, "MOTOR_SET_ENC_ZERO");
@@ -276,9 +289,9 @@ static void parseMotorOp	( uint8_t *datagram, Motor *motor ){
             break;
 		
 		//GETTERS
-		case MOTOR_GET_SPEED:
-            datagram_validate(datagram, 0, "MOTOR_GET_SPEED");
-			datagram_return(datagram, 'i', motor->speed_dmd);
+		case MOTOR_GET_VEL:
+            datagram_validate(datagram, 0, "MOTOR_GET_VEL");
+			datagram_return(datagram, 'i', motor->velocity_dmd);
             break;	
 		case MOTOR_GET_KVP:
             datagram_validate(datagram, 0, "MOTOR_GET_KVP");
@@ -312,17 +325,64 @@ static void parseMotorOp	( uint8_t *datagram, Motor *motor ){
 	}
 }
 
+static void parseMultiOp ( uint8_t *datagram, Motor *motorL, Motor *motorR ){
+
+	switch(datagram[2]) {
+		//SETTERS
+		case MULTI_SET_VEL:
+            datagram_validate(datagram, 2, "MULTI_SET_VEL");
+            motorR->velocity_dmd = (int8_t) PAYLOAD(0);
+            motorL->velocity_dmd = (int8_t) PAYLOAD(1);
+            break;
+
+        case MULTI_GET_ENC:
+            datagram_validate(datagram, 0, "MULTI_GET_ENC");
+			datagram_return(datagram, 'h', motorL->position, motorR->position);
+            break;
+
+        case MULTI_SET_VEL_GET_ENC:
+            datagram_validate(datagram, 2, "MULTI_SET_VEL_GET_ENC");
+            motorR->velocity_dmd = (int8_t) PAYLOAD(0);
+            motorL->velocity_dmd = (int8_t) PAYLOAD(1);
+			datagram_return(datagram, 'h', motorL->position, motorR->position);
+            break;
+
+		case MULTI_ALL_STOP:
+            datagram_validate(datagram, 0, "MULTI_ALL_STOP");
+			motorR->velocity_dmd = 0;
+			motorL->velocity_dmd = 0;
+            break;
+
+		case MULTI_CLEAR_DATA:
+            datagram_validate(datagram, 0, "MULTI_CLEAR_DATA");
+            motorR->velocity_dmd = 0;
+            motorL->velocity_dmd = 0;
+            ATOMIC_BLOCK(ATOMIC_FORCEON) {
+                motorL->position = 0;
+                motorL->position_prev = 0;
+                motorR->position = 0;
+                motorR->position_prev = 0;
+            }
+            break;
+		
+		default:
+			errmessage("bad Multi opcode %d", datagram[2]);
+            longjmp(bad_datagram, 2);
+            break;
+    }
+}
+
 static void parseLEDOp( uint8_t *datagram, LED *led )
 {
 	switch(datagram[2]) {
 		//SETTERS
 		case LED_SET_STATE:
             datagram_validate(datagram, 1, "LED_SET_STATE");
-            led->state = datagram[3];
+            led->state = PAYLOAD(0);
             break;
 		case LED_SET_COUNT:
             datagram_validate(datagram, 1, "LED_SET_COUNT");
-            led->count = datagram[3];
+            led->count = PAYLOAD(0);
             led->state = 1;
             break;
 
@@ -345,7 +405,12 @@ static void parseADCOp( uint8_t *datagram, AnalogIn *adc )
 		//SETTERS
 		case ADC_SET_SCALE:
             datagram_validate(datagram, 4, "ADC_SET_SCALE");
-            adc->scale = char2float(&datagram[3]);
+            adc->scale = char2float(&PAYLOAD(0));
+            break;
+
+		case ADC_SET_POLE:
+            datagram_validate(datagram, 4, "ADC_SET_POLE");
+            adc->alpha = char2float(&PAYLOAD(0));
             break;
 		
 		//GETTERS
@@ -353,10 +418,17 @@ static void parseADCOp( uint8_t *datagram, AnalogIn *adc )
             datagram_validate(datagram, 0, "ADC_GET_SCALE");
 			datagram_return(datagram, 'f', adc->scale);
             break;
+
+		case ADC_GET_POLE:
+            datagram_validate(datagram, 0, "ADC_GET_POLE");
+			datagram_return(datagram, 'f', adc->alpha);
+            break;
+
 		case ADC_GET_VALUE:
             datagram_validate(datagram, 0, "ADC_GET_VALUE");
 			datagram_return(datagram, 'i', adc->value);
             break;
+
 		case ADC_GET_SMOOTH:
             datagram_validate(datagram, 0, "ADC_GET_SMOOTH");
 			datagram_return(datagram, 'f', adc->smooth);
@@ -364,50 +436,6 @@ static void parseADCOp( uint8_t *datagram, AnalogIn *adc )
 		
 		default:
 			errmessage("bad ADC opcode %d", datagram[2]);
-            longjmp(bad_datagram, 2);
-            break;
-	}
-}
-
-static void parseAllOp( uint8_t *datagram )
-{
-	switch(datagram[2]){
-        case ALL_GET_ENC_SET_SPEED:
-            datagram_validate(datagram, 2, "ALL_GET_ENC_SET_SPEED");
-            motorR.speed_dmd = (int8_t) datagram[3];
-            motorL.speed_dmd = (int8_t) datagram[4];
-			datagram_return(datagram, 'h', motorL.position, motorR.position);
-            break;
-        case ALL_GET_DIP:
-            datagram_validate(datagram, 0, "ALL_GET_DIP");
-			datagram_return(datagram, 'c', (uint8_t) hat_DIP);
-            break;
-        case ALL_GET_BUTTON:
-            datagram_validate(datagram, 0, "ALL_GET_BUTTON");
-			datagram_return(datagram, 'c', hat_user_button);
-            hat_user_button = 0;
-            break;
-		case ALL_STOP:
-            datagram_validate(datagram, 0, "ALL_STOP");
-			motorR.speed_dmd = 0;
-			motorL.speed_dmd = 0;
-			
-			// FIXME hat_oled.show_option = OLED_SHUTDOWN;
-            break;
-		case ALL_CLEAR_DATA:
-            datagram_validate(datagram, 0, "ALL_CLEAR_DATA");
-            motorR.speed_dmd = 0;
-            motorL.speed_dmd = 0;
-            ATOMIC_BLOCK(ATOMIC_FORCEON) {
-                motorL.position = 0;
-                motorL.position_prev = 0;
-                motorR.position = 0;
-                motorR.position_prev = 0;
-            }
-            break;
-		
-		default:
-			errmessage("bad ALL opcode %d", datagram[2]);
             longjmp(bad_datagram, 2);
             break;
 	}

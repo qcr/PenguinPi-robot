@@ -14,6 +14,10 @@ void datagram_return(uint8_t *datagram, uint8_t type, ...);
 #define DGRAM_MAX_LENGTH 10 	//bytes
 #define BAUD  115200
 
+#define PAYLOAD(k) (datagram[3+k])
+#define PAYLOAD16(k) PAYLOAD(k)<<8 | PAYLOAD(k+1)
+
+
 extern uint8_t   	datagram_last[];  // previous datagram
 
 void datagram_init();
@@ -23,6 +27,8 @@ enum _addresses {
     AD_MOTORS =		0x10,
     AD_MOTOR_R,
     AD_MOTOR_L,
+
+    AD_MULTI,
             
     AD_SERVOS =		0x20,
     AD_SERVO_A,
@@ -41,26 +47,35 @@ enum _addresses {
     AD_ADC_C,
     AD_OLED =       0x50,
 
-    AD_ALL =		0x60
+    AD_HAT =		0x60
 };
 
 //device opcodes
 //MOTOR
 
 enum _motor {
-    MOTOR_SET_SPEED = 1,
+    MOTOR_SET_VEL = 1,
     MOTOR_SET_KVP,
     MOTOR_SET_KVI,
     MOTOR_SET_ENC_ZERO,
     MOTOR_SET_ENC_MODE,
     MOTOR_SET_CONTROL_MODE,
 
-    MOTOR_GET_SPEED = 0x81,
+    MOTOR_GET_VEL = 0x81,
     MOTOR_GET_ENC,
     MOTOR_GET_KVP,
     MOTOR_GET_KVI,
     MOTOR_GET_ENC_MODE,
     MOTOR_GET_CONTROL_MODE
+};
+
+// Multi motor object
+enum _multi {
+    MULTI_SET_VEL = 1,
+    MULTI_ALL_STOP,
+    MULTI_CLEAR_DATA,
+    MULTI_GET_ENC = 0x81,
+    MULTI_SET_VEL_GET_ENC
 };
 
 //LED
@@ -69,11 +84,6 @@ enum _led {
     LED_SET_COUNT,
 
     LED_GET_STATE = 0x81
-};
-
-enum _oled {
-    OLED_SET_IP_ETH = 0x10,
-    OLED_SET_IP_WLAN
 };
 
 //ADC
@@ -87,14 +97,15 @@ enum _adc {
     ADC_GET_SMOOTH
 };
 
-//GLOBAL
-enum _all {
-    ALL_STOP = 0x0F,
-    ALL_CLEAR_DATA,
-    ALL_RESET,
-    ALL_GET_DIP = 0xA0,
-    ALL_GET_BUTTON,
-    ALL_GET_ENC_SET_SPEED
+//HAT
+enum _hat {
+    HAT_SET_IP_ETH = 0x10,
+    HAT_SET_IP_WLAN,
+    HAT_SET_SCREEN,
+    HAT_SET_LEDARRAY,
+    HAT_GET_DIP = 0xA0,
+    HAT_GET_BUTTON,
+    HAT_GET_LEDARRAY
 };
 
 //SERVO
