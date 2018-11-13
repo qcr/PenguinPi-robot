@@ -16,8 +16,13 @@ void io_analog_filter_step(AnalogIn *chan, uint16_t value)
     // convert to physical unit
     chan->value = value * chan->scale;
     
-    // apply first-order digital filter
-    chan->smooth = chan->alpha * chan->smooth + (1.0 - chan->alpha) * chan->value;
+    if (chan->initialized == 0) {
+        chan->initialized = 1;
+        chan->smooth = chan->value;
+    } else 
+        // apply first-order digital filter
+        chan->smooth = chan->alpha * chan->smooth 
+                     + (1.0 - chan->alpha) * chan->value;
 }
 
 void io_init(void)

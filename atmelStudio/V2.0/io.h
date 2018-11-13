@@ -39,8 +39,9 @@ typedef struct {
 	float 				value;
     float               smooth;
 	float 				scale;
-    float               alpha;
+    float               alpha;      // z-domain pole
     uint8_t             channel;
+    uint8_t             initialized;
 } AnalogIn;
 
 struct Battery {
@@ -109,5 +110,9 @@ void io_init(void);
 //Control Defines
 #define SERVO_PWM_RANGE_MIN 1500
 #define SERVO_PWM_RANGE_MAX 3000
+
+//Vcc reference voltage with external cap on AREF
+#define ADC_REF (0<<REFS1)|(1<<REFS0) 
+
 
 #endif 
