@@ -27,7 +27,7 @@ BIG_ENDIAN = True #NETWORK BYTE ORDER
 
 DGRAM_MAX_LENGTH = 10 #bytes
 
-CRC_8_POLY = 0xAE
+CRC_8_POLY = 0x97
 
 debug_comms = False
 debug_comms = True
@@ -47,14 +47,21 @@ class UART(object):
     def __init__(self, port='/dev/serial0', baud=115200):
 
         try:
-            self.ser = serial.Serial(   port = port,
-                                        baudrate = baud,
-                                        parity = serial.PARITY_NONE,
-                                        stopbits = serial.STOPBITS_ONE,
-                                        bytesize = serial.EIGHTBITS,
-                                        exclusive = True,
-                                        timeout = 1
-            )
+            args = {
+                    "port" :     port,
+                    "baudrate" : baud,
+                    "parity" :   serial.PARITY_NONE,
+                    "stopbits" : serial.STOPBITS_ONE,
+                    "bytesize" : serial.EIGHTBITS,
+                    "timeout" :  1
+                    };
+
+            # use the exclusice flag if its supported (3.3 onwards)
+            v = [int(x) for x in serial.__version__.split('.')]
+            if v[0]+v[1]/10 >= 3.3:
+                    args["exclusive"] = True
+
+            self.ser = serial.Serial( **args)
         except serial.serialutil.SerialException:
             # somebody else has the port open, give up now
             logging.critical("can't acquire exclusive access to communications port", file=sys.stderr)
@@ -321,26 +328,6 @@ def extract_payload(bin, address, opcode, paytype):
         print("address/opcode mismatch:", bin, " expected ", [address,opcode], datagram2str(bin))
         return None
 
-def get_dip():
-    '''Read the DIP switches.  
-       Switch 1 is the high-order bit.`
-       ON means 1.
-    '''
-    dip = send_datagram('AD_ALL', 'ALL_GET_DIP', rxtype='uint8') & 0xff
-    return dip
-
-def motor_setget(speedL, speedR):
-    # send the motor speeds to Atmel
-    encoders = send_datagram('AD_ALL', 'ALL_GET_ENC_SET_SPEED', [speedL,speedR], 'int8[2]', rxtype='uint16[2]')
-
-    return encoders
-
-def stop_all():
-    send_datagram('AD_ALL', 'ALL_STOP')
-
-def clear_data():
-    send_datagram('AD_ALL', 'ALL_CLEAR_DATA')
-
 ### --- Device Classes --- ###
 '''
 Motor Object
@@ -364,32 +351,26 @@ class Motor(object):
         self.gainD = 0
 
 #SETTERS
-    def set_speed(self, speed):
-        self.speedDPS = speed
-        send_datagram(self.address, 'MOTOR_SET_SPEED', speed, 'int16')
-
-    #not implmented on the micro controler
-    def set_degrees(self, degrees):
-        self.degrees = degrees
-        send_datagram(self.address, 'MOTOR_SET_DEGREES', degrees, 'int16')
+    def set_velocity(self, velocity):
+        self.velocity = velocity
+        send_datagram(self.address, 'MOTOR_SET_VEL', velocity, 'int16')
 
     def set_encoder_mode(self, mode):
         self.encoderMode = mode
         send_datagram(self.address, 'MOTOR_SET_ENC_MODE', mode, 'uint8')
 
-    #works with set_degrees not implmented on the microcontroler
-    def set_PID(self, kP=0, kI=0, kD=0):
-        self.gainP = kP
-        self.gainI = kI
-        self.gainD = kD
-        send_datagram(self.address, 'MOTOR_SET_GAIN_P', kP, 'float')
-        send_datagram(self.address, 'MOTOR_SET_GAIN_I', kI, 'float')
-        send_datagram(self.address, 'MOTOR_SET_GAIN_D', kD, 'float')
+    def set_kvp(self, kvp):
+        self.Kvp = kvp
+        send_datagram(self.address, 'MOTOR_SET_KVP', kvp, 'int16')
+
+    def set_kvi(self, kvi):
+        self.Kvi = kvi
+        send_datagram(self.address, 'MOTOR_SET_KVI', kvi, 'int16')
 
 #GETTERS
-    def get_speed(self):
-        self.speed = send_datagram(self.address, 'MOTOR_GET_SPEED', rxtype='int16')
-        return self.speed
+    def get_velocity(self):
+        self.velocity = send_datagram(self.address, 'MOTOR_GET_VEL', rxtype='int16')
+        return self.velocity
 
     def get_encoder(self):
         self.encoder = send_datagram(self.address, 'MOTOR_GET_ENC', rxtype='int16')
@@ -397,26 +378,47 @@ class Motor(object):
 
     def get_encoder_mode(self):
         self.encoderMode = send_datagram(self.address, 'MOTOR_GET_ENC_MODE', rxtype='uint8')
-        return self.encoderMode
+    def get_kvp(self):
+        self.kvp = send_datagram(self.address, 'MOTOR_GET_KVP', rxtype='int16')
+        return self.kvp
 
-    def get_PID(self):
-        kP=kI=kD = -1
-
-        kP = send_datagram(self.address, 'MOTOR_GET_GAIN_P', rxtype='float')
-        self.gainP = kP
-
-        kI = send_datagram(self.address, 'MOTOR_GET_GAIN_I', rxtype='float')
-        self.gainI = kI
-
-        kD = send_datagram(self.address, 'MOTOR_GET_GAIN_D', rxtype='float')
-        self.gainD = kD
-
-        return kP, kI, kD
+    def get_kvi(self):
+        self.kvi = send_datagram(self.address, 'MOTOR_GET_KVI', rxtype='int16')
+        return self.kvi
 
     def get_all(self):
-        self.get_speed()
+        self.get_velocity()
         self.get_encoder()
         self.get_encoder_mode()
+
+'''Multi Object
+    Access both motors at once
+'''
+
+class Multi(object):
+    def __init__(self, address):
+        self.address = address;
+
+    def set_velocity(velocity):
+        send_datagram(self.address, 'MULTI_SET_VEL', velocity, 'int8[2]')
+        self.velocity = velocity
+
+    def get_encoders():
+        encoders = send_datagram(self.address, 'MULTI_GET_ENC', rxtype='uint16[2]')
+        self.encoders = encoders;
+        return encoders
+
+    def setget_velocity_encoders(velocity):
+        encoders = send_datagram(self.address, 'MULTI_SET_SPEED_GET_ENC', velocity, 'int8[2]', rxtype='uint16[2]')
+        self.encoders = encoders;
+        return encoders
+
+    def stop_all():
+        send_datagram(self.address, 'MULTI_ALL_STOP')
+
+    def clear_data():
+        send_datagram(self.address, 'MULTI_CLEAR_DATA')
+
 
 '''
 Servo Object
@@ -620,44 +622,77 @@ class AnalogIn(object):
         self.scale = scale
         send_datagram(self.address, 'ADC_SET_SCALE', scale, 'float')
 
+    def set_pole(self, pole):
+        self.pole = pole
+        send_datagram(self.address, 'ADC_SET_POLE', pole, 'float')
+
 #GETTERS
     def get_scale(self):
         self.scale = send_datagram(self.address, 'ADC_GET_SCALE', rxtype='float')
         return self.scale
 
     def get_value(self):
-        self.value = send_datagram(self.address, 'ADC_GET_VALUE', rxtype='uint16')
+        self.value = send_datagram(self.address, 'ADC_GET_VALUE', rxtype='float')
         return self.value
 
     def get_smooth(self):
         self.smooth = send_datagram(self.address, 'ADC_GET_SMOOTH', rxtype='float')
         return self.smooth
 
+    def get_pole(self):
+        self.pole = send_datagram(self.address, 'ADC_GET_POLE', rxtype='float')
+        return self.pole
+
     def get_all(self):
         self.get_scale()
         self.get_value()
         self.get_smooth()
 		
-		
 '''
-OLED Object
-    used to set registers in the AVR to show information on the OLED
+HAT Object
+    interface with the custom hat board
 '''
-class OLED(object):
-
+class Hat(object):
     def __init__(self, address):
         self.address = address
         self.ip_eth   = 0
         self.ip_wlan  = 0
-		
+
 #SETTERS
+    def set_screen(self, screen):
+        send_datagram(self.address, 'HAT_SET_SCREEN', screen, 'uint8')
+
+    def set_ledarray(self, ledarray):
+        send_datagram(self.address, 'HAT_SET_LEDARRAY', ledarray, 'uint16')
+
     def set_ip_eth( self, ipaddr ):
-        octets = [int(x) for x in ipaddr.split('.')]
-        print(octets)
-        send_datagram(self.address, 'OLED_SET_IP_ETH', octets, 'uint8[4]')
+        if isinstance(ipaddr,list):
+            octets = ipaddr
+        else:
+            octets = [int(x) for x in ipaddr.split('.')]
+        send_datagram(self.address, 'HAT_SET_IP_ETH', octets, 'uint8[4]')
 
     def set_ip_wlan( self, ipaddr ):
-        octets = [int(x) for x in ipaddr.split('.')]
-        send_datagram(self.address, 'OLED_SET_IP_WLAN', octets, 'uint8[4]')
+        if isinstance(ipaddr,list):
+            octets = ipaddr
+        else:
+            octets = [int(x) for x in ipaddr.split('.')]
+        send_datagram(self.address, 'HAT_SET_IP_WLAN', octets, 'uint8[4]')
+
+#GETTERS
+    def get_dip(self):
+        '''Read the DIP switches.  
+           Switch 1 is the high-order bit.`
+           ON means 1.
+        '''
+        dip = send_datagram(self.address, 'HAT_GET_DIP', rxtype='uint8') & 0xff
+        return dip
+
+    def get_button(self):
+        return send_datagram(self.address, 'HAT_GET_BUTTON', rxtype='uint8') & 0xff
+
+    def get_ledarray(self):
+        return send_datagram(self.address, 'HAT_GET_LEDARRAY', rxtype='uint16')
+
 
 logging.basicConfig(format='%(asctime)s %(levelname)s  %(message)s', level=logging.INFO)
