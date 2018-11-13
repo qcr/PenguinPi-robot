@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 import sys
 import pickle
@@ -11,7 +12,7 @@ enumdict = {}
 
 enumdef = re.compile(r'''
         \s*
-        (?P<symb>[A-Z_]+)   # enum symbol
+        (?P<symb>[A-Z_][A-Z0-9_]*)   # enum symbol
         \s*
         (=\s*
             (?P<val>(0x[0-9a-fA-F]+)|([0-9]+))  # hex or decimal constant
@@ -48,6 +49,8 @@ with defines:
 
         enumdict[m.group('symb')] = val
 
-print(enumdict)
+for sym in sorted(enumdict.keys()):
+    print(sym)
+
 with open('atmel-symbols.pickle', 'wb') as file:
     pickle.Pickler(file).dump(enumdict)
