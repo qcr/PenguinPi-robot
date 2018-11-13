@@ -4,7 +4,7 @@
  * NOTES
  * ========
  *
- * Motor, set_power() invokes MOTOR_SET_SPEED_DPS which sets motor->dir and motor->setSpeedDPS
+ * Motor, set_power() invokes MOTOR_SET_velocity_dPS which sets motor->dir and motor->setSpeedDPS
  * set_degrees() invokes MOTOR_SET_DEGREES which sets motor->setDegrees which is the PID setpoint
  *
  * LED usage:
@@ -39,7 +39,15 @@
 #include "motor.h"
 #include "timer.h"
 
+// parameters
 #define ERRMSGLEN   80
+
+#define BATTERY_WARNING  7000
+#define BATTERY_SHUTDOWN  6500
+
+const uint8_t   control_interval = 20; // ms
+const uint8_t   adc_interval = 10; // ms
+const uint8_t   oled_interval = 200; // ms
 
 
 // global variables
@@ -50,34 +58,25 @@ AnalogIn 	vdiv;
 AnalogIn 	csense;
 Performance performance;
 
-#define ADC_REF (0<<REFS1)|(1<<REFS0) //Vcc reference voltage with external cap on AREF
+uint8_t    pid_on = 3;  // PID control is on
 
-// forward defines
-void test_leds();
-
-//Display 	displayA;	//remove when parsing logic changed
-
-
-//PID FLAG
-uint8_t    pid_on = 3;
-
-// PID TIMER
-// system wide flags
 volatile uint8_t  oled_update_now = 0;
 volatile uint8_t  second_now = 0;
 volatile uint32_t seconds_counter;  // wraps every 18 hours
 
 uint8_t  low_voltage = 0;
 
-//#################################################################################################
+
+// forward defines
+void test_leds();
+
+
+
+//######################################################################
 //
 // ISRs
 //
-//#################################################################################################
-
-const uint8_t   control_interval = 20; // ms
-const uint8_t   adc_interval = 10; // ms
-const uint8_t   oled_interval = 200; // ms
+//######################################################################
 
 
 // initialize the counters so they are not in sync
@@ -259,7 +258,7 @@ main(void)
             }
 
             if (vdiv.smooth < battery.mvolts_shutdown)
-                hat_lowvolts();
+                hat_shutdown();
 		}
 
         // Update the hat
@@ -267,8 +266,8 @@ main(void)
 		
         if (pid_on == 0) {
             // no velocity control, command PWM directly
-            OCR0A = mapRanges( abs(motorR.speed_dmd), 0, 100, 0, 255 );
-            OCR0B = mapRanges( abs(motorL.speed_dmd), 0, 100, 0, 255 );
+            OCR0A = mapRanges( abs(motorR.velocity_dmd), 0, 100, 0, 255 );
+            OCR0B = mapRanges( abs(motorL.velocity_dmd), 0, 100, 0, 255 );
             
             // Set motor driver polarities
             if (motorR.command >= 0)
@@ -347,12 +346,14 @@ void debugmessage(const char *fmt, ...)
 void init_structs(void){
 	vdiv.scale 				= 16.018497;//mV per div
     vdiv.channel = 6;
+    vdiv.alpha = 0.95;
 	csense.scale 			= 3.2226562;//mA per div
     csense.channel = 7;
+    csense.alpha = 0.95;
 	
-	battery.mvolts_warning 			= 7000;  // millivolts
+	battery.mvolts_warning = BATTERY_WARNING;
     battery.warning = 0;
-    battery.mvolts_shutdown            = 6500;  // millivolts
+    battery.mvolts_shutdown = BATTERY_SHUTDOWN;
 	
     for (uint8_t i=0; i<NLEDS; i++) {
         leds[i].state = 0;
