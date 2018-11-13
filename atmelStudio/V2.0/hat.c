@@ -48,6 +48,7 @@ typedef struct _hat_s {
 	uint8_t				dir;				// Set bit to 1 if direction of bit needs to be an output
 	uint8_t				int_07;				// Set bit to a 1 if interrupt enabled on HAT07
 	uint8_t				has_oled;			// Set bit to a 1 if the I2C OLED is on the hat
+    uint16_t             ledarray;        // the blue LED array
 } Hat_s;
 
 typedef struct {
@@ -144,8 +145,8 @@ hat_update(volatile uint8_t *oled_refresh)
                         break;
                     case 1 : 	//Button S2 has been pressed -- ALL STOP
                         // stop all motors
-                        motorR.speed_dmd	=   0;
-                        motorL.speed_dmd	=   0;
+                        motorR.velocity_dmd	=   0;
+                        motorL.velocity_dmd	=   0;
                         break;
                     case 2 : 	//Button S3 has been pressed
                         // the function of this button depends on the screen state
@@ -159,8 +160,8 @@ hat_update(volatile uint8_t *oled_refresh)
                             };
                             break;
                         case OLED_PID:
-                            motorR.speed_dmd	=  30;
-                            motorL.speed_dmd	= -30;
+                            motorR.velocity_dmd	=  30;
+                            motorL.velocity_dmd	= -30;
                             break;
                         case OLED_ERROR:
                             memset((void *)hat_oled.err_msg, 0, 3*OLED_LINELEN);
@@ -196,26 +197,61 @@ hat_update(volatile uint8_t *oled_refresh)
 uint8_t
 hat_datagram(uint8_t *datagram)
 {
-	switch( datagram[1] ){
-		case AD_OLED:
-			parseOLEDOp( datagram, &hat_oled );
+	if (datagram[1] != AD_HAT)
+        return 0;
 
-//DELETE		case AD_BTN_A:
-//DELETE			parseButtonOp(datagram, &buttonA);
-//DELETE		break;
-//DELETE		case AD_BTN_B:
-//DELETE			parseButtonOp(datagram, &buttonB);
-//DELETE		break;
-//DELETE		case AD_BTN_C:
-//DELETE			parseButtonOp(datagram, &buttonC);
-            return 1;   // datagram was processed
-        default:
-            return 0;   // no datagram processed here
-    }
+	switch( datagram[2] ){
+        // SETTERS
+        case HAT_SET_SCREEN:
+            datagram_validate(datagram, 1, "HAT_SET_IP_ETH");
+            hat_oled.show_option = PAYLOAD(0);
+            break;
+
+        case HAT_SET_IP_ETH:
+            datagram_validate(datagram, 4, "HAT_SET_IP_ETH");
+            for (uint8_t i=0; i<4; i++)
+                hat_oled.eth[i] = PAYLOAD(i);
+            break;
+
+        case HAT_SET_IP_WLAN:
+            datagram_validate(datagram, 4, "HAT_SET_IP_WLAN");
+            for (uint8_t i=0; i<4; i++)
+                hat_oled.wlan[i] = PAYLOAD(i);
+            break;
+
+        case HAT_SET_LEDARRAY:
+            datagram_validate(datagram, 2, "HAT_SET_LEDARRAY");
+            hat_status.ledarray = PAYLOAD16(0);
+            i2cWritenBytes( (uint8_t *)&hat_status.ledarray, PCA6416A_0, 0x02, 2);		
+            break;
+            
+        // GETTERS
+        case HAT_GET_DIP:
+            datagram_validate(datagram, 0, "HAT_GET_DIP");
+			datagram_return(datagram, 'c', (uint8_t) hat_DIP);
+            break;
+
+        case HAT_GET_BUTTON:
+            datagram_validate(datagram, 0, "HAT_GET_BUTTON");
+			datagram_return(datagram, 'c', hat_user_button);
+            hat_user_button = 0;
+            break;
+
+        case HAT_GET_LEDARRAY:
+            datagram_validate(datagram, 0, "HAT_GET_LEDARRAY");
+			datagram_return(datagram, 'i', hat_status.ledarray);
+            break;
+
+		default:
+			errmessage("bad HAT opcode %d", datagram[2]);
+            return 0;
+            break;
+	}	
+    return 1;
 }
 
 void
-hat_lowvolts()
+hat_shutdown()
 {
     //display low battery warning on OLED
 	oled_clear_frame();	
@@ -233,26 +269,6 @@ hat_lowvolts()
         PORTB &= ~(1<<PB5);//pull the pin low
         _delay_ms(5000);
     }			
-}
-
-void parseOLEDOp	( uint8_t *datagram, Hat_oled *hat_oled ) {
-
-	switch( datagram[2] ){
-        case OLED_SET_IP_ETH:
-            datagram_validate(datagram, 4, "OLED_SET_IP_ETH");
-            for (uint8_t i=0; i<4; i++)
-                hat_oled->eth[i] = datagram[i+3];
-            break;
-        case OLED_SET_IP_WLAN:
-            datagram_validate(datagram, 4, "OLED_SET_IP_WLAN");
-            for (uint8_t i=0; i<4; i++)
-                hat_oled->wlan[i] = datagram[i+3];
-            break;
-		
-		default:
-			errmessage("bad OLED opcode %d", datagram[2]);
-            break;
-	}	
 }
 
 
@@ -431,11 +447,11 @@ void oled_screen(Hat_oled *oled)
             oled_string( 0, 0, INVERSE, "VEL   L    R");
             oled_string( 15, 0, NORMAL, "On? %d", pid_on);
 
-            oled_string( 0, 1, NORMAL, "v*  %3d", motorR.speed_dmd);
+            oled_string( 0, 1, NORMAL, "v*  %3d", motorR.velocity_dmd);
             oled_string( 0, 2, NORMAL, "ve  %3d", motorR.verror);
             oled_string( 0, 3, NORMAL, "mc  %3d", motorR.command);
 
-            oled_string( 9, 1, NORMAL, "%3d", motorL.speed_dmd);
+            oled_string( 9, 1, NORMAL, "%3d", motorL.velocity_dmd);
             oled_string( 9, 2, NORMAL, "%3d", motorL.verror);
             oled_string( 9, 3, NORMAL, "%3d", motorL.command);
             oled_string( 15, 3, INVERSE, "test");
