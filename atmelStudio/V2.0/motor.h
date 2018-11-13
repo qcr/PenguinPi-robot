@@ -16,7 +16,7 @@ typedef struct {
  
     int16_t velocity;
 
-	int16_t 			speed_dmd;
+	int16_t 			velocity_dmd;
     uint8_t             controlMode;    // not quite sure what this might be for
 
     // GAINS

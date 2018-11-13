@@ -7,7 +7,7 @@ motor_velocity_control(Motor *motor)
     // Scale the set point to match the non-pid commands
     // motor control interval is 20ms
     // setpoint after scaling is the number of ticks per time step (of the loop)
-    int16_t vdmd = motor->speed_dmd/5;
+    int16_t vdmd = motor->velocity_dmd/5;
 
     // estimate velocity (encs/interval)
     motor->velocity = motor->position - motor->position_prev;
@@ -48,7 +48,7 @@ motor_init(Motor *motor, uint8_t id)
     motor->command = 0;
     motor->velocity = 0;
     motor->verror = 0;
-    motor->speed_dmd = 0;
+    motor->velocity_dmd = 0;
     motor->verrorsum = 0;
     motor->Kvp = 0;
     motor->Kvi = 1;
@@ -141,7 +141,7 @@ void fn_dbg_motor ( Motor *motor ){
 	uart_puts(fstring);
 	uart_puts(fstring);
 	uart_puts(fstring);			
-	sprintf(fstring, "  dps: %6d\n", motor->speed_dmd);
+	sprintf(fstring, "  dps: %6d\n", motor->velocity_dmd);
 	uart_puts(fstring);		
 	
 }
