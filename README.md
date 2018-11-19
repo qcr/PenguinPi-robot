@@ -96,13 +96,13 @@ network={
 	psk=bebb15a62c377f565f9e17280df9e2b9ece627325be93653c0b98556c9216f49
 }
 ```
- Change your password (the `psk=` line) in the `/etc/wpa_supplicant/wpa_supplicant.conf` file to the new value.
+Change your password (the `psk=` line) in the `/etc/wpa_supplicant/wpa_supplicant.conf` file to the new value.
 
 
- For the QUT enterprise network, hash your password with:
- ```shell
+For the QUT enterprise network, hash your password with:
+```shell
 echo -n 'YOUR_REAL_PASSWORD' | iconv -t utf16le | openssl md4
- ```
+```
 
 This will output 
 ```shell
