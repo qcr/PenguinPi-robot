@@ -57,8 +57,8 @@ class UART(object):
                     };
 
             # use the exclusice flag if its supported (3.3 onwards)
-            v = [int(x) for x in serial.__version__.split('.')]
-            if v[0]+v[1]/10 >= 3.3:
+            v = serial.__version__.split('.')[0:2]
+            if float('.'.join(v)) >= 3.3:
                     args["exclusive"] = True
 
             self.ser = serial.Serial( **args)
