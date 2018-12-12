@@ -51,6 +51,9 @@ theta = 0
 
 count = 0;
 
+# USER web page: home page
+#
+# a bit of everything
 @app.route('/', methods = ['POST', 'GET'])
 def home():
     if request.method == 'POST':
@@ -110,6 +113,8 @@ def home():
 sp1 = 0
 sp2 = 0
 
+# USER web page for speed control
+#
 # push stop (STOP, stop) 
 # push submit (Set, submit)
 # (Left, value)
@@ -133,6 +138,7 @@ def speed():
             mRight.set_velocity(sp2);
     return render_template('speed.html', speed_l=sp1, speed_r=sp2);
 
+# USER web page to control camera parameters
 @app.route('/camera', methods = ['POST', 'GET'])
 def camera():
 
@@ -188,6 +194,7 @@ def camera():
 
     return render_template('camera.html', **camera_state)
 
+# USER web page for various other settings
 @app.route('/settings', methods = ['POST', 'GET'])
 def settings():
 
@@ -222,7 +229,33 @@ def settings():
 
     return render_template('settings.html', **ppi_state)
 
-@app.route('/get/camera')
+#### RESTful web services ###
+
+from flask import jsonify
+
+class InvalidCommand(Exception):
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+@app.errorhandler(InvalidCommand)
+def handle_invalid_command(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    print('ERROR ', error)
+    return response
+
+@app.route('/camera/get')
 def picam():
     # Create a byte stream
     stream = io.BytesIO()
@@ -233,6 +266,8 @@ def picam():
 
     # don't use use_video_port=True, leads to random hanging
     camera.capture(stream, format='png')
+
+    # the use_video_port option causes random hangs of the operating system
     #camera.capture(stream, format='png', use_video_port=True, resize=(320,240))
 
     # Send the image over the connection
@@ -240,7 +275,182 @@ def picam():
 
     return send_file(stream, 'image/png')
 
-@app.route('/get/encoders')
+@app.route('/battery/get/voltage')
+def voltage():
+    return str( voltage.get_smooth() )
+
+@app.route('/battery/get/current')
+def current():
+    return str( current.get_smooth() )
+
+@app.route('/adc/get/value')
+def adcvalue():
+    try:
+        id = int(request.args.get('id'))
+        return str( adc[id].get_value() )
+    except:
+        raise InvalidCommand('Bad id')
+
+
+@app.route('/adc/get/smooth')
+def adcsmooth():
+    try:
+        id = int(request.args.get('id'))
+        return str( adc[id].get_smooth() )
+    except:
+        raise InvalidCommand('Bad id')
+
+## HAT related
+
+@app.route('/hat/dip/get')
+def dip():
+    return str( hat.get_dip() )
+
+@app.route('/hat/button/get')
+def button():
+    return str( hat.get_button() )
+
+@app.route('/hat/ledarray/set')
+def ledarray():
+    try:
+        value = int(request.args.get('value'),0)
+        hat.set_ledarray(value)
+    except:
+        raise InvalidCommand('Bad value')
+    return ''
+
+@app.route('/hat/screen/set')
+def hatscreen():
+    try:
+        value = int(request.args.get('value'))
+    except:
+        raise InvalidCommand('Bad screen value')
+    hat.set_screen(value)
+    return ''
+
+## LED related
+
+@app.route('/led/set/state')
+def ledsetstate():
+    try:
+        id = int(request.args.get('id'),0)
+    except:
+        raise InvalidCommand('Bad led id')
+    if id < 2 or id > 4:
+        raise InvalidCommand('Bad led id')
+
+    try:
+        value = int(request.args.get('value'))
+    except:
+        raise InvalidCommand('Bad led value')
+
+    if value not in [0, 1]:
+        raise InvalidCommand('Bad led value')
+    leds[id].set_state(value)
+    return ''
+
+@app.route('/led/set/count')
+def ledsetcount():
+    try:
+        id = int(request.args.get('id'),0)
+    except:
+        raise InvalidCommand('Bad led id')
+    print(id)
+    if id < 2 or id > 4:
+        raise InvalidCommand('Bad led id')
+    print(id)
+
+    try:
+        value = int(request.args.get('value'))
+    except:
+        raise InvalidCommand('Bad led value')
+
+    if value > 255:
+        raise InvalidCommand('Bad led value')
+    leds[id].set_count(value)
+    return ''
+
+## motor related
+
+@app.route('/motor/get/encoder')
+def encget():
+    try:
+        id = int(request.args.get('id'))
+    except:
+        raise InvalidCommand('Bad motor id')
+    if id not in [0,1]:
+        raise InvalidCommand('Bad motor id')
+    return str(motors[id].get_encoder())
+
+@app.route('/motor/get/kvi')
+def kviget():
+    try:
+        id = int(request.args.get('id'))
+    except:
+        raise InvalidCommand('Bad motor id')
+    if id not in [0,1]:
+        raise InvalidCommand('Bad motor id')
+    return str(motors[id].get_kvi())
+
+@app.route('/motor/get/kvp')
+def kvpget():
+    try:
+        id = int(request.args.get('id'))
+    except:
+        raise InvalidCommand('Bad motor id')
+    if id not in [0,1]:
+        raise InvalidCommand('Bad motor id')
+    return str(motors[id].get_kvp())
+
+@app.route('/motor/set/velocity')
+def motorsetvel():
+    try:
+        id = int(request.args.get('id'))
+    except:
+        raise InvalidCommand('Bad motor id')
+    if id not in [0,1]:
+        raise InvalidCommand('Bad motor id')
+    try:
+        value = int(request.args.get('value'))
+    except:
+        raise InvalidCommand('Bad motor value')
+    motors[id].set_velocity(value)
+    return ''
+    
+@app.route('/motor/set/kvp')
+def motorsetkvp():
+    try:
+        id = int(request.args.get('id'))
+    except:
+        raise InvalidCommand('Bad motor id')
+    if id not in [0,1]:
+        raise InvalidCommand('Bad motor id')
+    try:
+        value = int(request.args.get('value'))
+    except:
+        raise InvalidCommand('Bad motor value')
+    motors[id].set_kvp(value)
+    return ''
+    
+@app.route('/motor/set/kvi')
+def motorsetkvi():
+    try:
+        id = int(request.args.get('id'))
+    except:
+        raise InvalidCommand('Bad motor id')
+    if id not in [0,1]:
+        raise InvalidCommand('Bad motor id')
+    try:
+        value = int(request.args.get('value'))
+    except:
+        raise InvalidCommand('Bad motor value')
+    motors[id].set_kvi(value)
+    return ''
+    
+
+## robot related (both motors together)
+
+@app.route('/robot/get/encoder')
 def getencoders():
     global mLeft, mRight
     ea = mLeft.get_encoder()
@@ -248,11 +458,7 @@ def getencoders():
     log.debug('--- get encoders: %d %d\n' % (ea,eb));
     return "%d,%d" % (ea, eb)
 
-@app.route('/get/voltage')
-def voltage():
-    return str( voltage.get_value() )
-
-@app.route('/set/motors')
+@app.route('/robot/set/velocity')
 def motors():
 
     # TODO: the trajectory could be done by the pose estimation thread
@@ -265,14 +471,13 @@ def motors():
             yield start + i * step
             i += 1
 
-
     # set motor speed using GET side effects
-    speeds = request.args.get('speed')
+    speeds = request.args.get('value')
     if speeds:
         try:
             speeds = [int(x) for x in speeds.split(',')]
         except:
-            return "bad speeds given"
+            raise InvalidCommand('invalid speeds')
 
         duration = request.args.get('time')
         if duration:
@@ -282,7 +487,7 @@ def motors():
             try:
                 Ttotal = float(duration)
             except:
-                return "bad time given"
+                raise InvalidCommand('bad time given')
 
             # get optional acceleration
             accel = request.args.get('accel')
@@ -290,12 +495,12 @@ def motors():
                 try:
                     Taccel = float(accel)
                 except:
-                    return "bad acceleration given"
+                    raise InvalidCommand('bad acceleration given')
             else:
                 Taccel = 0.0
 
             if Ttotal <= Taccel*2:
-                return "acceleration time too long"
+                raise InvalidCommand('acceleration time too long')
 
             if Taccel > 0:
                     for t in xfrange(0, Taccel, dt):
@@ -320,17 +525,7 @@ def motors():
 
     return robot_state_json()
 
-
-@app.route('/reset')
-def reset():
-    global x, y, theta
-
-    x = 0
-    y = 0
-    theta = 0
-    return robot_state_json()
-
-@app.route('/stop')
+@app.route('/robot/stop')
 def stop():
     stop_all()
     return robot_state_json()
@@ -560,6 +755,9 @@ if __name__ == '__main__':
 
     mLeft.get_all()
     mRight.get_all()
+
+    leds = [None, None, led2, led3, led4]
+    motors = [mLeft, mRight]
 
     # stash the PenguinPi state, used by the /settings page
     ppi_state = {
