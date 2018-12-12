@@ -88,6 +88,15 @@ void io_init(void);
 #define MOTOR_B_ENC_1 PA2
 #define MOTOR_B_ENC_2 PA3
 
+#define HAT6    PA4
+#define HAT1    PA5
+#define HAT2    PB2
+#define HAT5    PD2
+#define HAT3    PD3
+#define HAT4    PD4
+#define HAT0    PC6
+#define HAT7    PC7
+
 //DELETE	#define SERVO_A PD0
 //DELETE	#define SERVO_B PD1
 

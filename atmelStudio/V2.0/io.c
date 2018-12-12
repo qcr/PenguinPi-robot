@@ -53,7 +53,7 @@ void io_init(void)
 	//Encoders
 		//V1 was PC2, PC3, PE0, PE1 ... PCINT 10,11,24,25
 		//V2  is PA0, PA1, PA2, PA3 ... PCINT 0:3
-		DDRA 	&= ~((1<<MOTOR_A_ENC_1)|(1<<MOTOR_A_ENC_2)|(1<<MOTOR_B_ENC_1)|(1<<MOTOR_B_ENC_2));		//Direction to INPUT
+		DDRA 	&= ~((1<<MOTOR_A_ENC_1)|(1<<MOTOR_A_ENC_2)|(1<<MOTOR_B_ENC_1)|(1<<MOTOR_B_ENC_2)|(1<<HAT6));		//Direction to INPUT
 		PORTA 	|=   (1<<MOTOR_A_ENC_1)|(1<<MOTOR_A_ENC_2)|(1<<MOTOR_B_ENC_1)|(1<<MOTOR_B_ENC_2);		//Enable internal PULLUPs
 		PCMSK0   =   (1<<PCINT0)|(1<<PCINT1)|(1<<PCINT2)|(1<<PCINT3);									//Enable Pin Change Mask
 		PCICR 	|=   (1<<PCIE0);																		//Enable interrupt on pin change
