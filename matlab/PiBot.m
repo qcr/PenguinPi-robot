@@ -9,19 +9,31 @@
 % char          info in human readable form
 % display       display information about object
 %
+% Robot control:
+%
 % setVelocity   set motor velocity
 % stop          stop all motors
+% getCurrent    get battery voltage
+% getVoltage    get battery current
+% resetEncoder  zero the hardware encoder counters
+% resetPose     zero the onboard pose estimator
+%
+% Camera:
 %
 % getImage      get image from camera
 %
-% setLed        set LEDS 2-4
-% pulseLed      pulse LEDS 2-4
-% setLedArray   set the blue LED array
+% User interface:
+%
+% setLED        set LEDS 2-4
+% pulseLED      pulse LEDS 2-4
+% setLEDArray   set the blue LED array
 % getButton     get user button status
 % getDIP        get value of DIP switch
+% printfOLEDn   display text to OLED display
+% setScreen     select OLED screen
+
 %
-% getCurrent    get battery voltage
-% getVoltage    get battery current
+% (c) 2019 Peter Corke
 
     
 classdef PiBot < handle
@@ -38,12 +50,16 @@ classdef PiBot < handle
             % PB = PiBot(IP) creates an object used for communications with the robot
             % connected via the IP address which is given as a string in dot format.
             %
+            % eg. pb = PiBot('10.0.0.20')
+            %
             % Notes::
             % - This is a handle class object.
             %
             % See also PiBot.setVelocity, PiBot.getImage.
             
-            obj.url = string(address) + ":8080";
+            v = regexp(address, '^\d+\.\d+\.\d+\.\d+$');
+            assert(~isempty(v) && v==1, 'IP address is invalid, can only can contain digits and dots')
+            obj.url = "http://" + string(address) + ":8080";
         end
         
         function s = char(obj)
@@ -71,17 +87,28 @@ classdef PiBot < handle
         function stat = setVelocity(obj, varargin)
             %PiBot.setVelocity  Set the speeds of the motors
             %
-            % PB.setVelocity(Vleft, Vright) sets the velocities of the two motors to the values
-            % Vleft and Vright respectively.
+            % PB.setVelocity(Vleft, Vright) sets the velocities of the two motors to
+            % the values Vleft and Vright respectively.
             %
-            % PB.setVelocity(VEL, T) sets the speeds of the two motors to the values
-            % in the 2-vector VEL = [Vleft, Vright] and the motion runs for T seconds.
+            % PB.setVelocity(VEL, T) sets the speeds of the two motors to the values in
+            % the 2-vector VEL = [Vleft, Vright] and the motion runs for T seconds.
             % Timing is done locally on the RPi.
             %
-            % PB.setVelocity(VEL, T, ACC) as above but the speed ramps up and down at the end
-            % of the motion over ACC seconds.  The constant velocity part of the motion lasts for
-            % T-ACC seconds, the total motion time is T+2*ACC seconds.  This profile moves the same
-            % distance as a rectangular speed profile over T seconds.
+            % PB.setVelocity(VEL, T, ACC) as above but the speed ramps up and down at
+            % the end of the motion over ACC seconds.  The constant velocity part of
+            % the motion lasts for T-ACC seconds, the total motion time is T+2*ACC
+            % seconds.  This profile moves the same distance as a rectangular speed
+            % profile over T seconds.
+            %
+            % STAT = PB.setVelocity(...) as for any of the above call formats, but
+            % returns a structure that contains the encoder count and dead-reckoned
+            % pose at the end of the motion.
+            %
+            % Notes::
+            % - The motor speed is 10V encoders per second.
+            % - If T is given the total distance travelled is 10V*T encoders.
+            % - If ACC is also given the total distance travelled is 10V*(T-ACC)
+            %   encoders.
             %
             % See also PiBot.stop.
             
@@ -127,11 +154,13 @@ classdef PiBot < handle
             end
         end
         
-        
         function stat = stop(obj)
             %PiBot.stop  Stop all motors
             %
             % PB.stop() stops all motors.
+            %
+            % STAT = PB.stop() as above but returns a structure that contains the encoder 
+            % count and dead-reckoned pose at the end of the motion.
             %
             % See also PiBot.setVelocity.
             
@@ -141,13 +170,22 @@ classdef PiBot < handle
             end
         end
         
-        function reset(obj)
-            %PiBot.reset  Stop all motors and reset encoders
+        function resetEncoder(obj)
+            %PiBot.resetEncoder  Stop all motors and reset encoders
             %
-            % PB.reset() stop all motors and reset encoders.
+            % PB.resetEncoder() stop all motors and reset encoders.
             %
             % See also PiBot.stop, PiBot.setMotorSpeed.
-            
+            webread(obj.url+"/robot/hw/reset");
+        end
+
+        function resetPose(obj)
+            %PiBot.resetPose  Reset the onboard pose estimator
+            %
+            % PB.resetPose() will zero the estimated state of the onboard
+            % pose estimator, x=y=theta=0
+            %
+            webread(obj.url+"/robot/pose/reset");
         end
         
         function v = getVoltage(obj)
@@ -168,10 +206,10 @@ classdef PiBot < handle
             c = str2num( webread(obj.url+"/battery/get/current") ) /1000.0;
         end
         
-        function setLed(obj, i, s)
-            %PiBot.setLed  Set yellow LED
+        function setLED(obj, i, s)
+            %PiBot.setLED  Set yellow LED
             %
-            % PB.setLed(num, state) sets the yellow LED num to the state.
+            % PB.setLED(num, state) sets the yellow LED num to the state.
             %
             % Notes::
             % - LED number must in the range 2 to 4.
@@ -184,10 +222,10 @@ classdef PiBot < handle
             webread(obj.url+"/led/set/state", "id", i, "value", s);
         end
         
-        function pulseLed(obj, i, duration)
-            %PiBot.pulseLed  Pulse yellow LED
+        function pulseLED(obj, i, duration)
+            %PiBot.pulseLED  Pulse yellow LED
             %
-            % PB.pulseLed(num, time) pulses the yellow LED num to the on state
+            % PB.pulseLED(num, time) pulses the yellow LED num to the on state
             % for time (in seconds).
             %
             % Notes::
@@ -222,17 +260,52 @@ classdef PiBot < handle
         end
         
         
-        function setLedArray(obj, v)
-            %PiBot.setLedArray sets the blue LED array
+        function setLEDArray(obj, v)
+            %PiBot.setLEDArray sets the blue LED array
             %
-            % PB.setLedArray(v) sets the blue LED array on top of the robot to the
+            % PB.setLEDArray(v) sets the blue LED array on top of the robot to the
             % 16-bit integer value v.  Each bit represents an LED in the array.  The
             % LSB is the bottom right LED and number increasing upwards and to the
             % left.
             
             webread(obj.url+"/hat/ledarray/set", "value", v);
         end
+
+        function printfOLED(obj, varargin)
+            %PiBot.printfOLED write formatted text to OLED display
+            %
+            % PB.printfOLED(fmt, ...) has printf() like semantics and writes a 
+            % string to the user text screen of the OLED display.  The display is 
+            % only 21x4 characters.  New strings are written at the bottom and 
+            % scroll up.  Long lines are wrapped.  Line feed (\n) starts a new 
+            % line and form feed (\f) clears the screen.  The display is automatically
+            % to the USER TEXT screen.
+            %
+            % eg.
+            %       pb.printfOLED('hello world!\n');
+            %       pb.printfOLED('the answer is %d\n', 42)
         
+            webread(obj.url+"/hat/screen/print", "value", sprintf(varargin{:}));
+        end
+
+        function setScreen(obj, S)
+            %PiBot.setScreen select screen on OLED
+            %
+            % PB.setScreen(i) sets the OLED display to show information screen S. The OLED
+            % display can show a number of information screens and they can be selected
+            % using the leftmost button or this method where S is:
+            %
+            %  0   IP address
+            %  1   user text, see printfOLED
+            %  2   battery level
+            %  3   encoder values
+            %  4   controller values
+            %  5   system statistics
+            %  6   control loop timing data
+            %  7   error messages
+            %  8   last datagram received
+            webread(obj.url+"/hat/screen/set", "value", screen);
+        end
         
         function img = getImage(obj)
             %PiBot.getImagee  Get image from camera

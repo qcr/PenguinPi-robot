@@ -38,6 +38,7 @@ app = Flask(__name__)
 x = 0
 y = 0
 theta = 0
+pose_reset = False
 
 # http://flask.pocoo.org/docs/1.0/quickstart/
 
@@ -328,6 +329,13 @@ def hatscreen():
     hat.set_screen(value)
     return ''
 
+@app.route('/hat/screen/print')
+def hatscreenprint():
+    s = request.args.get('value')
+    ppi.puts(s)
+    hat.set_screen(1)
+    return ''
+
 ## LED related
 
 @app.route('/led/set/state')
@@ -499,22 +507,26 @@ def motors():
             else:
                 Taccel = 0.0
 
+            # motion time must be greater than twice the acceleration time
             if Ttotal <= Taccel*2:
                 raise InvalidCommand('acceleration time too long')
 
             if Taccel > 0:
-                    for t in xfrange(0, Taccel, dt):
-                            setspeed(speeds, t/Taccel);
-                            time.sleep(dt)
-
-            for t in xfrange(0, Ttotal-Taccel, dt):
-                    setspeed(speeds, 1.0)
+                # do the initial speed ramp up
+                for t in xfrange(0, Taccel, dt):
+                    setspeed(speeds, t/Taccel);
                     time.sleep(dt)
 
+            for t in xfrange(0, Ttotal-Taccel, dt):
+                setspeed(speeds, 1.0)
+                time.sleep(dt)
+
             if Taccel > 0:
-                    for t in xfrange(0, Taccel, dt):
-                            setspeed(speeds, (Taccel-t)/Taccel);
-                            time.sleep(dt)
+                # do the final speed ramp down
+                for t in xfrange(0, Taccel, dt):
+                    setspeed(speeds, (Taccel-t)/Taccel);
+                    time.sleep(dt)
+
             # all stop
             stop_all()
 
@@ -529,6 +541,18 @@ def motors():
 def stop():
     stop_all()
     return robot_state_json()
+
+@app.route('/robot/hw/reset')
+def reset_hw():
+    multi.clear_data()
+    return ''
+
+@app.route('/robot/pose/reset')
+def reset_pose():
+    global pose_reset
+
+    pose_reset = True
+    return ''
 
 """
 " Filters to be used in templates
@@ -643,7 +667,7 @@ def IPUpdateThread():
 " Pose estimation thread
 """
 def PoseEstimatorThread():
-    global x, y, theta
+    global x, y, theta, pose_reset
 
     log.info('Pose estimator thread launched, running at %.1f Hz' % args.pose_rate)
     dt = 1/args.pose_rate
@@ -664,7 +688,19 @@ def PoseEstimatorThread():
             d += 0x10000
         return d
 
+    # maximum possible encoder change
+    #  50Hz servo loop has maximum velocity of 20enc/interval
+    #  add a safety factor of 2
+    max_step = 50 / pose_estimator_rate * 20 * 2
+
     while True:
+        # check if there's a request to reset the pose estimate
+        if pose_reset:
+            x = 0
+            y = 0
+            theta = 0
+            pose_reset = False
+
         # read the encoders 
         new_left = mLeft.get_encoder()
         new_right = mRight.get_encoder()
@@ -677,6 +713,14 @@ def PoseEstimatorThread():
         # compute the difference since last sample and handle 16-bit wrapping
         dL = encoder_difference(new_left, left)
         dR = encoder_difference(new_right, right)
+
+        # handle case where user resets encoder on the PPI board
+        if abs(dL) > max_step:
+            dL = 0
+        if abs(dR) > max_step:
+            dR = 0
+
+        # stash the previous values
         left = new_left
         right = new_right
 
