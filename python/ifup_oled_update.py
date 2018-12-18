@@ -11,7 +11,7 @@ import penguinPi as ppi
 #initialise serial, and retrieve initial values from the Atmega
 ppi.init()
 
-oled = ppi.OLED( 'AD_OLED' )
+hat = ppi.Hat( 'AD_HAT' )
 
 #This works but fails if network not present ie split has no elements
 #ip_addr_eth0_str  = os.popen('ip addr show eth0').read().split("inet ")[1].split("/")[0]
@@ -35,5 +35,5 @@ else:
 print ( "ETH0 Address is ", ip_addr_eth0_str )
 print ( "WLAN0 Address is ", ip_addr_wlan0_str )
 
-oled.set_ip_eth ( ip_addr_eth0_str )
-oled.set_ip_wlan( ip_addr_wlan0_str )
+hat.set_ip_eth ( ip_addr_eth0_str )
+hat.set_ip_wlan( ip_addr_wlan0_str )
