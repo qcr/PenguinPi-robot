@@ -1,6 +1,6 @@
 
 BIN=main
-OBJS=main.o lib/uart.o lib/twimaster.o lib/PenguinPi.o
+OBJS=main.o datagram.o motor.o hat.o timer.o io.o lib/uart.o lib/twimaster.o 
 MCU=atmega644p
 
 CC=avr-gcc
@@ -18,7 +18,7 @@ ${BIN}.elf: ${OBJS}
 load: ${BIN}.hex
 	avrdude -v -c pi_isp -p ${MCU} -U flash:w:$<
 	
-clear_gpio:
+gpio24:
 	echo 24 > /sys/class/gpio/unexport
 	
 clean:
