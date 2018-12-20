@@ -65,6 +65,7 @@ volatile uint8_t  second_now = 0;
 volatile uint32_t seconds_counter;  // wraps every 18 hours
 
 uint8_t  low_voltage = 0;
+uint8_t  pishutdown_up = 0;
 
 
 // forward defines
@@ -250,7 +251,7 @@ main(void)
             io_analog_filter_step(&csense, adc[7]);
         }
 
-		if(vdiv.smooth < battery.mvolts_warning) {
+		if (vdiv.smooth < battery.mvolts_warning) {
             // battery volts are below warning level
             if (battery.warning == 0) {
                 battery.warning = 1;
@@ -258,8 +259,25 @@ main(void)
             }
 
             if (vdiv.smooth < battery.mvolts_shutdown)
-                hat_shutdown();
+                hat_shutdown(" LOW VOLTAGE SHUTDOWN ");
 		}
+
+        if ((PINB & (1<<PB7)) == 0)
+            LEDOff(Y4);
+        else
+            LEDOn(Y4);
+
+        // has the RPi acknowledged a shutdown request?
+        if ((PINB & (1<<PB7)) == 0) {
+            // GPIO11 is low
+            // EITHER shutdown daemon not running OR shutdown in progress
+            if (pishutdown_up)  // daemon was running, must be shutdown
+                hat_shutdown(" TURN RaspberryPI OFF SAFELY ");
+        } else {
+            // GPIO11 is high
+            // shutdown daemon is running
+            pishutdown_up = 1;
+        }
 
         // Update the hat
         hat_update(&oled_update_now);

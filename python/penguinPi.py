@@ -679,6 +679,13 @@ class Hat(object):
             octets = [int(x) for x in ipaddr.split('.')]
         send_datagram(self.address, 'HAT_SET_IP_WLAN', octets, 'uint8[4]')
 
+    def set_mac_wlan( self, mac ):
+        if isinstance(mac,list):
+            octets = mac
+        else:
+            octets = [int(x) for x in mac.split(':')]
+        send_datagram(self.address, 'HAT_SET_MAC_WLAN', octets, 'uint8[6]')
+
 #GETTERS
     def get_dip(self):
         '''Read the DIP switches.  
