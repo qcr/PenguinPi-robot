@@ -314,7 +314,7 @@ PB3/OC0A &&&& PWMA && \\
 PB4/OC0B &&&& PWMB && \\
 PB5 && shutdown request &&& MOSI\textdagger & GPIO10 \\
 PB6 &-&&&& MISO\textdagger & GPIO9\\
-PB7 &-&&&& SCLK\textdagger& GPIO11 \\ \hline\hline
+PB7 &-& shutdown ack&&& SCLK\textdagger& GPIO11 \\ \hline\hline
 PC0 &-&&&&SCL\textsuperscript{I2C}& GPIO3\textsuperscript{I2C}\\
 PC1 &-&&&& SDA\textsuperscript{I2C} & GPIO2\textsuperscript{I2C}  \\
 PC2 && LEDY0 &&&& \\
@@ -692,19 +692,23 @@ to the logging channel (stderr).
 \end{itemize}
 
 \subsection{Shutting down}
-The SDN button on the rear end of the PPI board initiates a shutdown process by setting GPIO22 to zero.
-TODO This signal  is monitored by a shutdown daemon python/??? and executes a \texttt{sudo shutdown now} command.
-The Raspberry Pi cannot actually be shutdown, the 
-shutdown command is effectively a synonym for reboot so power must be turned off once the ACT LED, see
-Figure \ref{fig:pi-leds} stops blinking.  The OLED
-display also indicates that a shutdown process has been initiated but it requires human timing to turn off the PPI power switch.
+A shutdown can be initiated by:
+\begin{enumerate}
+\item Pressing the SDN button on the rear end of the PPI board is pushed which directly sets GPIO22 to zero.
+\item The Atmel can initiate a shutdown (in the event of low batter) by setting GPIO10 to zero.
+\end{enumerate}
 
-Scrappy notes: GPIO10=PB5 is used by the PPI to request Raspberry Pi shutdown.
+A software daemon \texttt{python/GPIOSoftShutdown.py} monitors both GPIO lines and performs simple debouncing.  At startup it
+sets GPIO11 to one.
+When a shutdown request is detected the daemon:
+\begin{enumerate}
+\item sets GPIO11 to zero to inform the Atmel that a shutdown is requested.  The Atmel displays the message \texttt{"TURN RaspberryPI OFF SAFELY"}.
+\item executes a \texttt{sudo shutdown now} command to shutdown the RaspberryPi.  It will reboot almost straight away so wait until
+the disk activity has ceased (ACT LED, see Figure \ref{fig:pi-leds}, has stopped blinking) and then set the power switch to OFF.
+\end{enumerate}
 
-TODO DOES IT RAISE A LINE IN RETURN?
-
-Shutdown code uses GPIO11 and 22 as inputs, polled at 10Hz.  If GPIO11 == 0, from PPI, the Pi shutsdown, this doesn't work because should be GPIO10.
-If GPIO22 == 0, from hat button, the Pi shutsdown, this works.
+The Raspberry Pi cannot actually be shut down, the 
+shutdown command is effectively a synonym for reboot so power must be turned off once the ACT LED has stopped blinking.
 
 
 \subsection{Hat}
