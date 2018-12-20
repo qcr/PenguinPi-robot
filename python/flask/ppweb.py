@@ -588,6 +588,15 @@ def HeartBeatThread():
 
 def IPUpdateThread():
 
+    # magic code from https://stackoverflow.com/questions/7585435/best-way-to-convert-string-to-bytes-in-python-3
+    def getHwAddr(ifname):
+        ifname = "wlan0"
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname[:15], 'utf-8')))
+        return list(info[18:24])
+
+
     # magic code from http://code.activestate.com/recipes/439093-get-names-of-all-up-network-interfaces-linux-only/
     def all_interfaces():
         max_possible = 128  # arbitrary. raise if needed.
@@ -610,6 +619,7 @@ def IPUpdateThread():
     eth_ip = [];
     wlan_ip = [];
     while True:
+        # set the IP address
         for name,ip in all_interfaces():
             if name == 'eth0':
                 if ip != eth_ip:
@@ -621,6 +631,11 @@ def IPUpdateThread():
                     log.debug('wlan0 is %d.%d.%d.%d' % tuple(ip))
                     hat.set_ip_wlan(ip)
                     wlan_ip = ip
+
+        # set the MAC address
+        # do it every loop because wireless interface can be plugged in/out
+        mac = getHwAddr('wlan0')
+        hat.set_mac_wlan(mac)
 
         time.sleep(20)
 

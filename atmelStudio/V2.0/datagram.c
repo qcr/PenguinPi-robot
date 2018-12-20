@@ -141,7 +141,7 @@ static void datagram_parse( uint8_t *datagram ){
 
     // read and check the length
 	uint8_t dlen = serial_waitchar();
-    if(dlen >= DGRAM_MAX_LENGTH) {
+    if(dlen > DGRAM_MAX_LENGTH) {
         errmessage("Datagram too long %d", dlen);
         LED_DEBUG_R(250);
         return;

@@ -45,7 +45,6 @@ enum _addresses {
     AD_ADCS =       0x40,
     AD_ADC_V,
     AD_ADC_C,
-    AD_OLED =       0x50,
 
     AD_HAT =		0x60
 };
@@ -103,6 +102,7 @@ enum _hat {
     HAT_SET_IP_WLAN,
     HAT_SET_SCREEN,
     HAT_SET_LEDARRAY,
+    HAT_SET_MAC_WLAN,
     HAT_GET_DIP = 0xA0,
     HAT_GET_BUTTON,
     HAT_GET_LEDARRAY
