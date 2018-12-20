@@ -57,6 +57,7 @@ typedef struct {
 	//IP Addresses
 	uint8_t				eth[4];
 	uint8_t				wlan[4];
+	uint8_t				wmac[6];
 	
 	//Error messages
 	char				err_msg[3][OLED_LINELEN];
@@ -219,6 +220,12 @@ hat_datagram(uint8_t *datagram)
                 hat_oled.wlan[i] = PAYLOAD(i);
             break;
 
+        case HAT_SET_MAC_WLAN:
+            datagram_validate(datagram, 6, "HAT_SET_MAC_WLAN");
+            for (uint8_t i=0; i<6; i++)
+                hat_oled.wmac[i] = PAYLOAD(i);
+            break;
+
         case HAT_SET_LEDARRAY:
             datagram_validate(datagram, 2, "HAT_SET_LEDARRAY");
             hat_status.ledarray = PAYLOAD16(0);
@@ -251,11 +258,11 @@ hat_datagram(uint8_t *datagram)
 }
 
 void
-hat_shutdown()
+hat_shutdown(char *msg)
 {
-    //display low battery warning on OLED
+    //display shutdown message on OLED
 	oled_clear_frame();	
-    oled_string( 0, 1, INVERSE, " LOW VOLTAGE SHUTDOWN");
+    oled_string( 0, 1, INVERSE, msg);
     oled_write_frame_now();
     _delay_ms(2000);
 
@@ -269,6 +276,7 @@ hat_shutdown()
         PORTB &= ~(1<<PB5);//pull the pin low
         _delay_ms(5000);
     }			
+    // never return
 }
 
 
@@ -283,14 +291,11 @@ void hat_init( ) {
 	hat_status.has_oled			= 0;		//No OLED by default
 	
 	hat_oled.show_option	= OLED_IP_ADDR;	
-	hat_oled.eth[0] 		= 0;
-	hat_oled.eth[1] 		= 0;
-	hat_oled.eth[2] 		= 0;
-	hat_oled.eth[3] 		= 0;
-	hat_oled.wlan[0] 		= 0;
-	hat_oled.wlan[1] 		= 0;
-	hat_oled.wlan[2] 		= 0;
-	hat_oled.wlan[3] 		= 0;
+    for (uint8_t i=0; i<4; i++) 
+        hat_oled.wlan[i] = hat_oled.eth[i] = 0;
+    for (uint8_t i=0; i<6; i++) 
+        hat_oled.wmac[i] = 0;
+
 	uint8_t data_r[2] = {0, 0};
 	
 	//Config always on PCA6416A_1
@@ -503,6 +508,13 @@ void oled_screen(Hat_oled *oled)
                     hat_oled.wlan[1],
                     hat_oled.wlan[2],
                     hat_oled.wlan[3]);
+			oled_string( 0, 3, NORMAL, "wmac   %02x%02x%02x:%02x%02x%02x",
+                    hat_oled.wmac[0],
+                    hat_oled.wmac[1],
+                    hat_oled.wmac[2],
+                    hat_oled.wmac[3],
+                    hat_oled.wmac[4],
+                    hat_oled.wmac[5]);
 			break;
 
         case OLED_PERFORMANCE:
