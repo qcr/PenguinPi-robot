@@ -408,15 +408,15 @@ class Multi(object):
         self.encoders = encoders;
         return encoders
 
-    def setget_velocity_encoders(velocity):
+    def setget_velocity_encoders(self, velocity):
         encoders = send_datagram(self.address, 'MULTI_SET_SPEED_GET_ENC', velocity, 'int8[2]', rxtype='uint16[2]')
         self.encoders = encoders;
         return encoders
 
-    def stop_all():
+    def stop_all(self):
         send_datagram(self.address, 'MULTI_ALL_STOP')
 
-    def clear_data():
+    def clear_data(self):
         send_datagram(self.address, 'MULTI_CLEAR_DATA')
 
 
