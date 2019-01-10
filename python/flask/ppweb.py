@@ -329,6 +329,12 @@ def hatscreen():
     hat.set_screen(value)
     return ''
 
+@app.route('/hat/screen/print')
+def hatscreenprint():
+    s = request.args.get('value')
+    ppi.uart.ser.write(s.encode('utf-8'))
+    return ''
+
 ## LED related
 
 @app.route('/led/set/state')
