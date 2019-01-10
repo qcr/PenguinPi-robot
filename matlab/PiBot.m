@@ -22,6 +22,8 @@
 %
 % getCurrent    get battery voltage
 % getVoltage    get battery current
+%
+% (c) 2019 Peter Corke
 
     
 classdef PiBot < handle
@@ -83,6 +85,9 @@ classdef PiBot < handle
             % T-ACC seconds, the total motion time is T+2*ACC seconds.  This profile moves the same
             % distance as a rectangular speed profile over T seconds.
             %
+            % STAT = PB.setVelocity(...) as for any of the above call formats, but returns a structure
+            % that contains the encoder count and dead-reckoned pose at the end of the motion.
+            %
             % See also PiBot.stop.
             
             if length(varargin{1}) == 1
@@ -127,11 +132,13 @@ classdef PiBot < handle
             end
         end
         
-        
         function stat = stop(obj)
             %PiBot.stop  Stop all motors
             %
             % PB.stop() stops all motors.
+            %
+            % STAT = PB.stop() as above but returns a structure that contains the encoder 
+            % count and dead-reckoned pose at the end of the motion.
             %
             % See also PiBot.setVelocity.
             
