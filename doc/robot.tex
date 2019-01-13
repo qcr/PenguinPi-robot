@@ -1119,8 +1119,7 @@ Operation & URL & Query & Return \\\hline\hline
 Set velocity & \texttt{/robot/set} & \texttt{?vel=LEFT,RIGHT} & state \\
  &                      & \texttt{?time=DURATION}  & state\\
  &                      & \texttt{?acc=DURATION} & state \\
-Get state & \texttt{/robot/get/state} & & state \\
-Set state & \texttt{/robot/set?state=X,Y,TH} && \\ \hline
+Initialize state estimator & \texttt{/robot/pose/reset}   &  &\\
 Get image & \texttt{/robot/camera/get} & & image \\
  & &                  \texttt{?resolution=(WIDTH,HEIGHT)} & image \\
  &  &                 \texttt{?awb=AWB} & image\\\hline
@@ -1135,16 +1134,19 @@ If acceleration is specified, third argument, the speed ramps up linearly over t
 parameters which must be greater than twice the acceleration time.
 The displacement for each wheel is $V (T - T_a)$.
 
+This web API allows the robot to be controlled by a program written in any language that has a web or HTTP interface library.
+
 
 TODO: Commands to read the error log.  Command to write string to the OLED.
 
 \subsection{MATLAB API}
-The original MATLAB API used sockets to communicate with a Python-based server on the \rpi\ with a bespoke string-based protocol.
+
 By comparison accessing the web API from MATLAB is very easy
 \begin{Code}
-webread('http://10.0.0.1/set/motor', 'speed', [20 -30], 'time', 5)
+webread('http://10.0.0.1/robot/set', 'speed', [20 -30], 'time', 5)
 \end{Code}
-The \texttt{webread} function automatically converts numeric values to strings, and turns vectors into comma separated lists.
+The \texttt{webread} function automatically converts numeric values to strings,  turns vectors into comma separated lists and performs
+all neccessary character escaping.
 
 \fvset{formatcom=\color{blue},fontseries=c,fontfamily=courier,fontsize=\small}
 
@@ -1156,16 +1158,16 @@ which is passed a string with the robot's IP address.  This object has a number 
 
 \begin{tabular}{|l|p{3cm}|} \hline
 MATLAB command & Purpose \\ \hline\hline
-\var{stop()} & Stop all motors \\
-\var{state = setMotorVelocity(left, right)} & Velocities given as 2 arguments \\
-\var{state = setMotorVelocity([left right])} & Velocities given as 2-element vector \\
-\var{state = setMotorVelocity([left right], time)}& Specify total motion time\\
-\var{state = setMotorVelocity([left right], time, acc)} & Specify time and acceleration time\\ \hline
+\var{state = setMotorVelocity(vL, vR)} & Velocities given as 2 arguments \\
+\var{state = setMotorVelocity([vL vR])} & Velocities given as 2-element vector \\
+\var{state = setMotorVelocity([vL vR], time)}& Specify total motion time\\
+\var{state = setMotorVelocity([vL vR], time, acc)} & Specify time and acceleration time\\ 
+\var{stop()} & Stop all motors \\ \hline
 \var{img = getCameraImage()} & Get image from camera \\ \hline
 \var{setLED(led, state)} & Set LED (2-4) to logical value \\
 \var{pulseLED(led, time)} & Pulse LED (2-4) for integer milliseconds \\
 \var{n = getButtonCount()} & Get user button presses (and reset) \\
-\var{sendText(str)} & Send string to OLED display \\ \hline
+\var{printfOLED(str)} & Send text to OLED display \\ \hline
 \end{tabular}
 
 \var{state} is a structure that contains current encoder values and dead-reckoned robot configuration.  For example:
@@ -1253,8 +1255,8 @@ PPI Opcode &                         Python method &      Web call & Argument & 
 +MOTOR_SET_KVP+ & +set_kvp+ &   +/motor/set/kvp?value=V&id=N+          &  +int16+ & Set  velocity loop position gain   \\
 +MOTOR_SET_VEL+ & +set_velocity+ &  +/motor/set/velocity?value=V&id=N+  & +int8+ & Set  motor velocity setpoint \\ \hline
 +MULTI_ALL_STOP+ & +set_allstop+ & +/robot/stop+             & & Stop all motors \\
-+MULTI_CLEAR_DATA+ & &                                              & & Stop motors, zero encoders \\
-+MULTI_GET_ENC+ & +get_encoders+ &                 & +uint16[2]+ & Get both encoders \\
++MULTI_CLEAR_DATA+ & +clear_data+ &  +/robot/hw/reset+                         & & Stop motors, zero encoders \\
+ +MULTI_GET_ENC+ & +get_encoders+ &                 & +uint16[2]+ & Get both encoders \\
 +MULTI_SET_VEL+ & +set_velocity+ &                              & +int8[2]+ & Set both motor speeds \\
 +MULTI_SET_VEL_GET_ENC+ & +setget_velocity_encoders+ & +/robot/set/velocity?value=L,R&acc=A&time=T+  & +int8[2], uint16[2]+ & Set both motor speeds, get both encoders  \\ \hline
 +SERVO_GET_MAX_PWM+ & +get_PWM_range+ & & +int16+ & \\
@@ -1429,7 +1431,7 @@ See the git log for more details.  %Overall the code has reduced slightly from 2
 \item Network settings: \texttt{sudo vi /etc/network/interfaces}
 \item Check interfaces: \texttt{ip address show}
 \item Automatic process startup: \texttt{sudo crontab -e}
-\item Boot-time process start is handled by \texttt{/home/pi/.startup-servers.sh}
+\item Boot-time process start is handled by \texttt{/home/pi/.startup-servers.sh} which is invoked by root's crontab @reboot event.
 \item We disable the RPi builtin WiFi by a line in \texttt{/boot/config.txt}
 \begin{Code}
   dtoverlay=pi3-enable-wifi
