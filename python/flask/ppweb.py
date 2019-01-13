@@ -332,7 +332,8 @@ def hatscreen():
 @app.route('/hat/screen/print')
 def hatscreenprint():
     s = request.args.get('value')
-    ppi.uart.ser.write(s.encode('utf-8'))
+    ppi.puts(s)
+    hat.set_screen(1)
     return ''
 
 ## LED related
@@ -506,22 +507,26 @@ def motors():
             else:
                 Taccel = 0.0
 
+            # motion time must be greater than twice the acceleration time
             if Ttotal <= Taccel*2:
                 raise InvalidCommand('acceleration time too long')
 
             if Taccel > 0:
-                    for t in xfrange(0, Taccel, dt):
-                            setspeed(speeds, t/Taccel);
-                            time.sleep(dt)
-
-            for t in xfrange(0, Ttotal-Taccel, dt):
-                    setspeed(speeds, 1.0)
+                # do the initial speed ramp up
+                for t in xfrange(0, Taccel, dt):
+                    setspeed(speeds, t/Taccel);
                     time.sleep(dt)
 
+            for t in xfrange(0, Ttotal-Taccel, dt):
+                setspeed(speeds, 1.0)
+                time.sleep(dt)
+
             if Taccel > 0:
-                    for t in xfrange(0, Taccel, dt):
-                            setspeed(speeds, (Taccel-t)/Taccel);
-                            time.sleep(dt)
+                # do the final speed ramp down
+                for t in xfrange(0, Taccel, dt):
+                    setspeed(speeds, (Taccel-t)/Taccel);
+                    time.sleep(dt)
+
             # all stop
             stop_all()
 

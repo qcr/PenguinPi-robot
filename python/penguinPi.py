@@ -53,13 +53,9 @@ class UART(object):
                     "parity" :   serial.PARITY_NONE,
                     "stopbits" : serial.STOPBITS_ONE,
                     "bytesize" : serial.EIGHTBITS,
-                    "timeout" :  1
+                    "timeout" :  1,
+                    "exclusive" : True      # expect PySerial 3.3 or newer
                     };
-
-            # use the exclusice flag if its supported (3.3 onwards)
-            v = serial.__version__.split('.')[0:2]
-            if float('.'.join(v)) >= 3.3:
-                    args["exclusive"] = True
 
             self.ser = serial.Serial( **args)
         except serial.serialutil.SerialException:
@@ -110,7 +106,8 @@ class UART(object):
         dgram = (struct.pack('!B', STARTBYTE)) + dgram
         self.ser.write(dgram)
         #print(str(datetime.datetime.now())+": DGRAM: ad=0x%02x op=0x%02x" % (dgram[2], dgram[3]) )    ;
-
+    def puts(self, s):
+        self.ser.write(s.encode('utf-8'))
 
     def uart_recv(self):
         '''thread: receives command packets, and prints other messages
@@ -312,6 +309,12 @@ def send_datagram(address, opCode, payload=None, paytype='', rxtype=''):
             return result
         else:
             return
+
+def puts(s):
+    '''Send non-packet text to the PPI board
+    '''
+    with comms_mutex:
+        uart.puts(s)
 
 def extract_payload(bin, address, opcode, paytype):
     '''Extracts payload from the microcontroler
