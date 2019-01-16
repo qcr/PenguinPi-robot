@@ -35,7 +35,7 @@ angle = 0
 pose_lock = threading.RLock()
 shutdown_sig = False
 
-src_points = np.array([[537, 1], [85, 1],[72, 467], [569, 450]])
+src_points = np.array([[558, 6], [107, 5],[77, 473], [580,474]])
 dst_points = np.array([[0,0],[500,0],[500,500], [0,500]])
 h, status = cv2.findHomography(src_points, dst_points)
 
@@ -176,8 +176,8 @@ def ProcessImage(im1):
     eroded = mask
     sm = cv2.resize(eroded, (320,240))
     im2, robot_contours, hierarchy_rbt = cv2.findContours(eroded.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # cv2.imshow("contours", im2)
-    # cv2.waitKey()
+    cv2.imshow("im", eroded)
+    cv2.waitKey()
     conts = Contours()
     conts.get_contours(robot_contours)
     boxes = conts.list_boxes
@@ -241,7 +241,6 @@ def ProcessImage(im1):
         pose_lock.release()
 
         logging.debug("Pose: %8.3f %8.3f %8.2f",  x, y, angle)
-        
     else:
         logging.debug("Nothing found")
 
@@ -269,7 +268,7 @@ if __name__ == '__main__':
 
     img_counter = 0
     
-    bot_min = np.array([150,150,150])
+    bot_min = np.array([180,180,180])
     bot_max = np.array([255,255,255])
 
     camera = piVideoStream.PiVideoStream(
