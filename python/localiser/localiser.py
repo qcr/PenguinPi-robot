@@ -84,6 +84,41 @@ def poseget():
 """
 " Localizer thread
 """
+class Box:
+    def __init__(self):
+        self.x = None
+        self.y = None
+        self.w = None
+        self.h = None
+
+    def __init__(self, xx, yy, ww, hh):
+        self.x = xx
+        self.y = yy
+        self.w = ww
+        self.h = hh
+        self.cx = xx + (ww/2)
+        self.cy = yy + (hh/2)
+        # self.mx = mx
+        # self.my = my
+
+class Contours:
+    def __init__(self):
+        self.list_contours = []
+        self.list_boxes = []
+        self.dec = []
+    def get_contours(self, contours):
+        minimum_area = 5
+        # Find all contours
+        for contour in contours:
+            x,y,w,h = cv2.boundingRect(contour)
+            area = w * h
+            if area > minimum_area:
+                self.list_contours.append(contour)
+                self.list_boxes.append(Box(x,y,w,h))
+            else:
+                log.debug("Out of bounds")
+
+
 def LocalizerThread():
     global x, y, theta, grey
 
@@ -99,11 +134,93 @@ def LocalizerThread():
         # when an image is requested
         image_data = np.fromstring(stream.getvalue(), dtype=np.uint8)
         image = cv2.imdecode(image_data, 1)
-        grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         log.debug('process frame')
 
-        # do clever stuff here
+        src_points = np.array([[537, 1], [85, 1],[72, 467], [569, 450]])
+        dst_points = np.array([[0,0],[500,0],[500,500], [0,500]])
+        h, status = cv2.findHomography(src_points, dst_points)
+        num_iter = 10
+        kernel = np.ones((2,2), np.uint8)
+
+        img_counter = 0
+        
+        bot_min = np.array([150,150,150])
+        bot_max = np.array([255,255,255])
+        im1 = cv2.warpPerspective(image, h, (500,500))
+        mask = cv2.inRange(im1, bot_min, bot_max)
+        eroded = mask
+        sm = cv2.resize(eroded, (320,240))
+        im2, robot_contours, hierarchy_rbt = cv2.findContours(eroded.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        conts = Contours()
+        conts.get_contours(robot_contours)
+        boxes = conts.list_boxes
+        
+        
+        min_x = 100000
+        max_x = 0
+        min_y = 100000
+        max_y = 0
+
+        for box in boxes:
+            if box.cx < min_x:
+                min_x = box.cx
+
+            if box.cx > max_x:
+                max_x = box.cx
+
+            if box.cy < min_y:
+                min_y = box.cy
+
+            if box.cy > max_y:
+                max_y = box.cy
+
+
+        center_box = None
+
+        for box in boxes:
+            if box.cx < max_x and box.cx > min_x and box.cy < max_y and box.cy > min_y:
+                center_box = box
+        
+        if center_box:   
+            dists_boxes = []
+            for box2 in boxes:
+                if (center_box != box2):
+                    a = np.array([center_box.cx, center_box.cy])
+                    b = np.array([box2.cx, box2.cy])
+                    d = np.linalg.norm(a - b)
+                    # print(d)
+                    dist_box = (d, box2)
+                    dists_boxes.append(dist_box)
+
+            dists_boxes = sorted(dists_boxes, key=lambda x: x[0])
+                # print(dists_boxes)
+            closest_two = dists_boxes[0:2]
+            # print(closest_two)
+            mid_point_x = (closest_two[0][1].cx + closest_two[1][1].cx)/2
+            mid_point_y = (closest_two[0][1].cy + closest_two[1][1].cy)/2
+            # Update the pose values
+            pose_lock.acquire()
+
+
+            angle = np.arctan2(center_box.cy-mid_point_y, center_box.cx-mid_point_x)
+            angle = np.rad2deg(angle)
+            x = (center_box.cx / 500)*2
+            y = (center_box.cy / 500)*2
+
+
+
+            pose_lock.release()
+
+            log.debug("Pose: %8.3f %8.3f %8.2f",  x, y, angle)
+            
+        else:
+            log.debug("Nothing found")
+
+
+
+  # do clever stuff here
         #   if you want to create a cv2 image with overlayed graphics in it, I can make
         #   that appear in the /console view
 

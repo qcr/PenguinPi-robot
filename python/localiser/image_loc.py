@@ -35,8 +35,8 @@ angle = 0
 pose_lock = threading.RLock()
 shutdown_sig = False
 
-src_points = np.array([[148, 1], [600, 1], [124, 471], [627, 471]])
-dst_points = np.array([[0,0],[500,0],[0,500], [500,500]])
+src_points = np.array([[537, 1], [85, 1],[72, 467], [569, 450]])
+dst_points = np.array([[0,0],[500,0],[500,500], [0,500]])
 h, status = cv2.findHomography(src_points, dst_points)
 
 def StartServer():
@@ -136,15 +136,15 @@ class Box:
         self.w = None
         self.h = None
 
-    def __init__(self, xx, yy, ww, hh, mx, my):
+    def __init__(self, xx, yy, ww, hh):
         self.x = xx
         self.y = yy
         self.w = ww
         self.h = hh
         self.cx = xx + (ww/2)
         self.cy = yy + (hh/2)
-        self.mx = mx
-        self.my = my
+        # self.mx = mx
+        # self.my = my
 
 class Contours:
     def __init__(self):
@@ -152,20 +152,16 @@ class Contours:
         self.list_boxes = []
         self.dec = []
     def get_contours(self, contours):
-        minimum_area = 20
+        minimum_area = 5
         # Find all contours
         for contour in contours:
             x,y,w,h = cv2.boundingRect(contour)
             area = w * h
             if area > minimum_area:
-                if (x > 20 and x < 480) and (y > 20 and y < 480):
-                    self.list_contours.append(contour)
-                    M = cv2.moments(contour)
-                    mx = int(M['m10']/M['m00'])
-                    my = int(M['m01']/M['m00'])
-                    self.list_boxes.append(Box(x,y,w,h,mx,my))
-                else:
-                    logging.debug("Out of bounds")
+                self.list_contours.append(contour)
+                self.list_boxes.append(Box(x,y,w,h))
+            else:
+                logging.debug("Out of bounds")
 
 
 def ProcessImage(im1):
@@ -174,59 +170,78 @@ def ProcessImage(im1):
     global angle
 
     im1 = cv2.warpPerspective(im1, h, (500,500))
-    hsv = cv2.cvtColor(im1, cv2.COLOR_BGR2HSV)
-    mask_red = cv2.inRange(hsv, red_min, red_max)
-    mask_robot = cv2.inRange(hsv, bot_min, bot_max)
-    # cv2.imshow('Rob still smells', im1)
-    # cv2.waitKey(1)
-    dilated = cv2.dilate(mask_red, red_kernel, iterations = 5)
-    eroded = cv2.erode(dilated, red_kernel, iterations = 3)
-
-    robot_dilated = cv2.dilate(mask_robot, red_kernel, iterations = 5)
-    robot_eroded = cv2.erode(robot_dilated, red_kernel, iterations = 3)
-
-    im2, robot_contours, hierarchy_rbt = cv2.findContours(robot_eroded.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    im2, red_contours, hierarchy_rbt = cv2.findContours(eroded.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    if type(red_contours) != list:
-        red_contours = [red_contours]
-
+    mask = cv2.inRange(im1, bot_min, bot_max)
+    # dilated = cv2.dilate(mask, kernel, iterations = 1)
+    # eroded = cv2.erode(dilated, kernel, iterations = 1)
+    eroded = mask
+    sm = cv2.resize(eroded, (320,240))
+    im2, robot_contours, hierarchy_rbt = cv2.findContours(eroded.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # cv2.imshow("contours", im2)
+    # cv2.waitKey()
     conts = Contours()
     conts.get_contours(robot_contours)
     boxes = conts.list_boxes
+    
+    
+    min_x = 100000
+    max_x = 0
+    min_y = 100000
+    max_y = 0
 
-    red_conts = Contours()
-    red_conts.get_contours(red_contours)
-    red_boxes = red_conts.list_boxes
+    # checked = []
 
-    if len(boxes) > 0 and len(red_boxes) > 0:
-        for box in boxes:
-            cv2.rectangle(im1,(box.x,box.y),(box.x+box.w,box.y+box.h),(255,100,0),5)
+    for box in boxes:
+        if box.cx < min_x:
+            min_x = box.cx
 
-        for box in red_boxes:
-            cv2.rectangle(im1,(box.x,box.y),(box.x+box.w,box.y+box.h),(0,100,255),5)
-        robot = boxes[0]
-        usb = red_boxes[0]
+        if box.cx > max_x:
+            max_x = box.cx
 
+        if box.cy < min_y:
+            min_y = box.cy
+
+        if box.cy > max_y:
+            max_y = box.cy
+
+
+    center_box = None
+
+    for box in boxes:
+        if box.cx < max_x and box.cx > min_x and box.cy < max_y and box.cy > min_y:
+            center_box = box
+    
+    if center_box:   
+        dists_boxes = []
+        for box2 in boxes:
+            if (center_box != box2):
+                a = np.array([center_box.cx, center_box.cy])
+                b = np.array([box2.cx, box2.cy])
+                d = np.linalg.norm(a - b)
+                # print(d)
+                dist_box = (d, box2)
+                dists_boxes.append(dist_box)
+
+        dists_boxes = sorted(dists_boxes, key=lambda x: x[0])
+            # print(dists_boxes)
+        closest_two = dists_boxes[0:2]
+        # print(closest_two)
+        mid_point_x = (closest_two[0][1].cx + closest_two[1][1].cx)/2
+        mid_point_y = (closest_two[0][1].cy + closest_two[1][1].cy)/2
         # Update the pose values
         pose_lock.acquire()
 
-        angle = -np.degrees(np.arctan2(robot.my - usb.cy, robot.mx - usb.cx))
 
-        l =100
-        ang = -np.radians(angle)
-        cv2.arrowedLine(im1, (round(robot.mx), round(robot.my)), (round(robot.mx + l * math.cos(ang)), round(robot.my + l * math.sin(ang))), (0,0,255), 5)
-        x = robot.mx/500 * 2
-        y = robot.my/500 * 2
-        #convert to right hand rule
-        x = -(x - 1)   
-        y = y - 1 
-        angle = angle + 180
+        angle = np.arctan2(center_box.cy-mid_point_y, center_box.cx-mid_point_x)
+        angle = np.rad2deg(angle)
+        x = (center_box.cx / 500)*2
+        y = (center_box.cy / 500)*2
+
+
 
         pose_lock.release()
 
         logging.debug("Pose: %8.3f %8.3f %8.2f",  x, y, angle)
-    
+        
     else:
         logging.debug("Nothing found")
 
@@ -250,36 +265,12 @@ if __name__ == '__main__':
 
     # Image Processing Variables
     num_iter = 10
-    kernel = np.ones((5,5), np.uint8)
-    red_kernel = np.ones((4,4), np.uint8)
+    kernel = np.ones((2,2), np.uint8)
 
     img_counter = 0
-    # Red
-    channel1Min = 0.860;
-    channel1Max = 0.980;
-
-    channel2Min = 0.160;
-    channel2Max = 0.656;
-
-    channel3Min = 0.667;
-    channel3Max = 0.965;
-
-    red_min = np.array([channel1Min * 180, channel2Min * 255, channel3Min * 255])
-    red_max = np.array([channel1Max * 180, channel2Max * 255, channel3Max * 255])
-
-    # # BLUE 
-    channel1Min = 0.45;
-    channel1Max = 0.63;
-
-    channel2Min = 0.20;
-    channel2Max = 0.69;
-
-    channel3Min = 0.44;
-    channel3Max = 0.95;
-
-    # Ro#
-    bot_min = np.array([channel1Min * 180, channel2Min * 255, channel3Min * 255])
-    bot_max = np.array([channel1Max * 180, channel2Max * 255, channel3Max * 255])
+    
+    bot_min = np.array([150,150,150])
+    bot_max = np.array([255,255,255])
 
     camera = piVideoStream.PiVideoStream(
         resolution=(IM_WIDTH, IM_HEIGHT),
@@ -292,6 +283,7 @@ if __name__ == '__main__':
         if (camera.frame_available):
             im1 =  camera.read()
             ProcessImage(im1)
-
+            # cv2.imshow("live", im1)
+            # cv2.waitKey()
 
     camera.stop()
