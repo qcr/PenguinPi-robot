@@ -15,12 +15,15 @@ import array
 
 import picamera
 import cv2
-import numpy as non-priviliged
+import numpy as np
 from flask import Flask, request, render_template, redirect, send_file
 
 # set default values
 log_level = logging.INFO
-localizer_rate = 5 # Hz
+localizer_rate = 2 # Hz
+
+IM_WIDTH = 640
+IM_HEIGHT = 480
 
 app = Flask(__name__)
 
@@ -55,20 +58,8 @@ def home():
 
 @app.route('/camera/get', methods = ['GET'])
 def picam():
-    # Create a byte stream
-    stream = io.BytesIO()
 
-    # Capture the image
-    #  video port = True, video comes from video splitter, use this for
-    #   fast image capture, quality is lower
-
-    # don't use use_video_port=True, leads to random hanging
-    camera.capture(stream, format='png')
-
-    # the use_video_port option causes random hangs of the operating system
-    #camera.capture(stream, format='png', use_video_port=True, resize=(320,240))
-
-    response = make_response(image_binary)
+    response = app.make_response(image_data)
     response.headers.set('Content-Type', 'image/jpeg')
     response.headers.set(
         'Content-Disposition', 'attachment', filename='%s.jpg' % pid)
@@ -97,19 +88,28 @@ def poseget():
 def LocalizerThread():
     global x, y, theta, image_data
 
-    log.info('Pose estimator thread launched, running at %.1f Hz' % args.localizer_rate)
+    log.info('Localizer thread launched, running at %.1f Hz' % args.localizer_rate)
     dt = 1/args.localizer_rate
 
     stream = io.BytesIO()
 
     while True:
+        """
         camera.capture(stream, format='jpeg')
         # Construct a numpy array from the stream
         image_data = np.fromstring(stream.getvalue(), dtype=np.uint8)
         # "Decode" the image from the array, preserving colour
         image = cv2.imdecode(image_data, 1)
+        """
+        with picamera.array.PiRGBArray(camera) as stream:
+            camera.capture(stream, format='bgr')
+            # At this point the image is available as stream.array
+            image = stream.array
 
         # process the image here
+
+        log.info('process frame')
+        print('process frame')
 
         # sleep a bit
         time.sleep(dt)
@@ -126,7 +126,7 @@ if __name__ == '__main__':
         epilog="default logging level is {}".format(logging.getLevelName(log_level)))
     parser.set_defaults(
         log_level=log_level,
-        localizer_rate = pose_estimator_rate,
+        localizer_rate = localizer_rate,
     )
     parser.add_argument("-d", "--debug",
         help="log DEBUG messages", 
@@ -150,22 +150,22 @@ if __name__ == '__main__':
     log = logging.getLogger('werkzeug')  # the Flask log channel
     log.setLevel(args.log_level)
 
-
-    # launch the localizer thread
-    if args.pose:
-        pose_thread = threading.Thread(target=LocalizerThread, daemon=True)
-        pose_thread.start()
-
     # Get the camera up and running
     # see http://picamera.readthedocs.io/en/release-1.10/api_camera.html for details
 
     # connect to the camera
+    print('Connecting to the camera')
     try:
         camera = picamera.PiCamera()
     except:
         log.fatal("Couldn't open camera connection -- is it being used by another process?");
     camera.resolution = (IM_WIDTH, IM_HEIGHT)
     camera.rotation = 180
+    print('camera running')
+
+    # launch the localizer thread
+    localizer_thread = threading.Thread(target=LocalizerThread, daemon=True)
+    localizer_thread.start()
 
     # fire up the webserver on a non-priviliged port
     app.jinja_env.lstrip_blocks = True
