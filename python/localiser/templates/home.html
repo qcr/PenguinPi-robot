@@ -1,0 +1,61 @@
+#extends 'base.html'
+
+#block content
+<h1>PenguinPi home page</h1>
+<table bgcolor="SkyBlue">
+    <tr>
+      <td>
+        <table  cellpadding="5">
+           <tr>
+            <td>Pose.x</td> <td>{{ '%.2f'%pose_x }}&thinsp;m</td>
+           </tr>
+            <td>Pose.y</td> <td>{{ '%.2f'%pose_y }}&thinsp;m</td>
+           </tr>
+            <td>Pose.&theta;</td> <td>{{ '%.2f'%pose_theta }}&thinsp;deg</td>
+           </tr>
+           <tr>
+               <td colspan="2"><hr/></td>
+           </tr>
+           <tr>
+            <td>Encoder.left</td> <td>{{ enc_l }}</td>
+           </tr>
+           <tr>
+            <td>Encoder.right</td> <td>{{ enc_r }}</td>
+           </tr>
+           <tr>
+               <td colspan="2"><hr/></td>
+           </tr>
+           <tr>
+            <td>Battery</td> <td>{{ volts }}&thinsp;V</td>
+           </tr>
+           <tr>
+            <td></td> <td>{{ current }}&thinsp;mA</td>
+           </tr>
+        </table>
+    </td>
+    <td>
+       <img src="/camera/get" style="height:auto; width:100%; max-width:100%;" width="100%">
+    </td>
+    </tr>
+</table>
+   <br />
+      <form action="" method="post">
+         <p>Test motors
+         <input type="submit" name="test_l" value="Left" title="speed +20 for 2seconds"/>
+         <input type="submit" name="test_r" value="Right" title="speed +20 for 2seconds"/>
+         </p>
+      </form>
+      <form action="" method="post">
+          <p>
+         <input type="submit" name="refresh" value="Refresh" />
+         </p>
+      </form>
+      <p>This robot contains:
+      <ul>
+          <li>Hardware: {{ model }}</li>
+          <li><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.revision">PiCam</a>: {{ camera_revision }}</li>
+          <li>Distribution: {{ distro }}</li>
+          <li>Kernel: {{ kernel }}</li>
+      </ul>
+      </p>
+#endblock
