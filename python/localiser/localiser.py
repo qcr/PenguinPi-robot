@@ -10,9 +10,6 @@ import math
 import json
 import logging
 
-import struct
-import array
-
 import picamera
 import cv2
 import numpy as np
@@ -31,7 +28,7 @@ app = Flask(__name__)
 x = 0
 y = 0
 theta = 0
-image_data = None
+grey = None
 group_number = 0
 
 
@@ -59,13 +56,13 @@ def home():
 @app.route('/camera/get', methods = ['GET'])
 def picam():
 
-    response = app.make_response(image_data)
-    response.headers.set('Content-Type', 'image/jpeg')
-    response.headers.set(
-        'Content-Disposition', 'attachment', filename='%s.jpg' % pid)
-    return response
+    global grey
 
-    return send_file(stream, 'image/png')
+    if grey:
+        # encode the grey scale image as PNG
+        image_data = cv2.imencode('.png', grey)[1]
+        # make it streamable and return an HTTP image response
+        return send_file(io.BytesIO(image_data), 'image/png')
 
 @app.route('/pose/get', methods = ['GET'])
 def poseget():
@@ -73,6 +70,7 @@ def poseget():
 
     group_number = request.args.get('group')
 
+    # build a dictionary of stuff to return
     state = {
         'pose' : {
                 'x'     : x,
@@ -80,13 +78,14 @@ def poseget():
                 'theta' : theta
                 }
             }
+    # return a JSON encoding
     return json.dumps(state)
 
 """
 " Localizer thread
 """
 def LocalizerThread():
-    global x, y, theta, image_data
+    global x, y, theta, grey
 
     log.info('Localizer thread launched, running at %.1f Hz' % args.localizer_rate)
     dt = 1/args.localizer_rate
@@ -94,22 +93,19 @@ def LocalizerThread():
     stream = io.BytesIO()
 
     while True:
-        """
-        camera.capture(stream, format='jpeg')
-        # Construct a numpy array from the stream
+        # grab a frame
+        camera.capture(stream, format='png')
+        # convert it to a grey scale image, which is global, used
+        # when an image is requested
         image_data = np.fromstring(stream.getvalue(), dtype=np.uint8)
-        # "Decode" the image from the array, preserving colour
         image = cv2.imdecode(image_data, 1)
-        """
-        with picamera.array.PiRGBArray(camera) as stream:
-            camera.capture(stream, format='bgr')
-            # At this point the image is available as stream.array
-            image = stream.array
+        grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        # process the image here
+        log.debug('process frame')
 
-        log.info('process frame')
-        print('process frame')
+        # do clever stuff here
+        #   if you want to create a cv2 image with overlayed graphics in it, I can make
+        #   that appear in the /console view
 
         # sleep a bit
         time.sleep(dt)
@@ -149,19 +145,19 @@ if __name__ == '__main__':
     # everybody uses the Flask logger
     log = logging.getLogger('werkzeug')  # the Flask log channel
     log.setLevel(args.log_level)
+    logging.basicConfig(format='%(asctime)s %(levelname)s  %(message)s')
 
     # Get the camera up and running
     # see http://picamera.readthedocs.io/en/release-1.10/api_camera.html for details
-
     # connect to the camera
-    print('Connecting to the camera')
+    log.info('Connecting to the camera')
     try:
         camera = picamera.PiCamera()
     except:
         log.fatal("Couldn't open camera connection -- is it being used by another process?");
     camera.resolution = (IM_WIDTH, IM_HEIGHT)
     camera.rotation = 180
-    print('camera running')
+    log.debug('camera running')
 
     # launch the localizer thread
     localizer_thread = threading.Thread(target=LocalizerThread, daemon=True)
