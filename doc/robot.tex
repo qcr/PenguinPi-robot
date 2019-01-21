@@ -39,7 +39,7 @@
 \maketitle
 \pagestyle{fancyplain}
 %\pagestyle{headings}        % Gives page headings at top of page
-\rfoot{Revision of \Date }
+\rfoot{Revision of \today }
 %\rfoot{Copyright \copyright Peter Corke \rtbyear}
 
 
@@ -802,6 +802,7 @@ The C source code for the PPI is provided on the Raspberry Pi along with a cross
 % make
 \end{Code}
 
+The RaspberryPi can act like an ISP (\texttt{pi\_isp}) to facilitate flashing the Atmel on the PPI board via certain lines in the GPIO connector.
 The code can be flashed on to the PPI 
 \begin{Code}
 % sudo make load
@@ -813,19 +814,22 @@ In the event of error messages about the GPIO being busy (this occurs if the ref
 \begin{Code}
 % sudo echo 24 > /sys/class/gpio/unexport
 \end{Code}
+Note that sometimes the Raspberry Pi will reboot after the Atmel is reflashed.
 
-Sometimes the Raspberry Pi reboots after the Atmel is reflashed.
-
-The Atmel fuse settings are
-
+The fuse values can be read by
 \begin{Code}
-avrdude -c avrisp -p m328p -P com6 -b 19200 -U lfuse:r:-:i -v
-avrdude.exe -c usbasp -p m8 -U lfuse:r:low_fuse_val.hex:h -U hfuse:r:high_fuse_val.hex:h
-efuse
-lfuse
-hfuse
+% sudo  avrdude -c pi_isp -p atmega644p
 \end{Code}
-TODO, READ THE FUSES
+and should be: E=0xff, L=0xff, H=0xd9. 
+
+For a brand new PPI board these will not be set correctly and the PPI board will appear to run very slowly, the LED sequence at boot time and the UI.  To set the fuses correctly use
+\begin{Code}
+% make fuse
+\end{Code}
+
+
+
+More information about fuse settings can be found at the online fuse calculator at \url{http://www.engbedded.com/fusecalc}.
 
 \subsection{The Git repository}
 The code currently resides in the Bitbucket repository:
