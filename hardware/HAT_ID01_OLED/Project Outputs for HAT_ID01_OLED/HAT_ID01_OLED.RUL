@@ -1,0 +1,5 @@
+DRC Rules Export File for PCB: T:\Techs\Steve\Projects\170327 - PenguinPi_v2\PCB\HAT_ID01_OLED\HAT_ID01_OLED.PcbDoc
+RuleKind=ShortCircuit|RuleName=ShortCircuit|Scope=Board|Allowed=0
+RuleKind=Clearance|RuleName=Clearance|Scope=Board|Minimum=10.00
+RuleKind=Width|RuleName=Width|Scope=Board|Minimum=10.00
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion|Scope=Board|Minimum=4.00

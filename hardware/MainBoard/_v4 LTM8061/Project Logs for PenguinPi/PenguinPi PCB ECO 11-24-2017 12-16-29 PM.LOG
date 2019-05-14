@@ -1,0 +1,3 @@
+Change Component Comment : Designator=LED6 Old Comment=CHARGE New Comment=CHG
+Change Component Comment : Designator=LED5 Old Comment=FAULT New Comment=BAD
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

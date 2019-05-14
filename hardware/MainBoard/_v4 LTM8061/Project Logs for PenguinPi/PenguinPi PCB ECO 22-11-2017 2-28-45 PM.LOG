@@ -1,0 +1,72 @@
+Removed Pin From Net: NetName=VBAT Pin=C13-2
+Removed Pin From Net: NetName=GND Pin=C14-1
+Removed Pin From Net: NetName=VBAT Pin=C14-2
+Removed Pin From Net: NetName=VDCIN Pin=C15-1
+Removed Pin From Net: NetName=VSYS Pin=C17-1
+Removed Pin From Net: NetName=VDC Pin=D2-1
+Removed Pin From Net: NetName=VDC Pin=D3-1
+Removed Pin From Net: NetName=VDCIN Pin=D3-2
+Removed Pin From Net: NetName=GND Pin=D5-1
+Removed Pin From Net: NetName=GND Pin=N2-1
+Removed Pin From Net: NetName=GND Pin=P1-1
+Removed Pin From Net: NetName=VBAT Pin=P1-2
+Removed Pin From Net: NetName=VSYS Pin=R22-2
+Removed Pin From Net: NetName=GND Pin=U4-6
+Removed Pin From Net: NetName=VBAT Pin=U4-8
+Removed Pin From Net: NetName=VSYS Pin=U4-9
+Removed Pin From Net: NetName=VSYS Pin=U4-10
+Removed Pin From Net: NetName=FAULT_N Pin=U4-14
+Removed Pin From Net: NetName=FASTCHG_N Pin=U4-15
+Removed Pin From Net: NetName=FULLCHG_N Pin=U4-16
+Removed Pin From Net: NetName=GND Pin=U4-18
+Removed Pin From Net: NetName=VSYS Pin=U4-26
+Removed Pin From Net: NetName=VDCIN Pin=U4-28
+Removed Member From Class: ClassName=PenguinPi Member=C13
+Removed Member From Class: ClassName=PenguinPi Member=C14
+Removed Member From Class: ClassName=PenguinPi Member=C15
+Removed Member From Class: ClassName=PenguinPi Member=C16
+Removed Member From Class: ClassName=PenguinPi Member=C17
+Removed Member From Class: ClassName=PenguinPi Member=C18
+Removed Member From Class: ClassName=PenguinPi Member=C19
+Removed Member From Class: ClassName=PenguinPi Member=C20
+Removed Member From Class: ClassName=PenguinPi Member=C21
+Removed Member From Class: ClassName=PenguinPi Member=C22
+Removed Member From Class: ClassName=PenguinPi Member=C23
+Removed Member From Class: ClassName=PenguinPi Member=C24
+Removed Member From Class: ClassName=PenguinPi Member=C25
+Removed Member From Class: ClassName=PenguinPi Member=C26
+Removed Member From Class: ClassName=PenguinPi Member=D2
+Removed Member From Class: ClassName=PenguinPi Member=D3
+Removed Member From Class: ClassName=PenguinPi Member=D4
+Removed Member From Class: ClassName=PenguinPi Member=D5
+Removed Member From Class: ClassName=PenguinPi Member=L2
+Removed Member From Class: ClassName=PenguinPi Member=N2
+Removed Member From Class: ClassName=PenguinPi Member=P1
+Removed Member From Class: ClassName=PenguinPi Member=R22
+Removed Member From Class: ClassName=PenguinPi Member=R23
+Removed Member From Class: ClassName=PenguinPi Member=R24
+Removed Member From Class: ClassName=PenguinPi Member=R25
+Removed Member From Class: ClassName=PenguinPi Member=R26
+Removed Member From Class: ClassName=PenguinPi Member=U4
+Added Component: Designator=P?(XT30 - PCB mount)
+Added Component: Designator=U?(LT-LGA-77-05-08-1856_V)
+Added Component: Designator=U?(LT-LGA-77-05-08-1856_V)
+Added Pin To Net: NetName=GND Pin=P?-1
+Added Pin To Net: NetName=VBAT Pin=P?-2
+Added Pin To Net: NetName=VBAT Pin=U?-A6
+Added Pin To Net: NetName=VBAT Pin=U?-A7
+Added Pin To Net: NetName=VBAT Pin=U?-B6
+Added Pin To Net: NetName=VBAT Pin=U?-B7
+Added Pin To Net: NetName=VBAT Pin=U?-C6
+Added Pin To Net: NetName=VBAT Pin=U?-C7
+Added Pin To Net: NetName=VBAT Pin=U?-D6
+Added Pin To Net: NetName=VBAT Pin=U?-D7
+Added Pin To Net: NetName=VBAT Pin=U?-E6
+Added Pin To Net: NetName=VBAT Pin=U?-E7
+Added Pin To Net: NetName=VBAT Pin=U?-F6
+Added Pin To Net: NetName=VBAT Pin=U?-F7
+Added Member To Class: ClassName=PenguinPi Member=Component P? XT30
+Added Member To Class: ClassName=PenguinPi Member=Component SW1 PCB Switch
+Added Member To Class: ClassName=PenguinPi Member=Component U? LTM8061EV-8.2#PBF
+Added Member To Class: ClassName=PenguinPi Member=Component U? LTM8061EV-8.2#PBF
+Added Room: Name=PenguinPi

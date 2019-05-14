@@ -1,0 +1,12 @@
+Change Component Comment : Designator=LED2 Old Comment=PWR New Comment=
+Change Component Comment : Designator=LED3 Old Comment=PWR New Comment=
+Added Component: Designator=LED5(LED YELLOW RightAngle)
+Added Component: Designator=R18(RESC2012X07N)
+Added Pin To Net: NetName=3V3 Pin=LED5-2
+Added Pin To Net: NetName=LED-Y2 Pin=R18-2
+Added Net: Name=LED-Y2
+Added Pin To Net: NetName=NetLED5_1 Pin=LED5-1
+Added Pin To Net: NetName=NetLED5_1 Pin=R18-1
+Added Net: Name=NetLED5_1
+Added Member To Class: ClassName=PenguinPi Member=Component LED5 
+Added Member To Class: ClassName=PenguinPi Member=Component R18 RES SMD

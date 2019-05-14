@@ -1,0 +1,2 @@
+Removed Pin From Net: NetName=HAT_02 Pin=U3-21
+Added Pin To Net: NetName=HAT_02 Pin=U3-24

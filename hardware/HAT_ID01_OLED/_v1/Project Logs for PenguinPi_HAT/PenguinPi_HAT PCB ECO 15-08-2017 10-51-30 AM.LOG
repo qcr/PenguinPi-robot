@@ -1,0 +1,10 @@
+Added Component: Designator=R5(CAC-80P319X155-8M)
+Added Pin To Net: NetName=NetR5_1 Pin=R5-1
+Added Pin To Net: NetName=NetR5_2 Pin=R5-2
+Added Pin To Net: NetName=NetR5_3 Pin=R5-3
+Added Pin To Net: NetName=NetR5_4 Pin=R5-4
+Added Pin To Net: NetName=IO0_4 Pin=R5-5
+Added Pin To Net: NetName=IO0_5 Pin=R5-6
+Added Pin To Net: NetName=IO0_6 Pin=R5-7
+Added Pin To Net: NetName=IO0_7 Pin=R5-8
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R5 ARRAY

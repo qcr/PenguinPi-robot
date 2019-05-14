@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=NetC13_2 Pin=U1-K6
+Added Pin To Net: NetName=VDC Pin=U1-K6
+Added Member To Class: ClassName=PenguinPi Member=Component LED5 FAULT
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

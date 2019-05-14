@@ -1,0 +1,26 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [EncoderArm_PhotoReflector.PrjPcb]
+   Generated File[EncoderArm_PhotoReflector.GTL]
+   Generated File[EncoderArm_PhotoReflector.GBL]
+   Generated File[EncoderArm_PhotoReflector.GTP]
+   Generated File[EncoderArm_PhotoReflector.GTO]
+   Generated File[EncoderArm_PhotoReflector.GTS]
+   Generated File[EncoderArm_PhotoReflector.GBS]
+   Generated File[EncoderArm_PhotoReflector.GBO]
+   Generated File[EncoderArm_PhotoReflector.GBP]
+   Generated File[EncoderArm_PhotoReflector.GKO]
+   Generated File[EncoderArm_PhotoReflector.GM1]
+   Generated File[EncoderArm_PhotoReflector.GM13]
+   Generated File[EncoderArm_PhotoReflector.GM15]
+   Generated File[EncoderArm_PhotoReflector.GML]
+   Generated File[EncoderArm_PhotoReflector.1]
+   Generated File[EncoderArm_PhotoReflector.RUL]
+   Generated File[EncoderArm_PhotoReflector.EXTREP]
+   Generated File[EncoderArm_PhotoReflector.REP]
+
+
+Files Generated   : 17
+Documents Printed : 0
+
+Finished Output Generation At 2:06:03 PM On 18/09/2017

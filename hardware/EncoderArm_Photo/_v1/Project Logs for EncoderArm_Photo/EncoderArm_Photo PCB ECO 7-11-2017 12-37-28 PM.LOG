@@ -1,0 +1,28 @@
+Removed Pin From Net: NetName=3V3 Pin=R2-2
+Removed Member From Class: ClassName=EncoderArm_Photo Member=R4
+Change Component Designator: OldDesignator=R3 NewDesignator=R2
+Change Component Designator: OldDesignator=R4 NewDesignator=R3
+Added Component: Designator=Left1(EE-SX1109)
+Added Component: Designator=Left2(EE-SX1109)
+Added Component: Designator=Right1(EE-SX1109)
+Added Component: Designator=Right2(EE-SX1109)
+Added Pin To Net: NetName=NetLeft1_1 Pin=Left1-1
+Added Pin To Net: NetName=GND Pin=Left1-2
+Added Pin To Net: NetName=VOUT1 Pin=Left1-3
+Added Pin To Net: NetName=NetLeft1_4 Pin=Left1-4
+Added Pin To Net: NetName=GND Pin=Left2-1
+Added Pin To Net: NetName=GND Pin=Left2-2
+Added Pin To Net: NetName=VOUT2 Pin=Left2-3
+Added Pin To Net: NetName=NetLeft1_1 Pin=Left2-4
+Added Pin To Net: NetName=NetRight1_1 Pin=Right1-1
+Added Pin To Net: NetName=GND Pin=Right1-2
+Added Pin To Net: NetName=VOUT1 Pin=Right1-3
+Added Pin To Net: NetName=NetLeft1_4 Pin=Right1-4
+Added Pin To Net: NetName=GND Pin=Right2-1
+Added Pin To Net: NetName=GND Pin=Right2-2
+Added Pin To Net: NetName=VOUT2 Pin=Right2-3
+Added Pin To Net: NetName=NetRight1_1 Pin=Right2-4
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Left1 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Left2 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Right1 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Right2 EE-SX1109 PhotoInterrupter

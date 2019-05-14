@@ -1,0 +1,21 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: PenguinPi.PcbDoc   9/19/2017  3:54:22 PM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : PenguinPi.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      15mil (0.381mm)                                           Round             55        PTH        12.84inch (326.10mm)
+T2      28mil (0.711mm)                                           Round             5         PTH        3.24inch (82.22mm)
+T3      35mil (0.9mm)                                             Round             28        PTH        5.18inch (131.65mm)
+T4      40mil (1.016mm)                                           Round             60        PTH        7.96inch (202.29mm)
+T5      47mil (1.2mm)                                             Round             2         PTH        0.43inch (11.00mm)
+T6      59mil (1.5mm)                                             Round             7         PTH        2.28inch (57.96mm)
+T7      75mil (1.9mm)                                             Round             2         PTH        0.20inch (5.00mm)
+T8      118mil (3mm)                                              Round             4         NPTH       6.50inch (165.00mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              163
+
+Total Processing Time (hh:mm:ss) : 00:00:00

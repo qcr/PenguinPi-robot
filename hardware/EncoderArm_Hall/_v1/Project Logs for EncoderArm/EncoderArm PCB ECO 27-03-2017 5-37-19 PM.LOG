@@ -1,0 +1,31 @@
+Change Component Designator: OldDesignator=S1 NewDesignator=L1
+Added Component: Designator=L2(SOT23-3N)
+Added Component: Designator=P1(HDR1X6)
+Added Component: Designator=P2(HDR1X2)
+Added Component: Designator=R1(SOT23-3N)
+Added Component: Designator=R2(SOT23-3N)
+Added Pin To Net: NetName=VCC Pin=L2-1
+Added Pin To Net: NetName=GND Pin=L2-3
+Added Pin To Net: NetName=GND Pin=P1-3
+Added Pin To Net: NetName=VCC Pin=P1-4
+Added Pin To Net: NetName=VOUT1 Pin=P1-6
+Added Pin To Net: NetName=VCC Pin=R1-1
+Added Pin To Net: NetName=VOUT1 Pin=R1-2
+Added Pin To Net: NetName=GND Pin=R1-3
+Added Pin To Net: NetName=VCC Pin=R2-1
+Added Pin To Net: NetName=GND Pin=R2-3
+Added Pin To Net: NetName=M1A Pin=P1-1
+Added Pin To Net: NetName=M1A Pin=P2-1
+Added Net: Name=M1A
+Added Pin To Net: NetName=M1B Pin=P1-2
+Added Pin To Net: NetName=M1B Pin=P2-2
+Added Net: Name=M1B
+Added Pin To Net: NetName=VOUT2 Pin=L2-2
+Added Pin To Net: NetName=VOUT2 Pin=P1-5
+Added Pin To Net: NetName=VOUT2 Pin=R2-2
+Added Net: Name=VOUT2
+Added Member To Class: ClassName=EncoderArm Member=Component L2 A1120 Hall Effect
+Added Member To Class: ClassName=EncoderArm Member=Component P1 Connection to Controller
+Added Member To Class: ClassName=EncoderArm Member=Component P2 Motor
+Added Member To Class: ClassName=EncoderArm Member=Component R1 A1120 Hall Effect
+Added Member To Class: ClassName=EncoderArm Member=Component R2 A1120 Hall Effect

@@ -1,0 +1,16 @@
+Removed Pin From Net: NetName=FAULT_N Pin=LED5-1
+Removed Pin From Net: NetName=CHG_N Pin=LED6-1
+Removed Member From Class: ClassName=PenguinPi Member=LED6
+Added Component: Designator=CHG(C0805)
+Added Component: Designator=FAULT(C0805)
+Added Pin To Net: NetName=CHG_N Pin=CHG-1
+Added Pin To Net: NetName=FAULT_N Pin=FAULT-1
+Added Pin To Net: NetName=NetCHG_2 Pin=CHG-2
+Added Pin To Net: NetName=NetCHG_2 Pin=R20-2
+Added Net: Name=NetCHG_2
+Added Pin To Net: NetName=NetFAULT_2 Pin=FAULT-2
+Added Pin To Net: NetName=NetFAULT_2 Pin=R19-2
+Added Net: Name=NetFAULT_2
+Added Member To Class: ClassName=PenguinPi Member=Component CHG 
+Added Member To Class: ClassName=PenguinPi Member=Component FAULT 
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

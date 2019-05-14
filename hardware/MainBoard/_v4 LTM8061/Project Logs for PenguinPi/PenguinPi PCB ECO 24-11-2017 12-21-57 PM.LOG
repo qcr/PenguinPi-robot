@@ -1,0 +1,3 @@
+Change Component Footprint: Designator=LED5 Old Footprint=C0805 New Footprint=RESC2012X07N
+Change Component Footprint: Designator=LED6 Old Footprint=C0805 New Footprint=RESC2012X07N
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

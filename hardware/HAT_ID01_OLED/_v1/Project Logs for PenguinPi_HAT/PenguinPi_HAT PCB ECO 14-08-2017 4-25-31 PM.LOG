@@ -1,0 +1,3 @@
+Added Pin To Net: NetName=3V3 Pin=R1-1
+Added Pin To Net: NetName=3V3 Pin=R12-1
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R12 RES SMD

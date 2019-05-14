@@ -1,0 +1,10 @@
+Removed Pin From Net: NetName=VIN Pin=*-2
+Removed Pin From Net: NetName=GND Pin=*-3
+Removed Pin From Net: NetName=VCC Pin=*-4
+Removed Pin From Net: NetName=VCC Pin=*-5
+Removed Pin From Net: NetName=GND Pin=*-7
+Removed Pin From Net: NetName=GND Pin=R?-1
+Removed Pin From Net: NetName=GND Pin=X1-GND
+Removed Pin From Net: NetName=GND Pin=X1-GND
+Removed Member From Class: ClassName=PenguinPi Member=*
+Removed Member From Class: ClassName=PenguinPi Member=R?

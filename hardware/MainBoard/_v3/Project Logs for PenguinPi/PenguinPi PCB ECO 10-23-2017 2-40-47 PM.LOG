@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=HAT_03 Pin=PI-27
+Removed Pin From Net: NetName=HAT_04 Pin=PI-28
+Added Pin To Net: NetName=HAT_04 Pin=PI-24
+Added Pin To Net: NetName=HAT_03 Pin=PI-26

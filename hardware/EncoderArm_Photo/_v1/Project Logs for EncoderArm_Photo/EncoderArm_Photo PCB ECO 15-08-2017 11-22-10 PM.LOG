@@ -1,0 +1,4 @@
+Added Pin To Net: NetName=3V3 Pin=R2-2
+Added Pin To Net: NetName=3V3 Pin=R3-2
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component R2 Res2
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component R3 Res2

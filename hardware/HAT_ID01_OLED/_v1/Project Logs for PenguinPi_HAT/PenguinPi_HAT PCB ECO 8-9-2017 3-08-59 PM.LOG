@@ -1,0 +1,136 @@
+Added Component: Designator=DIP1(DIP Switch (4way))
+Added Component: Designator=LED2(LED 5mm)
+Added Component: Designator=LED3(LED 5mm)
+Added Component: Designator=LED4(LED 5mm)
+Added Component: Designator=LED5(LED 5mm)
+Added Component: Designator=LED6(LED 5mm)
+Added Component: Designator=LED7(LED 5mm)
+Added Component: Designator=LED8(LED 5mm)
+Added Component: Designator=LED9(LED 5mm)
+Added Component: Designator=LED10(LED 5mm)
+Added Component: Designator=LED11(LED 5mm)
+Added Component: Designator=LED12(LED 5mm)
+Added Component: Designator=LED13(LED 5mm)
+Added Component: Designator=LED14(LED 5mm)
+Added Component: Designator=LED15(LED 5mm)
+Added Component: Designator=LED16(LED 5mm)
+Added Component: Designator=LED17(LED 5mm)
+Added Component: Designator=P?(HDR2X8)
+Added Pin To Net: NetName=3V3 Pin=DIP1-0
+Added Pin To Net: NetName=3V3 Pin=DIP1-1
+Added Pin To Net: NetName=3V3 Pin=DIP1-2
+Added Pin To Net: NetName=3V3 Pin=DIP1-3
+Added Pin To Net: NetName=3V3 Pin=P?-2
+Added Net: Name=3V3
+Added Net: Name=BTN0
+Added Net: Name=BTN1
+Added Net: Name=BTN2
+Added Net: Name=BTN3
+Added Pin To Net: NetName=CFG0 Pin=DIP1-7
+Added Net: Name=CFG0
+Added Pin To Net: NetName=CFG1 Pin=DIP1-6
+Added Net: Name=CFG1
+Added Pin To Net: NetName=CFG2 Pin=DIP1-5
+Added Net: Name=CFG2
+Added Pin To Net: NetName=CFG3 Pin=DIP1-4
+Added Net: Name=CFG3
+Added Pin To Net: NetName=GND Pin=LED2-2
+Added Pin To Net: NetName=GND Pin=LED3-2
+Added Pin To Net: NetName=GND Pin=LED4-2
+Added Pin To Net: NetName=GND Pin=LED5-2
+Added Pin To Net: NetName=GND Pin=LED6-2
+Added Pin To Net: NetName=GND Pin=LED7-2
+Added Pin To Net: NetName=GND Pin=LED8-2
+Added Pin To Net: NetName=GND Pin=LED9-2
+Added Pin To Net: NetName=GND Pin=LED10-2
+Added Pin To Net: NetName=GND Pin=LED11-2
+Added Pin To Net: NetName=GND Pin=LED12-2
+Added Pin To Net: NetName=GND Pin=LED13-2
+Added Pin To Net: NetName=GND Pin=LED14-2
+Added Pin To Net: NetName=GND Pin=LED15-2
+Added Pin To Net: NetName=GND Pin=LED16-2
+Added Pin To Net: NetName=GND Pin=LED17-2
+Added Pin To Net: NetName=GND Pin=P?-1
+Added Net: Name=GND
+Added Pin To Net: NetName=HAT_00 Pin=P?-3
+Added Net: Name=HAT_00
+Added Pin To Net: NetName=HAT_01 Pin=P?-5
+Added Net: Name=HAT_01
+Added Pin To Net: NetName=HAT_02 Pin=P?-7
+Added Net: Name=HAT_02
+Added Pin To Net: NetName=HAT_03 Pin=P?-9
+Added Net: Name=HAT_03
+Added Pin To Net: NetName=HAT_04 Pin=P?-10
+Added Net: Name=HAT_04
+Added Pin To Net: NetName=HAT_05 Pin=P?-8
+Added Net: Name=HAT_05
+Added Pin To Net: NetName=HAT_06 Pin=P?-6
+Added Net: Name=HAT_06
+Added Pin To Net: NetName=HAT_07 Pin=P?-4
+Added Net: Name=HAT_07
+Added Pin To Net: NetName=IO0_0 Pin=LED16-1
+Added Net: Name=IO0_0
+Added Pin To Net: NetName=IO0_1 Pin=LED14-1
+Added Net: Name=IO0_1
+Added Pin To Net: NetName=IO0_2 Pin=LED12-1
+Added Net: Name=IO0_2
+Added Pin To Net: NetName=IO0_3 Pin=LED10-1
+Added Net: Name=IO0_3
+Added Pin To Net: NetName=IO0_4 Pin=LED8-1
+Added Net: Name=IO0_4
+Added Pin To Net: NetName=IO0_5 Pin=LED6-1
+Added Net: Name=IO0_5
+Added Pin To Net: NetName=IO0_6 Pin=LED4-1
+Added Net: Name=IO0_6
+Added Pin To Net: NetName=IO0_7 Pin=LED2-1
+Added Net: Name=IO0_7
+Added Pin To Net: NetName=IO1_0 Pin=LED17-1
+Added Net: Name=IO1_0
+Added Pin To Net: NetName=IO1_1 Pin=LED15-1
+Added Net: Name=IO1_1
+Added Pin To Net: NetName=IO1_2 Pin=LED13-1
+Added Net: Name=IO1_2
+Added Pin To Net: NetName=IO1_3 Pin=LED11-1
+Added Net: Name=IO1_3
+Added Pin To Net: NetName=IO1_4 Pin=LED9-1
+Added Net: Name=IO1_4
+Added Pin To Net: NetName=IO1_5 Pin=LED7-1
+Added Net: Name=IO1_5
+Added Pin To Net: NetName=IO1_6 Pin=LED5-1
+Added Net: Name=IO1_6
+Added Pin To Net: NetName=IO1_7 Pin=LED3-1
+Added Net: Name=IO1_7
+Added Pin To Net: NetName=MISO Pin=P?-14
+Added Net: Name=MISO
+Added Pin To Net: NetName=MOSI Pin=P?-13
+Added Net: Name=MOSI
+Added Net: Name=NetR7_1
+Added Net: Name=NetR8_1
+Added Net: Name=NetR11_1
+Added Net: Name=NetR11_2
+Added Net: Name=NetR11_3
+Added Net: Name=NetR11_4
+Added Net: Name=NetR12_5
+Added Net: Name=NetR12_6
+Added Net: Name=NetR12_7
+Added Net: Name=NetR12_8
+Added Net: Name=NetR14_1
+Added Net: Name=NetR14_2
+Added Net: Name=NetR14_3
+Added Net: Name=NetR14_4
+Added Net: Name=NetR15_5
+Added Net: Name=NetR15_6
+Added Net: Name=NetR15_7
+Added Net: Name=NetR15_8
+Added Net: Name=NetR?_1
+Added Net: Name=NetS0_2
+Added Net: Name=NetS1_2
+Added Net: Name=NetS2_2
+Added Pin To Net: NetName=SCLK Pin=P?-11
+Added Net: Name=SCLK
+Added Pin To Net: NetName=SCL Pin=P?-15
+Added Net: Name=SCL
+Added Pin To Net: NetName=SDA Pin=P?-16
+Added Net: Name=SDA
+Added Class: Name=PenguinPi_HAT
+Added Room: Name=PenguinPi_HAT

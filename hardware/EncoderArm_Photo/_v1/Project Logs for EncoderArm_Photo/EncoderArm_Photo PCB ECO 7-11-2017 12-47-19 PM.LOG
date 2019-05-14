@@ -1,0 +1,8 @@
+Change Component Designator: OldDesignator=Left1 NewDesignator=SL1
+Change Component Designator: OldDesignator=Left2 NewDesignator=SL2
+Change Component Designator: OldDesignator=Right1 NewDesignator=SR1
+Change Component Designator: OldDesignator=Right2 NewDesignator=SR2
+Change Net Name : Old Net Name=NetLeft1_1 New Net Name=NetSL1_1
+Change Net Name : Old Net Name=NetLeft1_4 New Net Name=NetR1_1
+Change Net Name : Old Net Name=NetRight1_1 New Net Name=NetSR1_1
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component R3 Res2

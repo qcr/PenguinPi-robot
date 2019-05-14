@@ -1,0 +1,17 @@
+Removed Pin From Net: NetName=GND Pin=CX1-2
+Removed Pin From Net: NetName=GND Pin=CX1-4
+Removed Member From Class: ClassName=PenguinPi Member=CX1
+Added Component: Designator=*(XTAL AV Series)
+Added Component: Designator=CX?(ABM3B_CRYSTAL)
+Added Pin To Net: NetName=GND Pin=CX?-2
+Added Pin To Net: NetName=GND Pin=CX?-4
+Added Pin To Net: NetName=Net*_1 Pin=*-1
+Added Pin To Net: NetName=Net*_1 Pin=C10-2
+Added Pin To Net: NetName=Net*_1 Pin=U3-36
+Added Net: Name=Net*_1
+Added Pin To Net: NetName=Net*_2 Pin=*-2
+Added Pin To Net: NetName=Net*_2 Pin=C9-2
+Added Pin To Net: NetName=Net*_2 Pin=U3-37
+Added Net: Name=Net*_2
+Added Member To Class: ClassName=PenguinPi Member=Component * XTAL
+Added Member To Class: ClassName=PenguinPi Member=Component CX? ABM3B

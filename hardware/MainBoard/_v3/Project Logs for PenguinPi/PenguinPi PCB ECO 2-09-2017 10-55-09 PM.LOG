@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=HAT_03 Pin=U3-22
+Removed Pin From Net: NetName=HAT_04 Pin=U3-23
+Removed Pin From Net: NetName=HAT_05 Pin=U3-24
+Removed Pin From Net: NetName=HAT_07 Pin=U3-26
+Added Pin To Net: NetName=HAT_03 Pin=U3-11
+Added Pin To Net: NetName=HAT_04 Pin=U3-12
+Added Pin To Net: NetName=HAT_05 Pin=U3-13
+Added Pin To Net: NetName=HAT_07 Pin=U3-42

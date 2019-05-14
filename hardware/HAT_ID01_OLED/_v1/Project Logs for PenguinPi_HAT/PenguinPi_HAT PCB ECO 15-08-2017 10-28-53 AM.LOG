@@ -1,0 +1,43 @@
+Removed Pin From Net: NetName=IO0_3 Pin=LED1-1
+Removed Pin From Net: NetName=IO1_2 Pin=LED7-1
+Removed Pin From Net: NetName=IO0_1 Pin=LED9-1
+Removed Pin From Net: NetName=IO0_5 Pin=LED10-1
+Removed Pin From Net: NetName=IO1_1 Pin=LED11-1
+Removed Pin From Net: NetName=IO1_3 Pin=LED12-1
+Removed Pin From Net: NetName=IO0_0 Pin=LED13-1
+Removed Pin From Net: NetName=IO1_2 Pin=LED14-1
+Removed Pin From Net: NetName=IO1_0 Pin=LED15-1
+Removed Pin From Net: NetName=IO1_1 Pin=LED16-1
+Added Pin To Net: NetName=IO0_7 Pin=LED1-1
+Added Pin To Net: NetName=GND Pin=LED1-2
+Added Pin To Net: NetName=IO0_6 Pin=LED3-1
+Added Pin To Net: NetName=GND Pin=LED3-2
+Added Pin To Net: NetName=IO0_5 Pin=LED5-1
+Added Pin To Net: NetName=GND Pin=LED5-2
+Added Pin To Net: NetName=IO0_4 Pin=LED7-1
+Added Pin To Net: NetName=GND Pin=LED7-2
+Added Pin To Net: NetName=IO0_3 Pin=LED9-1
+Added Pin To Net: NetName=IO1_3 Pin=LED10-1
+Added Pin To Net: NetName=GND Pin=LED10-2
+Added Pin To Net: NetName=IO0_2 Pin=LED11-1
+Added Pin To Net: NetName=IO1_2 Pin=LED12-1
+Added Pin To Net: NetName=GND Pin=LED12-2
+Added Pin To Net: NetName=IO0_1 Pin=LED13-1
+Added Pin To Net: NetName=IO1_1 Pin=LED14-1
+Added Pin To Net: NetName=GND Pin=LED14-2
+Added Pin To Net: NetName=IO0_0 Pin=LED15-1
+Added Pin To Net: NetName=IO1_0 Pin=LED16-1
+Added Pin To Net: NetName=GND Pin=LED16-2
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED1 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED3 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED5 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED7 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED9 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED10 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED11 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED12 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED13 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED14 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED15 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED16 LED*
+Added Room: Name=PenguinPi_HAT

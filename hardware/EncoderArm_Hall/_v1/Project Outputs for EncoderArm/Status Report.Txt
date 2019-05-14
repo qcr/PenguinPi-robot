@@ -1,0 +1,26 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [EncoderArm.PrjPcb]
+   Generated File[EncoderArm.GTL]
+   Generated File[EncoderArm.GBL]
+   Generated File[EncoderArm.GTP]
+   Generated File[EncoderArm.GTO]
+   Generated File[EncoderArm.GTS]
+   Generated File[EncoderArm.GBS]
+   Generated File[EncoderArm.GBO]
+   Generated File[EncoderArm.GBP]
+   Generated File[EncoderArm.GKO]
+   Generated File[EncoderArm.GM1]
+   Generated File[EncoderArm.GM13]
+   Generated File[EncoderArm.GM15]
+   Generated File[EncoderArm.GML]
+   Generated File[EncoderArm.1]
+   Generated File[EncoderArm.RUL]
+   Generated File[EncoderArm.EXTREP]
+   Generated File[EncoderArm.REP]
+
+
+Files Generated   : 17
+Documents Printed : 0
+
+Finished Output Generation At 6:18:28 PM On 27/03/2017

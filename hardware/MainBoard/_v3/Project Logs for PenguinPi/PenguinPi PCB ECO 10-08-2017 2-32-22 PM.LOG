@@ -1,0 +1,62 @@
+Added Component: Designator=C1(CAPC2012X07N)
+Added Component: Designator=C2(CAPC2012X07N)
+Added Component: Designator=C3(CAPC2012X07N)
+Added Component: Designator=C4(CAPC2012X07N)
+Added Component: Designator=C6(CAPC2012X07N)
+Added Component: Designator=C7(CAPC2012X07N)
+Added Component: Designator=D1(SODFL470X110-2N)
+Added Component: Designator=F1(MF-MSMF250/16X-2)
+Added Component: Designator=L1(CM322522)
+Added Component: Designator=R1(RESC3216X06M)
+Added Component: Designator=R2(RESC2012X07N)
+Added Component: Designator=R3(RESC2012X07N)
+Added Component: Designator=VR1(MURATA_OKR-Tn)
+Added Component: Designator=VR2(SOT230P700X180-4N)
+Added Pin To Net: NetName=GND Pin=C1-1
+Added Pin To Net: NetName=VCC Pin=C1-2
+Added Pin To Net: NetName=GND Pin=C2-1
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Pin To Net: NetName=GND Pin=C3-1
+Added Pin To Net: NetName=VCC Pin=C3-2
+Added Pin To Net: NetName=GND Pin=C4-1
+Added Pin To Net: NetName=3V3 Pin=C4-2
+Added Pin To Net: NetName=SGND Pin=C6-1
+Added Pin To Net: NetName=NetC6_2 Pin=C6-2
+Added Pin To Net: NetName=SGND Pin=C7-1
+Added Pin To Net: NetName=AREF Pin=C7-2
+Added Pin To Net: NetName=NetD1_1 Pin=D1-1
+Added Pin To Net: NetName=NetD1_2 Pin=D1-2
+Added Pin To Net: NetName=NetF1_1 Pin=F1-1
+Added Pin To Net: NetName=NetD1_1 Pin=F1-2
+Added Pin To Net: NetName=3V3 Pin=L1-1
+Added Pin To Net: NetName=NetC6_2 Pin=L1-2
+Added Pin To Net: NetName=NetD1_2 Pin=R1-1
+Added Pin To Net: NetName=NetC2_2 Pin=R1-2
+Added Pin To Net: NetName=NetR2_1 Pin=R2-1
+Added Pin To Net: NetName=NetC2_2 Pin=R2-2
+Added Pin To Net: NetName=GND Pin=R3-1
+Added Pin To Net: NetName=NetR3_2 Pin=R3-2
+Added Pin To Net: NetName=NetR2_1 Pin=VR1-1
+Added Pin To Net: NetName=NetC2_2 Pin=VR1-2
+Added Pin To Net: NetName=GND Pin=VR1-3
+Added Pin To Net: NetName=VCC Pin=VR1-4
+Added Pin To Net: NetName=NetR3_2 Pin=VR1-5
+Added Pin To Net: NetName=GND Pin=VR2-1
+Added Pin To Net: NetName=3V3 Pin=VR2-2
+Added Pin To Net: NetName=3V3 Pin=VR2-2
+Added Pin To Net: NetName=VCC Pin=VR2-3
+Added Member To Class: ClassName=PenguinPi Member=Component C1 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C2 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C3 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C4 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C6 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C7 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component D1 SMD DIODE
+Added Member To Class: ClassName=PenguinPi Member=Component F1 RGEF250
+Added Member To Class: ClassName=PenguinPi Member=Component L1 INDUCTOR SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R1 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R2 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R3 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component VR1 MURATA_OKR-T3-W12C
+Added Member To Class: ClassName=PenguinPi Member=Component VR2 3V3 LDO
+Added Room: Name=PenguinPi

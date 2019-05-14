@@ -1,0 +1,171 @@
+Board Information Report
+Filename     : T:\Techs\Steve\Projects\170327 - PenguinPi_v2\PCB\MainBoard\PenguinPi_HAT.PcbDoc
+Date         : 8/15/2017
+Time         : 4:43:27 PM
+Time Elapsed : 00:00:00
+
+General
+    Board Size, 2559.11milsx2204.724mils
+    Components on board, 43
+count : 2
+
+Routing Information
+    Routing completion, 100.00%
+    Connections, 116
+    Connections routed, 116
+    Connections remaining, 0
+count : 4
+
+Layer, Arcs, Pads, Vias, Tracks, Texts, Fills, Regions, ComponentBodies
+    Top Layer, 0, 56, 0, 94, 0, 0, 2, 0
+    Bottom Layer, 0, 104, 0, 253, 0, 0, 14, 0
+    Mechanical 1, 8, 0, 0, 10, 0, 0, 0, 0
+    Mechanical 13, 0, 0, 0, 64, 0, 0, 0, 38
+    Mechanical 15, 2, 0, 0, 372, 0, 0, 0, 0
+    Multi-Layer, 0, 24, 32, 0, 0, 0, 1, 0
+    Top Paste, 0, 0, 0, 0, 0, 0, 0, 0
+    Top Overlay, 4, 0, 0, 5436, 51, 0, 0, 0
+    Top Solder, 0, 0, 0, 0, 0, 0, 0, 0
+    Bottom Solder, 0, 0, 0, 0, 0, 0, 0, 0
+    Bottom Overlay, 8, 0, 0, 72, 36, 0, 0, 0
+    Bottom Paste, 0, 0, 0, 0, 0, 0, 0, 0
+    Drill Guide, 0, 0, 0, 0, 0, 0, 0, 0
+    Keep-Out Layer, 8, 0, 0, 10, 0, 0, 0, 0
+    Drill Drawing, 0, 0, 0, 0, 0, 0, 0, 0
+count : 15
+
+Drill Pairs, Vias
+    Top Layer - Bottom Layer, 32
+count : 1
+
+Non-Plated Hole Size, Pads, Vias
+    118.11mils, 4, 0
+count : 1
+
+Plated Hole Size, Pads, Vias
+    0mils, 160, 0
+    20mils, 0, 30
+    28mils, 0, 2
+    30mils, 4, 0
+    35.433mils, 16, 0
+count : 5
+
+Non-Plated Slot Size / Length, Pads
+count : 0
+
+Plated Slot Size / Length, Pads
+count : 0
+
+Non-Plated Square Hole Size, Pads
+count : 0
+
+Plated Square Hole Size, Pads
+count : 0
+
+Top Layer Annular Ring Size, Count
+    0mils, 4
+    10mils, 5
+    20mils, 25
+    22mils, 2
+    23.622mils, 16
+    30mils, 4
+count : 6
+
+Mid Layer Annular Ring Size, Count
+    0mils, 4
+    10mils, 5
+    20mils, 25
+    22mils, 2
+    23.622mils, 16
+    30mils, 4
+count : 6
+
+Bottom Layer Annular Ring Size, Count
+    0mils, 4
+    10mils, 5
+    20mils, 25
+    22mils, 2
+    23.622mils, 16
+    30mils, 4
+count : 6
+
+Pad Solder Mask, Count
+    4mils, 180
+    62.992mils, 4
+count : 2
+
+Pad Paste Mask, Count
+    0mils, 184
+count : 1
+
+Pad Pwr/Gnd Expansion, Count
+    20mils, 184
+count : 1
+
+Pad Relief Conductor Width, Count
+    10mils, 184
+count : 1
+
+Pad Relief Air Gap, Count
+    10mils, 184
+count : 1
+
+Pad Relief Entries, Count
+    4, 184
+count : 1
+
+Via Solder Mask, Count
+    4mils, 32
+count : 1
+
+Via Pwr/Gnd Expansion, Count
+    20mils, 32
+count : 1
+
+Track Width, Count
+    0.2mils, 5412
+    1.969mils, 72
+    3.937mils, 428
+    7.874mils, 12
+    10mils, 386
+    20mils, 1
+count : 6
+
+Arc Line Width, Count
+    3.937mils, 6
+    9.843mils, 2
+    10mils, 20
+    23.622mils, 2
+count : 4
+
+Arc Radius, Count
+    1.969mils, 4
+    3.937mils, 4
+    4.921mils, 2
+    11.811mils, 2
+    19.685mils, 2
+    118.11mils, 16
+count : 6
+
+Arc Degrees, Count
+    90, 16
+    360, 14
+count : 2
+
+Text Height, Count
+    40mils, 4
+    50mils, 69
+    60mils, 14
+count : 3
+
+Text Width, Count
+    10mils, 87
+count : 1
+
+Net Track Width, Count
+    10mils, 59
+count : 1
+
+Net Via Size, Count
+    50mils, 59
+count : 1

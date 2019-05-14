@@ -1,0 +1,62 @@
+Removed Member From Class: ClassName=PenguinPi_HAT Member=R17
+Change Component Designator: OldDesignator=LED2 NewDesignator=LED1
+Change Component Designator: OldDesignator=LED3 NewDesignator=LED2
+Change Component Designator: OldDesignator=LED4 NewDesignator=LED3
+Change Component Designator: OldDesignator=LED5 NewDesignator=LED4
+Change Component Designator: OldDesignator=LED6 NewDesignator=LED5
+Change Component Designator: OldDesignator=LED7 NewDesignator=LED6
+Change Component Designator: OldDesignator=LED8 NewDesignator=LED7
+Change Component Designator: OldDesignator=LED9 NewDesignator=LED8
+Change Component Designator: OldDesignator=LED10 NewDesignator=LED9
+Change Component Designator: OldDesignator=LED11 NewDesignator=LED10
+Change Component Designator: OldDesignator=LED12 NewDesignator=LED11
+Change Component Designator: OldDesignator=LED13 NewDesignator=LED12
+Change Component Designator: OldDesignator=LED14 NewDesignator=LED13
+Change Component Designator: OldDesignator=LED15 NewDesignator=LED14
+Change Component Designator: OldDesignator=LED16 NewDesignator=LED15
+Change Component Designator: OldDesignator=LED17 NewDesignator=LED16
+Change Component Designator: OldDesignator=R1 NewDesignator=R8
+Change Component Designator: OldDesignator=R2 NewDesignator=R9
+Change Component Designator: OldDesignator=R3 NewDesignator=R10
+Change Component Designator: OldDesignator=R4 NewDesignator=R11
+Change Component Designator: OldDesignator=R5 NewDesignator=R15
+Change Component Designator: OldDesignator=R6 NewDesignator=R16
+Change Component Designator: OldDesignator=R7 NewDesignator=R2
+Change Component Designator: OldDesignator=R8 NewDesignator=R4
+Change Component Designator: OldDesignator=R10 NewDesignator=R1
+Change Component Designator: OldDesignator=R11 NewDesignator=R5
+Change Component Designator: OldDesignator=R12 NewDesignator=R6
+Change Component Designator: OldDesignator=R13 NewDesignator=R3
+Change Component Designator: OldDesignator=R14 NewDesignator=R13
+Change Component Designator: OldDesignator=R15 NewDesignator=R14
+Change Component Designator: OldDesignator=R16 NewDesignator=R7
+Change Component Designator: OldDesignator=R17 NewDesignator=R12
+Change Component Designator: OldDesignator=S0 NewDesignator=S1
+Change Component Designator: OldDesignator=S1 NewDesignator=S2
+Change Component Designator: OldDesignator=S2 NewDesignator=S3
+Change Component Designator: OldDesignator=S3 NewDesignator=S4
+Change Net Name : Old Net Name=NetR5_1 New Net Name=NetR15_1
+Change Net Name : Old Net Name=NetR6_1 New Net Name=NetR16_1
+Change Net Name : Old Net Name=NetR7_1 New Net Name=NetR2_1
+Change Net Name : Old Net Name=NetR8_1 New Net Name=NetR4_1
+Change Net Name : Old Net Name=NetR11_1 New Net Name=NetR5_1
+Change Net Name : Old Net Name=NetR11_2 New Net Name=NetR5_2
+Change Net Name : Old Net Name=NetR11_3 New Net Name=NetR5_3
+Change Net Name : Old Net Name=NetR11_4 New Net Name=NetR5_4
+Change Net Name : Old Net Name=NetR12_5 New Net Name=NetR6_5
+Change Net Name : Old Net Name=NetR12_6 New Net Name=NetR6_6
+Change Net Name : Old Net Name=NetR12_7 New Net Name=NetR6_7
+Change Net Name : Old Net Name=NetR12_8 New Net Name=NetR6_8
+Change Net Name : Old Net Name=NetR14_1 New Net Name=NetR13_1
+Change Net Name : Old Net Name=NetR14_2 New Net Name=NetR13_2
+Change Net Name : Old Net Name=NetR14_3 New Net Name=NetR13_3
+Change Net Name : Old Net Name=NetR14_4 New Net Name=NetR13_4
+Change Net Name : Old Net Name=NetR15_5 New Net Name=NetR14_5
+Change Net Name : Old Net Name=NetR15_6 New Net Name=NetR14_6
+Change Net Name : Old Net Name=NetR15_7 New Net Name=NetR14_7
+Change Net Name : Old Net Name=NetR15_8 New Net Name=NetR14_8
+Change Net Name : Old Net Name=NetS0_2 New Net Name=NetS1_2
+Change Net Name : Old Net Name=NetS1_2 New Net Name=NetS2_2
+Change Net Name : Old Net Name=NetS2_2 New Net Name=NetS3_2
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R9 RES SMD
+Added Room: Name=PenguinPi_HAT

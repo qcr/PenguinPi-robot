@@ -1,0 +1,151 @@
+Added Component: Designator=R1(RESC2012X07N)
+Added Component: Designator=R2(RESC2012X07N)
+Added Component: Designator=R3(RESC2012X07N)
+Added Component: Designator=R4(RESC2012X07N)
+Added Component: Designator=R5(RESC2012X07N)
+Added Component: Designator=R6(RESC2012X07N)
+Added Component: Designator=R7(RESC2012X07N)
+Added Component: Designator=R8(RESC2012X07N)
+Added Component: Designator=R10(RESC2012X07N)
+Added Component: Designator=R11(CAC-80P319X155-8M)
+Added Component: Designator=R12(CAC-80P319X155-8M)
+Added Component: Designator=R13(RESC2012X07N)
+Added Component: Designator=R14(CAC-80P319X155-8M)
+Added Component: Designator=R15(CAC-80P319X155-8M)
+Added Component: Designator=R16(RESC2012X07N)
+Added Component: Designator=R17(RESC2012X07N)
+Added Component: Designator=S0(E-SWITCH-TL3342)
+Added Component: Designator=S1(E-SWITCH-TL3342)
+Added Component: Designator=S2(E-SWITCH-TL3342)
+Added Component: Designator=S3(E-SWITCH-TL3342)
+Added Component: Designator=U1(TSOP65P640X110-24N)
+Added Component: Designator=U2(TSOP65P640X110-24N)
+Added Pin To Net: NetName=GND Pin=R1-1
+Added Pin To Net: NetName=CFG3 Pin=R1-2
+Added Pin To Net: NetName=GND Pin=R2-1
+Added Pin To Net: NetName=CFG2 Pin=R2-2
+Added Pin To Net: NetName=GND Pin=R3-1
+Added Pin To Net: NetName=CFG1 Pin=R3-2
+Added Pin To Net: NetName=GND Pin=R4-1
+Added Pin To Net: NetName=CFG0 Pin=R4-2
+Added Pin To Net: NetName=NetR5_1 Pin=R5-1
+Added Pin To Net: NetName=3V3 Pin=R5-2
+Added Pin To Net: NetName=NetR6_1 Pin=R6-1
+Added Pin To Net: NetName=3V3 Pin=R6-2
+Added Pin To Net: NetName=NetR7_1 Pin=R7-1
+Added Pin To Net: NetName=3V3 Pin=R7-2
+Added Pin To Net: NetName=NetR8_1 Pin=R8-1
+Added Pin To Net: NetName=3V3 Pin=R8-2
+Added Pin To Net: NetName=3V3 Pin=R10-1
+Added Pin To Net: NetName=BTN0 Pin=R10-2
+Added Pin To Net: NetName=NetR11_1 Pin=R11-1
+Added Pin To Net: NetName=NetR11_2 Pin=R11-2
+Added Pin To Net: NetName=NetR11_3 Pin=R11-3
+Added Pin To Net: NetName=NetR11_4 Pin=R11-4
+Added Pin To Net: NetName=IO0_4 Pin=R11-5
+Added Pin To Net: NetName=IO0_5 Pin=R11-6
+Added Pin To Net: NetName=IO0_6 Pin=R11-7
+Added Pin To Net: NetName=IO0_7 Pin=R11-8
+Added Pin To Net: NetName=IO1_4 Pin=R12-1
+Added Pin To Net: NetName=IO1_5 Pin=R12-2
+Added Pin To Net: NetName=IO1_6 Pin=R12-3
+Added Pin To Net: NetName=IO1_7 Pin=R12-4
+Added Pin To Net: NetName=NetR12_5 Pin=R12-5
+Added Pin To Net: NetName=NetR12_6 Pin=R12-6
+Added Pin To Net: NetName=NetR12_7 Pin=R12-7
+Added Pin To Net: NetName=NetR12_8 Pin=R12-8
+Added Pin To Net: NetName=3V3 Pin=R13-1
+Added Pin To Net: NetName=BTN1 Pin=R13-2
+Added Pin To Net: NetName=NetR14_1 Pin=R14-1
+Added Pin To Net: NetName=NetR14_2 Pin=R14-2
+Added Pin To Net: NetName=NetR14_3 Pin=R14-3
+Added Pin To Net: NetName=NetR14_4 Pin=R14-4
+Added Pin To Net: NetName=IO0_0 Pin=R14-5
+Added Pin To Net: NetName=IO0_1 Pin=R14-6
+Added Pin To Net: NetName=IO0_2 Pin=R14-7
+Added Pin To Net: NetName=IO0_3 Pin=R14-8
+Added Pin To Net: NetName=IO1_0 Pin=R15-1
+Added Pin To Net: NetName=IO1_1 Pin=R15-2
+Added Pin To Net: NetName=IO1_2 Pin=R15-3
+Added Pin To Net: NetName=IO1_3 Pin=R15-4
+Added Pin To Net: NetName=NetR15_5 Pin=R15-5
+Added Pin To Net: NetName=NetR15_6 Pin=R15-6
+Added Pin To Net: NetName=NetR15_7 Pin=R15-7
+Added Pin To Net: NetName=NetR15_8 Pin=R15-8
+Added Pin To Net: NetName=3V3 Pin=R16-1
+Added Pin To Net: NetName=BTN2 Pin=R16-2
+Added Pin To Net: NetName=3V3 Pin=R17-1
+Added Pin To Net: NetName=BTN3 Pin=R17-2
+Added Pin To Net: NetName=NetS0_2 Pin=S0-2
+Added Pin To Net: NetName=BTN0 Pin=S0-4
+Added Pin To Net: NetName=NetS0_2 Pin=S1-1
+Added Pin To Net: NetName=NetS1_2 Pin=S1-2
+Added Pin To Net: NetName=BTN1 Pin=S1-4
+Added Pin To Net: NetName=NetS1_2 Pin=S2-1
+Added Pin To Net: NetName=NetS2_2 Pin=S2-2
+Added Pin To Net: NetName=BTN2 Pin=S2-4
+Added Pin To Net: NetName=NetS2_2 Pin=S3-1
+Added Pin To Net: NetName=GND Pin=S3-2
+Added Pin To Net: NetName=BTN3 Pin=S3-4
+Added Pin To Net: NetName=NetR7_1 Pin=U1-1
+Added Pin To Net: NetName=3V3 Pin=U1-2
+Added Pin To Net: NetName=NetR8_1 Pin=U1-3
+Added Pin To Net: NetName=NetR14_4 Pin=U1-4
+Added Pin To Net: NetName=NetR14_3 Pin=U1-5
+Added Pin To Net: NetName=NetR14_2 Pin=U1-6
+Added Pin To Net: NetName=NetR14_1 Pin=U1-7
+Added Pin To Net: NetName=NetR11_4 Pin=U1-8
+Added Pin To Net: NetName=NetR11_3 Pin=U1-9
+Added Pin To Net: NetName=NetR11_2 Pin=U1-10
+Added Pin To Net: NetName=NetR11_1 Pin=U1-11
+Added Pin To Net: NetName=GND Pin=U1-12
+Added Pin To Net: NetName=NetR15_8 Pin=U1-13
+Added Pin To Net: NetName=NetR15_7 Pin=U1-14
+Added Pin To Net: NetName=NetR15_6 Pin=U1-15
+Added Pin To Net: NetName=NetR15_5 Pin=U1-16
+Added Pin To Net: NetName=NetR12_8 Pin=U1-17
+Added Pin To Net: NetName=NetR12_7 Pin=U1-18
+Added Pin To Net: NetName=NetR12_6 Pin=U1-19
+Added Pin To Net: NetName=NetR12_5 Pin=U1-20
+Added Pin To Net: NetName=GND Pin=U1-21
+Added Pin To Net: NetName=SCL Pin=U1-22
+Added Pin To Net: NetName=SDA Pin=U1-23
+Added Pin To Net: NetName=3V3 Pin=U1-24
+Added Pin To Net: NetName=NetR5_1 Pin=U2-1
+Added Pin To Net: NetName=3V3 Pin=U2-2
+Added Pin To Net: NetName=NetR6_1 Pin=U2-3
+Added Pin To Net: NetName=CFG0 Pin=U2-4
+Added Pin To Net: NetName=CFG1 Pin=U2-5
+Added Pin To Net: NetName=CFG2 Pin=U2-6
+Added Pin To Net: NetName=CFG3 Pin=U2-7
+Added Pin To Net: NetName=BTN0 Pin=U2-8
+Added Pin To Net: NetName=BTN1 Pin=U2-9
+Added Pin To Net: NetName=BTN2 Pin=U2-10
+Added Pin To Net: NetName=BTN3 Pin=U2-11
+Added Pin To Net: NetName=GND Pin=U2-12
+Added Pin To Net: NetName=3V3 Pin=U2-21
+Added Pin To Net: NetName=SCL Pin=U2-22
+Added Pin To Net: NetName=SDA Pin=U2-23
+Added Pin To Net: NetName=3V3 Pin=U2-24
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R1 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R2 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R3 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R4 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R5 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R6 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R7 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R8 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R10 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R11 ARRAY
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R12 ARRAY
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R13 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R14 ARRAY
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R15 ARRAY
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R16 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component R17 RES SMD
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component S0 B1
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component S1 B1
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component S2 B1
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component S3 B1
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component U1 PCA6416A
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component U2 PCA6416A

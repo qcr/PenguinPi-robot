@@ -1,0 +1,45 @@
+Added Component: Designator=LED17(C0805)
+Added Component: Designator=LED18(C0805)
+Added Component: Designator=LED19(C0805)
+Added Component: Designator=LED20(C0805)
+Added Component: Designator=LED21(C0805)
+Added Component: Designator=R17(RESC2012X07N)
+Added Component: Designator=R18(RESC2012X07N)
+Added Component: Designator=R19(RESC2012X07N)
+Added Component: Designator=R20(RESC2012X07N)
+Added Component: Designator=R21(RESC2012X07N)
+Added Pin To Net: NetName=5V0 Pin=LED17-1
+Added Pin To Net: NetName=5V0 Pin=LED18-1
+Added Pin To Net: NetName=5V0 Pin=LED19-1
+Added Pin To Net: NetName=5V0 Pin=LED20-1
+Added Pin To Net: NetName=5V0 Pin=LED21-1
+Added Pin To Net: NetName=GND Pin=R17-1
+Added Pin To Net: NetName=GND Pin=R18-1
+Added Pin To Net: NetName=GND Pin=R19-1
+Added Pin To Net: NetName=GND Pin=R20-1
+Added Pin To Net: NetName=GND Pin=R21-1
+Added Pin To Net: NetName=NetLED17_2 Pin=LED17-2
+Added Pin To Net: NetName=NetLED17_2 Pin=R17-2
+Added Net: Name=NetLED17_2
+Added Pin To Net: NetName=NetLED18_2 Pin=LED18-2
+Added Pin To Net: NetName=NetLED18_2 Pin=R18-2
+Added Net: Name=NetLED18_2
+Added Pin To Net: NetName=NetLED19_2 Pin=LED19-2
+Added Pin To Net: NetName=NetLED19_2 Pin=R19-2
+Added Net: Name=NetLED19_2
+Added Pin To Net: NetName=NetLED20_2 Pin=LED20-2
+Added Pin To Net: NetName=NetLED20_2 Pin=R20-2
+Added Net: Name=NetLED20_2
+Added Pin To Net: NetName=NetLED21_2 Pin=LED21-2
+Added Pin To Net: NetName=NetLED21_2 Pin=R21-2
+Added Net: Name=NetLED21_2
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component LED17 LED*
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component LED18 LED*
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component LED19 LED*
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component LED20 LED*
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component LED21 LED*
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component R17 RES SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component R18 RES SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component R19 RES SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component R20 RES SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component R21 RES SMD

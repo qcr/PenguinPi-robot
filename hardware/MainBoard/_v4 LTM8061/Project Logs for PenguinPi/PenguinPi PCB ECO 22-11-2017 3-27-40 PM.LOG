@@ -1,0 +1,22 @@
+Removed Pin From Net: NetName=GND Pin=U1-J6
+Removed Member From Class: ClassName=PenguinPi Member=LED8
+Removed Member From Class: ClassName=PenguinPi Member=R21
+Added Component: Designator=C14(CAPC2012X07N)
+Added Component: Designator=R22(RESC2012X07N)
+Added Pin To Net: NetName=GND Pin=C14-2
+Added Pin To Net: NetName=VCC Pin=R19-1
+Added Pin To Net: NetName=VCC Pin=R20-1
+Added Pin To Net: NetName=GND Pin=R22-2
+Added Pin To Net: NetName=FAULT_N Pin=U1-J7
+Added Pin To Net: NetName=CHG_N Pin=LED7-1
+Added Pin To Net: NetName=CHG_N Pin=U1-K7
+Added Net: Name=CHG_N
+Added Pin To Net: NetName=NetC14_1 Pin=C14-1
+Added Pin To Net: NetName=NetC14_1 Pin=U1-J6
+Added Net: Name=NetC14_1
+Added Pin To Net: NetName=NetR22_1 Pin=R22-1
+Added Pin To Net: NetName=NetR22_1 Pin=U1-H7
+Added Net: Name=NetR22_1
+Added Member To Class: ClassName=PenguinPi Member=Component C14 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R22 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

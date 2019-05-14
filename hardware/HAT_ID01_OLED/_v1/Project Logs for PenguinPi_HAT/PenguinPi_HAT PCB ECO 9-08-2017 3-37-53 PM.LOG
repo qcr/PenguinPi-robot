@@ -1,0 +1,5 @@
+Change Component Comment : Designator=P? Old Comment=Header 8X2 New Comment=HAT
+Change Component Designator: OldDesignator=P? NewDesignator=P1
+Added Net: Name=NetR5_1
+Added Net: Name=NetR6_1
+Added Room: Name=PenguinPi_HAT

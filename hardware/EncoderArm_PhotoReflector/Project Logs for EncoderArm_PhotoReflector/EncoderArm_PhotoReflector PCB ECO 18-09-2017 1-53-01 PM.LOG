@@ -1,0 +1,25 @@
+Removed Pin From Net: NetName=GND Pin=P1-4
+Removed Pin From Net: NetName=NetR1_1 Pin=SL1-4
+Removed Pin From Net: NetName=GND Pin=SL2-2
+Removed Pin From Net: NetName=NetR1_1 Pin=SR1-4
+Removed Pin From Net: NetName=GND Pin=SR2-2
+Change Component Footprint: Designator=SL1 Old Footprint=EE-SX1109 New Footprint=QRE1113GR
+Change Component Footprint: Designator=SL2 Old Footprint=EE-SX1109 New Footprint=QRE1113GR
+Change Component Footprint: Designator=SR1 Old Footprint=EE-SX1109 New Footprint=QRE1113GR
+Change Component Footprint: Designator=SR2 Old Footprint=EE-SX1109 New Footprint=QRE1113GR
+Change Component Comment : Designator=SL1 Old Comment=EE-SX1109 PhotoInterrupter New Comment=QRE1113
+Change Component Comment : Designator=SL2 Old Comment=EE-SX1109 PhotoInterrupter New Comment=QRE1113
+Change Component Comment : Designator=SR1 Old Comment=EE-SX1109 PhotoInterrupter New Comment=QRE1113
+Change Component Comment : Designator=SR2 Old Comment=EE-SX1109 PhotoInterrupter New Comment=QRE1113
+Added Pin To Net: NetName=NetR1_1 Pin=SL1-1
+Added Pin To Net: NetName=NetR1_1 Pin=SR1-1
+Change Net Name : Old Net Name=GND New Net Name=NetSL1_2
+Added Pin To Net: NetName=GND Pin=P1-4
+Added Pin To Net: NetName=GND Pin=SL1-4
+Added Pin To Net: NetName=GND Pin=SL2-2
+Added Pin To Net: NetName=GND Pin=SL2-4
+Added Pin To Net: NetName=GND Pin=SR1-4
+Added Pin To Net: NetName=GND Pin=SR2-2
+Added Pin To Net: NetName=GND Pin=SR2-4
+Added Net: Name=GND
+Change Class Name : Old Net Name=EncoderArm_Photo New Net Name=EncoderArm_PhotoReflector

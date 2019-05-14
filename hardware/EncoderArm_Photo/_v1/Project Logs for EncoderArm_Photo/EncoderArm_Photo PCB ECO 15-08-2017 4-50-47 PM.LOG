@@ -1,0 +1,7 @@
+Removed Pin From Net: NetName=GND Pin=P1-3
+Removed Pin From Net: NetName=3V3 Pin=P1-4
+Change Component Footprint: Designator=P1 Old Footprint=HDR1X6 New Footprint=HDR2X3
+Change Component Comment : Designator=P1 Old Comment=Connection to Controller New Comment=Header 3X2
+Added Pin To Net: NetName=3V3 Pin=P1-3
+Added Pin To Net: NetName=GND Pin=P1-4
+Added Class: Name=Power

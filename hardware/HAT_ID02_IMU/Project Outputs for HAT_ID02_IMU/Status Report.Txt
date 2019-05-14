@@ -1,0 +1,26 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [HAT_ID02_IMU.PrjPcb]
+   Generated File[HAT_ID02_IMU.GTL]
+   Generated File[HAT_ID02_IMU.GBL]
+   Generated File[HAT_ID02_IMU.GTP]
+   Generated File[HAT_ID02_IMU.GTO]
+   Generated File[HAT_ID02_IMU.GTS]
+   Generated File[HAT_ID02_IMU.GBS]
+   Generated File[HAT_ID02_IMU.GBO]
+   Generated File[HAT_ID02_IMU.GBP]
+   Generated File[HAT_ID02_IMU.GKO]
+   Generated File[HAT_ID02_IMU.GM1]
+   Generated File[HAT_ID02_IMU.GM13]
+   Generated File[HAT_ID02_IMU.GM15]
+   Generated File[HAT_ID02_IMU.GML]
+   Generated File[HAT_ID02_IMU.1]
+   Generated File[HAT_ID02_IMU.RUL]
+   Generated File[HAT_ID02_IMU.EXTREP]
+   Generated File[HAT_ID02_IMU.REP]
+
+
+Files Generated   : 17
+Documents Printed : 0
+
+Finished Output Generation At 10:03:54 AM On 27/03/2018

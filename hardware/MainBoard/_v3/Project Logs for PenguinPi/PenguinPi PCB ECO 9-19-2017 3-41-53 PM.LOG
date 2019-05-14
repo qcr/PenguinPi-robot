@@ -1,0 +1,5 @@
+Change Component Footprint: Designator=P3 Old Footprint=Molex SL70553 2 way New Footprint=Microfit SMD 2 way
+Change Component Comment : Designator=P3 Old Comment=Charger New Comment=Microfit
+Added Pin To Net: NetName=NetP3_2 Pin=P3-2
+Added Pin To Net: NetName=NetP3_2 Pin=SW1-3
+Added Net: Name=NetP3_2

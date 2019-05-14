@@ -1,0 +1,24 @@
+Change Component Footprint: Designator=U3 Old Footprint=INSE-QFN-24-1700X1540TP_L New Footprint=INSE-QFN-24-1700X1540TP_M
+Change Component Designator: OldDesignator=R1 NewDesignator=R9
+Change Component Designator: OldDesignator=R2 NewDesignator=R7
+Change Component Designator: OldDesignator=R3 NewDesignator=R10
+Change Component Designator: OldDesignator=R7 NewDesignator=R11
+Change Component Designator: OldDesignator=R8 NewDesignator=R1
+Change Component Designator: OldDesignator=R9 NewDesignator=R2
+Change Component Designator: OldDesignator=R10 NewDesignator=R3
+Change Component Designator: OldDesignator=R11 NewDesignator=R4
+Change Component Designator: OldDesignator=R15 NewDesignator=R5
+Change Component Designator: OldDesignator=R16 NewDesignator=R6
+Change Component Designator: OldDesignator=U2 NewDesignator=U1
+Change Component Designator: OldDesignator=U3 NewDesignator=U2
+Added Component: Designator=R8(RESC2012X07N)
+Added Pin To Net: NetName=HAT_07 Pin=R5-1
+Added Pin To Net: NetName=GND Pin=R8-1
+Added Pin To Net: NetName=HAT_07 Pin=U1-1
+Change Net Name : Old Net Name=NetR2_1 New Net Name=NetR7_1
+Change Net Name : Old Net Name=NetR16_1 New Net Name=NetR6_1
+Added Pin To Net: NetName=INT_IMU Pin=R8-2
+Added Pin To Net: NetName=INT_IMU Pin=U1-20
+Added Pin To Net: NetName=INT_IMU Pin=U2-12
+Added Net: Name=INT_IMU
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component R11 RES SMD

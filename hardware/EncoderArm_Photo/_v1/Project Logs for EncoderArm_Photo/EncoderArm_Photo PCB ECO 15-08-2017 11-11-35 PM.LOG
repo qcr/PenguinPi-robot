@@ -1,0 +1,3 @@
+Added Pin To Net: NetName=M1A Pin=P2-1
+Added Pin To Net: NetName=M1B Pin=P2-2
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component P2 Motor

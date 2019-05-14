@@ -1,0 +1,5 @@
+Change Physical Footprint: Designator=LEFT Old Footprint=HDR2X3 New Footprint=HDR2X3
+Change Physical Footprint: Designator=P3 Old Footprint=Header 3x2 nonstandard New Footprint=Header 3x2 nonstandard
+Change Physical Footprint: Designator=P4 Old Footprint=HDR2X8 New Footprint=HDR2X8
+Change Physical Footprint: Designator=RIGHT Old Footprint=HDR2X3 New Footprint=HDR2X3
+Change Physical Footprint: Designator=SW1 Old Footprint=PCB Switch New Footprint=PCB Switch

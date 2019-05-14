@@ -1,0 +1,11 @@
+Removed Pin From Net: NetName=3V3 Pin=P1-2
+Change Component Designator: OldDesignator=LG? NewDesignator=LG1
+Added Pin To Net: NetName=3V3 Pin=P1-4
+Change Net Name : Old Net Name=HAT_04 New Net Name=HAT_05
+Change Net Name : Old Net Name=HAT_05 New Net Name=HAT_06
+Change Net Name : Old Net Name=HAT_06 New Net Name=HAT_07
+Added Pin To Net: NetName=5V0 Pin=P1-2
+Added Net: Name=5V0
+Added Pin To Net: NetName=HAT_04 Pin=P1-12
+Added Net: Name=HAT_04
+Change Class Name : Old Net Name=PenguinPi_HAT New Net Name=HAT_ID01_OLED

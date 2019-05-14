@@ -1,0 +1,4 @@
+Added Component: Designator=P3(Molex SL70553 2 way)
+Added Pin To Net: NetName=GND Pin=P3-0
+Added Pin To Net: NetName=NetP3_1 Pin=P3-1
+Added Member To Class: ClassName=PenguinPi Member=Component P3 Charger

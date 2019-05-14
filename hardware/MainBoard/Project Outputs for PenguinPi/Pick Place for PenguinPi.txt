@@ -1,0 +1,57 @@
+Designator Footprint               Mid X         Mid Y         Ref X         Ref Y         Pad X         Pad Y TB      Rotation Comment        
+
+LED7       LED_YELLOW_RightAngle        470mil         65mil        470mil         65mil    418.819mil         65mil  T          0.00 PWR            
+SW1        PCB_Switch             945mil      247.5mil        945mil        435mil       1130mil        435mil  T        360.00 PCB Switch     
+P2         DC_Jack_SMD        478.819mil    315.512mil    431.575mil       2.52mil    329.213mil    471.024mil  B         90.00 DC Jack SMD    
+R18        RESC2012X07N           320mil       1450mil        320mil       1450mil    285.551mil       1450mil  T          0.00 RES SMD        
+LED4       LED_YELLOW_RightAngle         65mil       1320mil         65mil       1320mil         65mil   1371.181mil  T        270.00                
+R17        RESC2012X07N           695mil       1410mil        695mil       1410mil        695mil   1375.551mil  B         90.00 RES SMD        
+R16        RESC2012X07N           320mil       1525mil        320mil       1525mil    285.551mil       1525mil  T        360.00 RES SMD        
+R15        RESC2012X07N           320mil       1600mil        320mil       1600mil    285.551mil       1600mil  T        360.00 RES SMD        
+R14        RESC2012X07N           385mil        255mil        385mil        255mil    419.449mil        255mil  T        180.00 RES SMD        
+LED3       LED_YELLOW_RightAngle         65mil       1500mil         65mil       1500mil         65mil   1551.181mil  T        270.00                
+LED2       LED_YELLOW_RightAngle         65mil       1680mil         65mil       1680mil         65mil   1731.181mil  T        270.00                
+LED1       LED_RGB_RightAngle     72.874mil       1865mil         65mil       1865mil         65mil   1805.945mil  T        270.00 LED RGB RightAngle
+X1         XTAL_TSX3225          1325mil       1685mil       1325mil       1685mil   1272.106mil   1693.352mil  T        315.00 20MHz          
+C12        CAPC2012X07N          1145mil       1305mil       1145mil       1305mil   1120.641mil   1329.359mil  B        315.00 CAP SMD        
+C11        CAPC2012X07N          1025mil       1475mil       1025mil       1475mil   1049.359mil   1450.641mil  B        135.00 CAP SMD        
+U2         SOT95P280X145-5N        705mil        950mil        705mil        950mil    759.134mil    987.402mil  B        180.00 TSC888         
+R13        RESC2012X07N          2270mil       1160mil       2270mil       1160mil   2304.449mil       1160mil  B        180.00 RES SMD        
+R11        RESC2012X07N           320mil       1750mil        320mil       1750mil    285.551mil       1750mil  T        360.00 RES SMD        
+R10        RESC2012X07N           320mil       1825mil        320mil       1825mil    285.551mil       1825mil  T        360.00 RES SMD        
+R12        RESC2012X07N           320mil       1675mil        320mil       1675mil    285.551mil       1675mil  T        360.00 RES SMD        
+R8         RESC2012X07N           720mil       1770mil        720mil       1770mil        720mil   1735.551mil  T         90.00 RES SMD        
+R7         RESC2012X07N           800mil       1770mil        800mil       1770mil        800mil   1735.551mil  T         90.00 RES SMD        
+R6         RESC2012X07N       864.449mil        995mil    864.449mil        995mil        830mil        995mil  B          0.00 RES SMD        
+R4         RESC2012X07N           865mil        915mil        865mil        915mil    899.449mil        915mil  B        180.00 RES SMD        
+R1         RESC3216X06M          1100mil        815mil       1100mil        815mil   1036.024mil        815mil  T        360.00 RES SMD        
+L1         CM322522           937.637mil   1367.546mil    895.183mil       1410mil    895.183mil       1410mil  B        315.00 INDUCTOR SMD   
+F1         MF-MSMF250/16X-2       1130mil        625mil       1130mil        625mil       1130mil    530.905mil  T         90.00 RGEF250        
+C10        CAPC2012X07N          2385mil       1200mil       2385mil       1200mil       2385mil   1165.551mil  B         90.00 CAP SMD        
+C9         CAPC2012X07N          1300mil       1700mil       1300mil       1700mil   1275.641mil   1675.641mil  B         45.00 CAP SMD        
+C8         CAPC2012X07N          1355mil       1645mil       1355mil       1645mil   1330.641mil   1620.641mil  B         45.00 CAP SMD        
+C7         CAPC2012X07N           795mil       1155mil        795mil       1155mil    770.641mil   1130.641mil  B         45.00 CAP SMD        
+C6         CAPC2012X07N           850mil       1100mil        850mil       1100mil    825.641mil   1075.641mil  B         45.00 CAP SMD        
+C5         CAPC2012X07N          1190mil       1455mil       1190mil       1455mil   1165.641mil   1430.641mil  B         45.00 CAP SMD        
+U3         44A_L                 1095mil       1400mil       1095mil       1400mil   1362.253mil   1444.542mil  T        225.00 ATmega644PA-AU 
+R3         RESC2012X07N          1615mil        110mil       1615mil        110mil   1580.551mil        110mil  T        360.00 RES SMD        
+VR1        OKL-T/3-W12           1470mil        415mil       1470mil        415mil       1290mil        415mil  T          0.00 Murata OKL-T/3-W12
+PI         RPI_2_Header          1280mil   2073.937mil        330mil   2023.937mil        330mil   2023.937mil  T         90.00 RPi Header     
+R2         RESC2012X07N          2270mil       1490mil       2270mil       1490mil   2235.551mil       1490mil  B        360.00 RES SMD        
+R9         RESC2012X07N          2270mil       1240mil       2270mil       1240mil   2235.551mil       1240mil  B        360.00 RES SMD        
+S1         E-SWITCH-TL3342   2274.016mil   1484.803mil   2398.032mil   1559.606mil   2398.032mil   1559.606mil  T        180.00 SDN            
+S2         E-SWITCH-TL3342   2275.984mil   1235.197mil   2151.968mil   1160.394mil   2151.968mil   1160.394mil  T        360.00 RST            
+RIGHT      HDR2X3             2371.26mil   -258.268mil    2421.26mil   -358.268mil    2421.26mil   -358.268mil  T         90.00 Header 3X2     
+LEFT       HDR2X3             2371.26mil   2470.866mil    2321.26mil   2570.866mil    2321.26mil   2570.866mil  T        270.00 Header 3X2     
+P5         Header_3x2_nonstandard       2230mil       1750mil       2130mil       1700mil       2130mil       1700mil  T         90.00 ISP            
+P4         HDR2X8                1800mil       1400mil       1850mil       1050mil       1850mil       1050mil  T         90.00 HAT            
+U1         DRV8835_CARRIER       2250mil    702.362mil       2100mil   1002.362mil       2100mil   1002.362mil  T        360.00 DRV8835_CARRIER
+R5         RESC2012X07N          2130mil        290mil       2130mil        290mil   2164.449mil        290mil  T        180.00 RES SMD        
+C1         CAPC2012X07N          1425mil        720mil       1425mil        720mil   1459.449mil        720mil  T        180.00 CAP SMD        
+C2         CAPC2012X07N          1605mil        720mil       1605mil        720mil   1570.551mil        720mil  T          0.00 CAP SMD        
+C3         6-0805_M              1240mil        965mil       1240mil        965mil    1200.63mil        965mil  B        360.00 Cap            
+C4         6-0805_M              1870mil        900mil       1870mil        900mil       1870mil     939.37mil  B        270.00 Cap Pol1       
+VR2        SOT233-4N             1470mil        770mil       1470mil        770mil   1354.842mil    679.449mil  B        360.00 FT_SOT223      
+P1         XT30_-_PCB_mount     276.85mil    961.535mil    473.701mil    961.535mil    473.701mil     863.11mil  B        270.00 XT30           
+D1         SODFL470X110-2N        945mil        620mil        945mil        620mil        945mil    533.386mil  T         90.00 SMD DIODE      
+

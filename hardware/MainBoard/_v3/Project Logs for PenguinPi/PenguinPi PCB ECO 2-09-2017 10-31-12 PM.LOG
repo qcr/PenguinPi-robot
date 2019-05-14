@@ -1,0 +1,11 @@
+Removed Pin From Net: NetName=NetC8_2 Pin=X1-1
+Removed Pin From Net: NetName=GND Pin=X1-2
+Removed Pin From Net: NetName=NetC9_2 Pin=X1-3
+Removed Pin From Net: NetName=GND Pin=X1-4
+Removed Member From Class: ClassName=PenguinPi Member=X1
+Added Component: Designator=X?(XTAL TSX3225)
+Added Pin To Net: NetName=NetC9_2 Pin=X?-1
+Added Pin To Net: NetName=GND Pin=X?-2
+Added Pin To Net: NetName=NetC8_2 Pin=X?-3
+Added Pin To Net: NetName=GND Pin=X?-4
+Added Member To Class: ClassName=PenguinPi Member=Component X? 20MHz

@@ -1,0 +1,19 @@
+Removed Pin From Net: NetName=MISO Pin=P3-1
+Removed Pin From Net: NetName=SCLK Pin=P3-3
+Removed Pin From Net: NetName=MOSI Pin=P3-4
+Added Component: Designator=*?(OKL-T/3-W12)
+Added Component: Designator=R?(RESC2012X07N)
+Added Pin To Net: NetName=GND Pin=*?-3
+Added Pin To Net: NetName=VCC Pin=*?-4
+Added Pin To Net: NetName=VCC Pin=*?-5
+Added Pin To Net: NetName=GND Pin=*?-7
+Added Pin To Net: NetName=HAT_05 Pin=P3-1
+Added Pin To Net: NetName=GND Pin=R?-1
+Change Net Name : Old Net Name=RST New Net Name=PDI_C
+Added Pin To Net: NetName=Net*?_6 Pin=*?-6
+Added Pin To Net: NetName=Net*?_6 Pin=R?-2
+Added Net: Name=Net*?_6
+Added Pin To Net: NetName=VIN Pin=*?-2
+Added Net: Name=VIN
+Added Member To Class: ClassName=PenguinPi Member=Component *? Murata OKL-T/3-W12
+Added Member To Class: ClassName=PenguinPi Member=Component R? RES SMD

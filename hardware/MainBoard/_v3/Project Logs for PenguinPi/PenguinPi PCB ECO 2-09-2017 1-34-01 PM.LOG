@@ -1,0 +1,56 @@
+Removed Pin From Net: NetName=VCC Pin=C1-2
+Removed Pin From Net: NetName=HAT_05 Pin=PDI-1
+Removed Member From Class: ClassName=Power Member=3V3
+Removed Member From Class: ClassName=Power Member=NetC2_2
+Removed Member From Class: ClassName=Power Member=VCC
+Change Component Designator: OldDesignator=*? NewDesignator=*1
+Change Component Designator: OldDesignator=LG1 NewDesignator=LG2
+Change Component Designator: OldDesignator=LG2 NewDesignator=LG1
+Change Component Designator: OldDesignator=P5 NewDesignator=P3
+Change Component Designator: OldDesignator=PDI NewDesignator=ISP1
+Change Component Designator: OldDesignator=R4 NewDesignator=R2
+Change Component Designator: OldDesignator=R5 NewDesignator=R4
+Change Component Designator: OldDesignator=R6 NewDesignator=R5
+Change Component Designator: OldDesignator=R7 NewDesignator=R6
+Change Component Designator: OldDesignator=R8 NewDesignator=R7
+Change Component Designator: OldDesignator=R9 NewDesignator=R8
+Change Component Designator: OldDesignator=R10 NewDesignator=R9
+Change Component Designator: OldDesignator=R11 NewDesignator=R13
+Change Component Designator: OldDesignator=R12 NewDesignator=R10
+Change Component Designator: OldDesignator=R13 NewDesignator=R11
+Change Component Designator: OldDesignator=R14 NewDesignator=R12
+Change Component Designator: OldDesignator=R? NewDesignator=R3
+Added Component: Designator=C2(CAPC2012X07N)
+Added Component: Designator=C3(6-0805_M)
+Added Component: Designator=C4(6-0805_M)
+Added Component: Designator=VREG1(SOT233-4N)
+Added Pin To Net: NetName=GND Pin=C2-1
+Added Pin To Net: NetName=VCC Pin=C2-2
+Added Pin To Net: NetName=GND Pin=C3-1
+Added Pin To Net: NetName=3V3 Pin=C3-2
+Added Pin To Net: NetName=VCC Pin=C4-1
+Added Pin To Net: NetName=GND Pin=C4-2
+Added Pin To Net: NetName=MISO Pin=ISP1-1
+Added Pin To Net: NetName=SCLK Pin=ISP1-3
+Added Pin To Net: NetName=MOSI Pin=ISP1-4
+Added Pin To Net: NetName=VCC Pin=VREG1-1
+Added Pin To Net: NetName=GND Pin=VREG1-2
+Added Pin To Net: NetName=3V3 Pin=VREG1-3
+Added Pin To Net: NetName=GND Pin=VREG1-4
+Change Net Name : Old Net Name=Net*?_6 New Net Name=Net*1_6
+Change Net Name : Old Net Name=NetP5_2 New Net Name=NetP3_2
+Change Net Name : Old Net Name=NetR6_2 New Net Name=NetR5_2
+Change Net Name : Old Net Name=NetR10_1 New Net Name=NetR9_1
+Change Net Name : Old Net Name=PDI_C New Net Name=RST
+Added Pin To Net: NetName=Net*1_2 Pin=*1-2
+Added Pin To Net: NetName=Net*1_2 Pin=C1-2
+Added Pin To Net: NetName=Net*1_2 Pin=R1-2
+Added Pin To Net: NetName=Net*1_2 Pin=U2-4
+Added Net: Name=Net*1_2
+Added Pin To Net: NetName=PWRG Pin=*1-10
+Added Net: Name=PWRG
+Added Member To Class: ClassName=PenguinPi Member=Component C2 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C3 Cap
+Added Member To Class: ClassName=PenguinPi Member=Component C4 Cap Pol1
+Added Member To Class: ClassName=PenguinPi Member=Component VREG1 FT_SOT223
+Added Member To Class: ClassName=Power Member=Wire Net*1_2

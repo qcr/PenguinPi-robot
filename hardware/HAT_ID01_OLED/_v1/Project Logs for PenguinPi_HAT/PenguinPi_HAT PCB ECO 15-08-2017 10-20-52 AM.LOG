@@ -1,0 +1,16 @@
+Added Component: Designator=LED6(C0805)
+Added Component: Designator=LED7(C0805)
+Added Component: Designator=LED10(C0805)
+Added Component: Designator=LED11(C0805)
+Added Pin To Net: NetName=IO1_5 Pin=LED6-1
+Added Pin To Net: NetName=GND Pin=LED6-2
+Added Pin To Net: NetName=IO0_4 Pin=LED7-1
+Added Pin To Net: NetName=GND Pin=LED7-2
+Added Pin To Net: NetName=IO1_3 Pin=LED10-1
+Added Pin To Net: NetName=GND Pin=LED10-2
+Added Pin To Net: NetName=IO0_2 Pin=LED11-1
+Added Pin To Net: NetName=GND Pin=LED11-2
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED6 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED7 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED10 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED11 LED*

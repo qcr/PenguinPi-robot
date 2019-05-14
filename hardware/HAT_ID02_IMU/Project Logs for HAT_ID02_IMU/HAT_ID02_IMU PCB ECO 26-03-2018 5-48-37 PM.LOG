@@ -1,0 +1,36 @@
+Added Component: Designator=BOB1(BOB MPU-9250)
+Added Component: Designator=C3(C0805)
+Added Component: Designator=C4(C0805)
+Added Component: Designator=C5(C0805)
+Added Component: Designator=C6(C0805)
+Added Component: Designator=LG2(QUT_Logo)
+Added Pin To Net: NetName=SCL Pin=BOB1-0
+Added Pin To Net: NetName=SDA Pin=BOB1-1
+Added Pin To Net: NetName=3V3 Pin=BOB1-2
+Added Pin To Net: NetName=GND Pin=BOB1-3
+Added Pin To Net: NetName=GND Pin=BOB1-5
+Added Pin To Net: NetName=INT_IMU Pin=BOB1-7
+Added Pin To Net: NetName=GND Pin=BOB1-9
+Added Pin To Net: NetName=3V3 Pin=BOB1-10
+Added Pin To Net: NetName=GND Pin=C3-1
+Added Pin To Net: NetName=5V0 Pin=C3-2
+Added Pin To Net: NetName=GND Pin=C4-1
+Added Pin To Net: NetName=5V0 Pin=C4-2
+Added Pin To Net: NetName=GND Pin=C5-1
+Added Pin To Net: NetName=3V3 Pin=C5-2
+Added Pin To Net: NetName=GND Pin=C6-1
+Added Pin To Net: NetName=3V3 Pin=C6-2
+Added Pin To Net: NetName=GND Pin=U1-17
+Added Pin To Net: NetName=GND Pin=U1-18
+Added Pin To Net: NetName=GND Pin=U1-19
+Added Pin To Net: NetName=NCS Pin=BOB1-8
+Added Pin To Net: NetName=NCS Pin=R7-1
+Added Pin To Net: NetName=NCS Pin=U2-22
+Added Net: Name=NCS
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component BOB1 BOB MPU-9250
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component C3 CAP SMD
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component C4 CAP SMD
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component C5 CAP SMD
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component C6 CAP SMD
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component LG2 QUT_Logo
+Added Room: Name=HAT_ID02_IMU

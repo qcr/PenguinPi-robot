@@ -1,0 +1,26 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [HAT_ID01_OLED.PrjPcb]
+   Generated File[HAT_ID01_OLED.GTL]
+   Generated File[HAT_ID01_OLED.GBL]
+   Generated File[HAT_ID01_OLED.GTP]
+   Generated File[HAT_ID01_OLED.GTO]
+   Generated File[HAT_ID01_OLED.GTS]
+   Generated File[HAT_ID01_OLED.GBS]
+   Generated File[HAT_ID01_OLED.GBO]
+   Generated File[HAT_ID01_OLED.GBP]
+   Generated File[HAT_ID01_OLED.GKO]
+   Generated File[HAT_ID01_OLED.GM1]
+   Generated File[HAT_ID01_OLED.GM13]
+   Generated File[HAT_ID01_OLED.GM15]
+   Generated File[HAT_ID01_OLED.GML]
+   Generated File[HAT_ID01_OLED.1]
+   Generated File[HAT_ID01_OLED.RUL]
+   Generated File[HAT_ID01_OLED.EXTREP]
+   Generated File[HAT_ID01_OLED.REP]
+
+
+Files Generated   : 17
+Documents Printed : 0
+
+Finished Output Generation At 12:49:11 PM On 18/12/2017

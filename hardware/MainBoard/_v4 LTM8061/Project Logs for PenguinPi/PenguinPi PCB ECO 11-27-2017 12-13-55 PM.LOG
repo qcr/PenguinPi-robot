@@ -1,0 +1,3 @@
+Change Component Designator: OldDesignator=U1 NewDesignator=U4
+Added Member To Class: ClassName=PenguinPi Member=Component R22 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component U4 LTM8061EV-8.2#PBF

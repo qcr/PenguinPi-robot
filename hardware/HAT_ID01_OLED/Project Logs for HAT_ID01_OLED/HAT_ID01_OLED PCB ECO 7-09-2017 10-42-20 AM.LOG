@@ -1,0 +1,29 @@
+Added Component: Designator=C1(CAPC2012X07N)
+Added Component: Designator=C2(CAPC2012X07N)
+Added Component: Designator=C3(CAPC2012X07N)
+Added Component: Designator=R17(RESC2012X07N)
+Added Component: Designator=U3(QFN40P300X300X105_HS-25N)
+Added Pin To Net: NetName=GND Pin=C1-1
+Added Pin To Net: NetName=3V3 Pin=C1-2
+Added Pin To Net: NetName=GND Pin=C2-1
+Added Pin To Net: NetName=3V3 Pin=C2-2
+Added Pin To Net: NetName=GND Pin=C3-1
+Added Pin To Net: NetName=GND Pin=R17-1
+Added Pin To Net: NetName=3V3 Pin=U3-1
+Added Pin To Net: NetName=3V3 Pin=U3-8
+Added Pin To Net: NetName=3V3 Pin=U3-13
+Added Pin To Net: NetName=GND Pin=U3-18
+Added Pin To Net: NetName=GND Pin=U3-20
+Added Pin To Net: NetName=SCL Pin=U3-23
+Added Pin To Net: NetName=SDA Pin=U3-24
+Added Pin To Net: NetName=NetC3_2 Pin=C3-2
+Added Pin To Net: NetName=NetC3_2 Pin=U3-10
+Added Net: Name=NetC3_2
+Added Pin To Net: NetName=NetR17_2 Pin=R17-2
+Added Pin To Net: NetName=NetR17_2 Pin=U3-9
+Added Net: Name=NetR17_2
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component C1 CAP SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component C2 CAP SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component C3 CAP SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component R17 RES SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component U3 MPU-9250

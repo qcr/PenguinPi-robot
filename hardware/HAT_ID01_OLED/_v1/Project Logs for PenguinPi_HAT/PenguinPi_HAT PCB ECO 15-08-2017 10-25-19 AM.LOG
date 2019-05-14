@@ -1,0 +1,13 @@
+Removed Pin From Net: NetName=IO1_6 Pin=LED8-1
+Removed Pin From Net: NetName=IO1_4 Pin=LED14-1
+Added Pin To Net: NetName=IO1_4 Pin=LED8-1
+Added Pin To Net: NetName=GND Pin=LED8-2
+Added Pin To Net: NetName=IO1_3 Pin=LED10-1
+Added Pin To Net: NetName=GND Pin=LED10-2
+Added Pin To Net: NetName=GND Pin=LED12-2
+Added Pin To Net: NetName=IO1_1 Pin=LED14-1
+Added Pin To Net: NetName=GND Pin=LED14-2
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED8 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED10 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED12 LED*
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component LED14 LED*

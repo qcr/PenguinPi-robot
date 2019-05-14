@@ -1,0 +1,3 @@
+Removed Pin From Net: NetName=SDA Pin=P5-1
+Removed Pin From Net: NetName=SCL Pin=P5-2
+Removed Member From Class: ClassName=PenguinPi Member=P5

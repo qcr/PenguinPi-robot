@@ -1,0 +1,9 @@
+Removed Pin From Net: NetName=3V3 Pin=LED1-4
+Removed Pin From Net: NetName=NetLED1_3 Pin=R12-1
+Change Component Footprint: Designator=LED1 Old Footprint=RGB SMD New Footprint=LED RGB RightAngle
+Change Component Comment : Designator=LED1 Old Comment=RGB SMD New Comment=LED RGB RightAngle
+Added Pin To Net: NetName=3V3 Pin=LED1-2
+Added Pin To Net: NetName=NetLED1_3 Pin=R11-1
+Added Pin To Net: NetName=NetLED1_4 Pin=LED1-4
+Added Pin To Net: NetName=NetLED1_4 Pin=R12-1
+Added Net: Name=NetLED1_4

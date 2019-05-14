@@ -1,0 +1,58 @@
+Designator Footprint               Mid X         Mid Y         Ref X         Ref Y         Pad X         Pad Y TB      Rotation Comment        
+
+DIP1       DIP_SMD                850mil   -859.291mil       1000mil  -1028.583mil        800mil  -1028.583mil  T        360.00 DIP Switch (4way)
+P1         HDR2X8                 950mil    297.638mil       1000mil    -52.362mil       1000mil    -52.362mil  T         90.00 HAT            
+R8         RESC2012X07N          1000mil       -900mil       1000mil       -900mil       1000mil   -934.449mil  B         90.00 RES SMD        
+R9         RESC2012X07N           900mil       -900mil        900mil       -900mil        900mil   -934.449mil  B         90.00 RES SMD        
+R10        RESC2012X07N           800mil       -900mil        800mil       -900mil        800mil   -934.449mil  B         90.00 RES SMD        
+R11        RESC2012X07N           700mil       -900mil        700mil       -900mil        700mil   -934.449mil  B         90.00 RES SMD        
+R15        RESC2012X07N          1000mil       -480mil       1000mil       -480mil       1000mil   -514.449mil  B         90.00 RES SMD        
+R16        RESC2012X07N           965mil       -640mil        965mil       -640mil    930.551mil       -640mil  B        360.00 RES SMD        
+R2         RESC2012X07N           760mil        -90mil        760mil        -90mil        760mil   -124.449mil  B         90.00 RES SMD        
+R4         RESC2012X07N           730mil       -200mil        730mil       -200mil    695.551mil       -200mil  B        360.00 RES SMD        
+R6         CAC-80P319X155-8M        680mil        510mil        680mil        510mil    627.835mil    545.433mil  B        270.00 ARRAY          
+R3         RESC2012X07N          -550mil        360mil       -550mil        360mil       -550mil    325.551mil  B         90.00 RES SMD        
+R13        CAC-80P319X155-8M        490mil       -400mil        490mil       -400mil    437.835mil   -364.567mil  B        270.00 ARRAY          
+R7         RESC2012X07N          -550mil       -360mil       -550mil       -360mil       -550mil   -325.551mil  B        270.00 RES SMD        
+S1         E-SWITCH-TL3342   -704.803mil    643.622mil   -779.606mil    767.638mil   -779.606mil    767.638mil  T        270.00 B1             
+S2         E-SWITCH-TL3342   -704.803mil    213.622mil   -779.606mil    337.638mil   -779.606mil    337.638mil  T        270.00 B1             
+S3         E-SWITCH-TL3342   -704.803mil   -216.378mil   -779.606mil    -92.362mil   -779.606mil    -92.362mil  T        270.00 B1             
+S4         E-SWITCH-TL3342   -704.803mil   -646.378mil   -779.606mil   -522.362mil   -779.606mil   -522.362mil  T        270.00 B1             
+U1         TSOP65P640X110-24N        550mil          0mil        550mil          0mil    690.748mil   -116.142mil  B         90.00 PCA6416A       
+U2         TSOP65P640X110-24N        785mil       -440mil        785mil       -440mil    925.748mil   -556.142mil  B         90.00 PCA6416A       
+OLED1      OLED                  -300mil    688.976mil       -300mil    688.976mil       -450mil    688.976mil  T        270.00 OLED           
+R1         RESC2012X07N          -550mil        500mil       -550mil        500mil       -550mil    534.449mil  B        270.00 RES SMD        
+R12        RESC2012X07N          -550mil       -500mil       -550mil       -500mil       -550mil   -534.449mil  B         90.00 RES SMD        
+R14        CAC-80P319X155-8M        290mil        170mil        290mil        170mil    254.567mil    117.835mil  B        360.00 ARRAY          
+LED2       C0805              590.551mil    590.551mil    590.551mil    590.551mil    590.551mil    620.079mil  T        270.00 LED*           
+LED4       C0805              393.701mil    590.551mil    393.701mil    590.551mil    393.701mil    620.079mil  T        270.00 LED*           
+LED6       C0805              196.851mil    590.551mil     196.85mil    590.551mil    196.851mil    620.079mil  T        270.00 LED*           
+LED8       C0805                    0mil    590.551mil          0mil    590.551mil          0mil    620.079mil  T        270.00 LED*           
+LED14      C0805              196.851mil     196.85mil     196.85mil     196.85mil    196.851mil    226.378mil  T        270.00 LED*           
+LED12      C0805              393.701mil     196.85mil    393.701mil     196.85mil    393.701mil    226.378mil  T        270.00 LED*           
+LED10      C0805              590.551mil     196.85mil    590.551mil     196.85mil    590.551mil    226.378mil  T        270.00 LED*           
+LED16      C0805                    0mil     196.85mil          0mil     196.85mil          0mil    226.378mil  T        270.00 LED*           
+LED15      C0805                    0mil   -590.551mil          0mil   -590.551mil          0mil   -620.079mil  T         90.00 LED*           
+LED13      C0805               196.85mil   -590.551mil     196.85mil   -590.551mil     196.85mil   -620.079mil  T         90.00 LED*           
+LED9       C0805              590.551mil   -590.551mil    590.551mil   -590.551mil    590.551mil   -620.079mil  T         90.00 LED*           
+LED11      C0805              393.701mil   -590.551mil    393.701mil   -590.551mil    393.701mil   -620.079mil  T         90.00 LED*           
+LED5       C0805               196.85mil    -196.85mil     196.85mil    -196.85mil     196.85mil   -226.378mil  T         90.00 LED*           
+LED1       C0805              590.551mil    -196.85mil    590.551mil    -196.85mil    590.551mil   -226.378mil  T         90.00 LED*           
+LED7       C0805                    0mil    -196.85mil          0mil    -196.85mil          0mil   -226.378mil  T         90.00 LED*           
+LED3       C0805              393.701mil    -196.85mil    393.701mil    -196.85mil    393.701mil   -226.378mil  T         90.00 LED*           
+R5         CAC-80P319X155-8M        170mil       -180mil        170mil       -180mil    205.433mil   -127.835mil  B        180.00 ARRAY          
+LED17      C0805                 1300mil        950mil       1300mil        950mil   1329.527mil        950mil  T        180.00 LED*           
+LED18      C0805                 -450mil        950mil       -450mil        950mil   -420.473mil        950mil  T        180.00 LED*           
+LED19      C0805                  700mil          0mil        700mil          0mil    729.528mil          0mil  T        180.00 LED*           
+LED20      C0805                 1300mil       -950mil       1300mil       -950mil   1329.527mil       -950mil  T        180.00 LED*           
+LED21      C0805                 -450mil       -950mil       -450mil       -950mil   -420.473mil       -950mil  T        180.00 LED*           
+R17        RESC2012X07N          1300mil        950mil       1300mil        950mil   1334.449mil        950mil  B        180.00 RES SMD        
+R18        RESC2012X07N          -450mil        950mil       -450mil        950mil   -415.551mil        950mil  B        180.00 RES SMD        
+R19        RESC2012X07N           310mil          0mil        310mil          0mil    344.449mil          0mil  B        180.00 RES SMD        
+R20        RESC2012X07N          1300mil       -950mil       1300mil       -950mil   1334.449mil       -950mil  B        180.00 RES SMD        
+R21        RESC2012X07N          -450mil       -950mil       -450mil       -950mil   -415.551mil       -950mil  B        180.00 RES SMD        
+C1         C0805              990.472mil       -250mil    990.472mil       -250mil    960.945mil       -250mil  T        360.00 CAP SMD        
+C2         C0805              990.472mil       -180mil    990.472mil       -180mil    960.945mil       -180mil  T        360.00 CAP SMD        
+C3         C0805                  810mil        100mil        810mil        100mil        810mil    129.528mil  T        270.00 CAP SMD        
+C4         C0805                  740mil    100.472mil        740mil    100.472mil        740mil        130mil  T        270.00 CAP SMD        
+

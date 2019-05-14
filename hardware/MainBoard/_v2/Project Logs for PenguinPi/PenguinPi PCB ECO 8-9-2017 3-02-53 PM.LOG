@@ -1,0 +1,164 @@
+Removed Pin From Net: NetName=RST Pin=C5-2
+Removed Pin From Net: NetName=GND Pin=C6-1
+Removed Pin From Net: NetName=3V3 Pin=C6-2
+Removed Pin From Net: NetName=SGND Pin=C8-1
+Removed Pin From Net: NetName=AREF Pin=C8-2
+Removed Pin From Net: NetName=3V3 Pin=DIP1-0
+Removed Pin From Net: NetName=3V3 Pin=DIP1-1
+Removed Pin From Net: NetName=3V3 Pin=DIP1-2
+Removed Pin From Net: NetName=3V3 Pin=DIP1-3
+Removed Pin From Net: NetName=GND Pin=LED2-2
+Removed Pin From Net: NetName=GND Pin=LED3-2
+Removed Pin From Net: NetName=GND Pin=LED4-2
+Removed Pin From Net: NetName=GND Pin=LED5-2
+Removed Pin From Net: NetName=GND Pin=LED6-2
+Removed Pin From Net: NetName=GND Pin=LED7-2
+Removed Pin From Net: NetName=GND Pin=LED8-2
+Removed Pin From Net: NetName=GND Pin=LED9-2
+Removed Pin From Net: NetName=GND Pin=LED10-2
+Removed Pin From Net: NetName=GND Pin=LED11-2
+Removed Pin From Net: NetName=GND Pin=LED12-2
+Removed Pin From Net: NetName=GND Pin=LED13-2
+Removed Pin From Net: NetName=GND Pin=LED14-2
+Removed Pin From Net: NetName=GND Pin=LED15-2
+Removed Pin From Net: NetName=GND Pin=LED16-2
+Removed Pin From Net: NetName=GND Pin=LED17-2
+Removed Pin From Net: NetName=MISO Pin=P6-1
+Removed Pin From Net: NetName=3V3 Pin=P6-2
+Removed Pin From Net: NetName=SCLK Pin=P6-3
+Removed Pin From Net: NetName=MOSI Pin=P6-4
+Removed Pin From Net: NetName=RST Pin=P6-5
+Removed Pin From Net: NetName=GND Pin=P6-6
+Removed Pin From Net: NetName=NetLED1_1 Pin=R10-1
+Removed Pin From Net: NetName=LED-R Pin=R10-2
+Removed Pin From Net: NetName=RST Pin=R11-2
+Removed Pin From Net: NetName=NetLED1_2 Pin=R12-1
+Removed Pin From Net: NetName=LED-G Pin=R12-2
+Removed Pin From Net: NetName=3V3 Pin=R13-2
+Removed Pin From Net: NetName=3V3 Pin=R14-2
+Removed Pin From Net: NetName=NetLED1_3 Pin=R15-1
+Removed Pin From Net: NetName=LED-B Pin=R15-2
+Removed Pin From Net: NetName=3V3 Pin=R16-1
+Removed Pin From Net: NetName=3V3 Pin=R19-1
+Removed Pin From Net: NetName=GND Pin=R20-1
+Removed Pin From Net: NetName=3V3 Pin=R23-1
+Removed Pin From Net: NetName=3V3 Pin=R24-1
+Removed Pin From Net: NetName=GND Pin=R26-1
+Removed Pin From Net: NetName=GND Pin=R27-1
+Removed Pin From Net: NetName=GND Pin=R28-1
+Removed Pin From Net: NetName=RST Pin=R29-1
+Removed Pin From Net: NetName=3V3 Pin=R29-2
+Removed Pin From Net: NetName=GND Pin=S6-2
+Removed Pin From Net: NetName=3V3 Pin=U4-2
+Removed Pin From Net: NetName=GND Pin=U4-12
+Removed Pin From Net: NetName=GND Pin=U4-21
+Removed Pin From Net: NetName=SCL Pin=U4-22
+Removed Pin From Net: NetName=SDA Pin=U4-23
+Removed Pin From Net: NetName=3V3 Pin=U4-24
+Removed Member From Class: ClassName=PenguinPi Member=DIP1
+Removed Member From Class: ClassName=PenguinPi Member=LED2
+Removed Member From Class: ClassName=PenguinPi Member=LED3
+Removed Member From Class: ClassName=PenguinPi Member=LED4
+Removed Member From Class: ClassName=PenguinPi Member=LED5
+Removed Member From Class: ClassName=PenguinPi Member=LED6
+Removed Member From Class: ClassName=PenguinPi Member=LED7
+Removed Member From Class: ClassName=PenguinPi Member=LED8
+Removed Member From Class: ClassName=PenguinPi Member=LED9
+Removed Member From Class: ClassName=PenguinPi Member=LED10
+Removed Member From Class: ClassName=PenguinPi Member=LED11
+Removed Member From Class: ClassName=PenguinPi Member=LED12
+Removed Member From Class: ClassName=PenguinPi Member=LED13
+Removed Member From Class: ClassName=PenguinPi Member=LED14
+Removed Member From Class: ClassName=PenguinPi Member=LED15
+Removed Member From Class: ClassName=PenguinPi Member=LED16
+Removed Member From Class: ClassName=PenguinPi Member=LED17
+Removed Member From Class: ClassName=PenguinPi Member=R15
+Removed Member From Class: ClassName=PenguinPi Member=R16
+Removed Member From Class: ClassName=PenguinPi Member=R17
+Removed Member From Class: ClassName=PenguinPi Member=R18
+Removed Member From Class: ClassName=PenguinPi Member=R19
+Removed Member From Class: ClassName=PenguinPi Member=R20
+Removed Member From Class: ClassName=PenguinPi Member=R21
+Removed Member From Class: ClassName=PenguinPi Member=R22
+Removed Member From Class: ClassName=PenguinPi Member=R23
+Removed Member From Class: ClassName=PenguinPi Member=R24
+Removed Member From Class: ClassName=PenguinPi Member=R26
+Removed Member From Class: ClassName=PenguinPi Member=R27
+Removed Member From Class: ClassName=PenguinPi Member=R28
+Removed Member From Class: ClassName=PenguinPi Member=S3
+Removed Member From Class: ClassName=PenguinPi Member=S4
+Removed Member From Class: ClassName=PenguinPi Member=S5
+Removed Member From Class: ClassName=PenguinPi Member=S6
+Removed Member From Class: ClassName=PenguinPi Member=U4
+Added Component: Designator=P3(Header 3x2 nonstandard)
+Added Component: Designator=P4(HDR2X8)
+Added Pin To Net: NetName=3V3 Pin=C5-2
+Added Pin To Net: NetName=SGND Pin=C6-1
+Added Pin To Net: NetName=AREF Pin=C7-2
+Added Pin To Net: NetName=GND Pin=C8-1
+Added Pin To Net: NetName=RST Pin=C8-2
+Added Pin To Net: NetName=MISO Pin=P3-1
+Added Pin To Net: NetName=3V3 Pin=P3-2
+Added Pin To Net: NetName=SCLK Pin=P3-3
+Added Pin To Net: NetName=MOSI Pin=P3-4
+Added Pin To Net: NetName=RST Pin=P3-5
+Added Pin To Net: NetName=GND Pin=P3-6
+Added Pin To Net: NetName=GND Pin=P4-1
+Added Pin To Net: NetName=3V3 Pin=P4-2
+Added Pin To Net: NetName=SCLK Pin=P4-11
+Added Pin To Net: NetName=MOSI Pin=P4-13
+Added Pin To Net: NetName=MISO Pin=P4-14
+Added Pin To Net: NetName=SCL Pin=P4-15
+Added Pin To Net: NetName=SDA Pin=P4-16
+Added Pin To Net: NetName=RST Pin=R10-2
+Added Pin To Net: NetName=RST Pin=R11-1
+Added Pin To Net: NetName=3V3 Pin=R11-2
+Added Pin To Net: NetName=NetLED1_1 Pin=R12-1
+Added Pin To Net: NetName=LED-R Pin=R12-2
+Added Pin To Net: NetName=NetLED1_2 Pin=R13-1
+Added Pin To Net: NetName=LED-G Pin=R13-2
+Added Pin To Net: NetName=NetLED1_3 Pin=R14-1
+Added Pin To Net: NetName=LED-B Pin=R14-2
+Added Pin To Net: NetName=HAT_00 Pin=P4-3
+Added Pin To Net: NetName=HAT_00 Pin=U3-41
+Added Net: Name=HAT_00
+Added Pin To Net: NetName=HAT_01 Pin=P4-5
+Added Pin To Net: NetName=HAT_01 Pin=U3-42
+Added Net: Name=HAT_01
+Added Pin To Net: NetName=HAT_02 Pin=P4-7
+Added Pin To Net: NetName=HAT_02 Pin=U3-43
+Added Net: Name=HAT_02
+Added Pin To Net: NetName=HAT_03 Pin=P4-9
+Added Pin To Net: NetName=HAT_03 Pin=U3-44
+Added Net: Name=HAT_03
+Added Pin To Net: NetName=HAT_04 Pin=P4-10
+Added Pin To Net: NetName=HAT_04 Pin=U3-1
+Added Net: Name=HAT_04
+Added Pin To Net: NetName=HAT_05 Pin=P4-8
+Added Pin To Net: NetName=HAT_05 Pin=U3-13
+Added Net: Name=HAT_05
+Added Pin To Net: NetName=HAT_06 Pin=P4-6
+Added Pin To Net: NetName=HAT_06 Pin=U3-14
+Added Net: Name=HAT_06
+Added Pin To Net: NetName=HAT_07 Pin=P4-4
+Added Pin To Net: NetName=HAT_07 Pin=U3-22
+Added Net: Name=HAT_07
+Added Pin To Net: NetName=NetC6_2 Pin=C6-2
+Added Pin To Net: NetName=NetC6_2 Pin=L1-2
+Added Pin To Net: NetName=NetC6_2 Pin=U3-39
+Added Net: Name=NetC6_2
+Added Pin To Net: NetName=NetR10_1 Pin=R10-1
+Added Pin To Net: NetName=NetR10_1 Pin=S2-4
+Added Net: Name=NetR10_1
+Added Member To Class: ClassName=PenguinPi Member=Component C5 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C6 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C7 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C8 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C9 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C10 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component CX1 ABM3B
+Added Member To Class: ClassName=PenguinPi Member=Component L1 INDUCTOR SMD
+Added Member To Class: ClassName=PenguinPi Member=Component P3 Header 3x2
+Added Member To Class: ClassName=PenguinPi Member=Component P4 Header 8X2
+Added Member To Class: ClassName=PenguinPi Member=Component U3 ATxmega64A4U-AU
+Added Room: Name=PenguinPi

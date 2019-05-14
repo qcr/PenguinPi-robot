@@ -1,0 +1,24 @@
+Added Component: Designator=C1(C0805)
+Added Component: Designator=C2(C0805)
+Added Component: Designator=C3(C0805)
+Added Component: Designator=C4(C0805)
+Added Component: Designator=LG2(QUT_Logo)
+Added Pin To Net: NetName=GND Pin=C1-1
+Added Pin To Net: NetName=5V0 Pin=C1-2
+Added Pin To Net: NetName=GND Pin=C2-1
+Added Pin To Net: NetName=5V0 Pin=C2-2
+Added Pin To Net: NetName=GND Pin=C3-1
+Added Pin To Net: NetName=3V3 Pin=C3-2
+Added Pin To Net: NetName=GND Pin=C4-1
+Added Pin To Net: NetName=3V3 Pin=C4-2
+Added Pin To Net: NetName=HAT_07 Pin=R15-1
+Added Pin To Net: NetName=HAT_07 Pin=U2-1
+Added Pin To Net: NetName=GND Pin=U2-17
+Added Pin To Net: NetName=GND Pin=U2-18
+Added Pin To Net: NetName=GND Pin=U2-19
+Added Pin To Net: NetName=GND Pin=U2-20
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component C1 CAP SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component C2 CAP SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component C3 CAP SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component C4 CAP SMD
+Added Member To Class: ClassName=HAT_ID01_OLED Member=Component LG2 QUT_Logo

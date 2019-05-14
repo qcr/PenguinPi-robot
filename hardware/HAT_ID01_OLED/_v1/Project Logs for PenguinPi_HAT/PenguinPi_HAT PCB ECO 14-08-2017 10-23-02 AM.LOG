@@ -1,0 +1,6 @@
+Added Component: Designator=OLED1(OLED)
+Added Pin To Net: NetName=CFG1 Pin=OLED1-1
+Added Pin To Net: NetName=CFG0 Pin=OLED1-2
+Added Pin To Net: NetName=SCL Pin=OLED1-3
+Added Pin To Net: NetName=SDA Pin=OLED1-4
+Added Member To Class: ClassName=PenguinPi_HAT Member=Component OLED1 OLED

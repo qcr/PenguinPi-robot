@@ -1,0 +1,7 @@
+Change Component Designator: OldDesignator=R10 NewDesignator=R12
+Change Component Designator: OldDesignator=R11 NewDesignator=R10
+Change Component Designator: OldDesignator=R12 NewDesignator=R11
+Added Component: Designator=R17(RESC2012X07N)
+Added Pin To Net: NetName=PWRG Pin=R17-1
+Added Pin To Net: NetName=3V3 Pin=R17-2
+Added Member To Class: ClassName=PenguinPi Member=Component R17 RES SMD

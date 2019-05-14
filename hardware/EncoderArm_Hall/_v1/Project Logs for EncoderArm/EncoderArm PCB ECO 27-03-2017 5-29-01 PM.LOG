@@ -1,0 +1,8 @@
+Added Component: Designator=S1(SOT23-3N)
+Added Pin To Net: NetName=GND Pin=S1-3
+Added Net: Name=GND
+Added Pin To Net: NetName=VCC Pin=S1-1
+Added Net: Name=VCC
+Added Pin To Net: NetName=VOUT1 Pin=S1-2
+Added Net: Name=VOUT1
+Added Class: Name=EncoderArm

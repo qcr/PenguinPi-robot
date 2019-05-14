@@ -1,0 +1,29 @@
+Added Component: Designator=LED2(LED YELLOW RightAngle)
+Added Component: Designator=LED3(LED YELLOW RightAngle)
+Added Component: Designator=LED4(LED YELLOW RightAngle)
+Added Component: Designator=R14(RESC2012X07N)
+Added Component: Designator=R15(RESC2012X07N)
+Added Component: Designator=R16(RESC2012X07N)
+Added Pin To Net: NetName=3V3 Pin=LED2-2
+Added Pin To Net: NetName=3V3 Pin=LED3-2
+Added Pin To Net: NetName=3V3 Pin=LED4-2
+Added Pin To Net: NetName=GND Pin=R14-2
+Added Pin To Net: NetName=LED-Y0 Pin=R15-2
+Added Net: Name=LED-Y0
+Added Pin To Net: NetName=LED-Y1 Pin=R16-2
+Added Net: Name=LED-Y1
+Added Pin To Net: NetName=NetLED2_1 Pin=LED2-1
+Added Pin To Net: NetName=NetLED2_1 Pin=R14-1
+Added Net: Name=NetLED2_1
+Added Pin To Net: NetName=NetLED3_1 Pin=LED3-1
+Added Pin To Net: NetName=NetLED3_1 Pin=R15-1
+Added Net: Name=NetLED3_1
+Added Pin To Net: NetName=NetLED4_1 Pin=LED4-1
+Added Pin To Net: NetName=NetLED4_1 Pin=R16-1
+Added Net: Name=NetLED4_1
+Added Member To Class: ClassName=PenguinPi Member=Component LED2 PWR
+Added Member To Class: ClassName=PenguinPi Member=Component LED3 PWR
+Added Member To Class: ClassName=PenguinPi Member=Component LED4 PWR
+Added Member To Class: ClassName=PenguinPi Member=Component R14 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R15 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R16 RES SMD

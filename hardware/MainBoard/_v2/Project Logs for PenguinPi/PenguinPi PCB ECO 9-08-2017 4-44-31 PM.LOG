@@ -1,0 +1,4 @@
+Added Component: Designator=R6(RESC2012X07N)
+Added Pin To Net: NetName=3V3 Pin=R6-1
+Added Pin To Net: NetName=NetR6_2 Pin=R6-2
+Added Member To Class: ClassName=PenguinPi Member=Component R6 RES SMD

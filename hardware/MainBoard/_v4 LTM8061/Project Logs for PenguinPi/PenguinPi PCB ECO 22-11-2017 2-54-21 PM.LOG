@@ -1,0 +1,4 @@
+Change Component Designator: OldDesignator=C? NewDesignator=C13
+Change Component Designator: OldDesignator=P? NewDesignator=P1
+Change Net Name : Old Net Name=NetC?_2 New Net Name=NetC13_2
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

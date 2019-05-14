@@ -1,0 +1,19 @@
+Removed Pin From Net: NetName=GND Pin=C?-1
+Removed Pin From Net: NetName=3V3 Pin=U3-9
+Change Component Designator: OldDesignator=C? NewDesignator=C2
+Added Component: Designator=C1(CAPC2012X07N)
+Added Component: Designator=R2(RESC2012X07N)
+Added Pin To Net: NetName=GND Pin=C1-1
+Added Pin To Net: NetName=3V3 Pin=R2-2
+Added Pin To Net: NetName=3V3 Pin=U3-1
+Added Pin To Net: NetName=GND Pin=U3-9
+Added Pin To Net: NetName=GND Pin=U3-11
+Added Pin To Net: NetName=GND Pin=U3-20
+Added Pin To Net: NetName=NetC1_2 Pin=C1-2
+Added Pin To Net: NetName=NetC1_2 Pin=U3-10
+Added Net: Name=NetC1_2
+Added Pin To Net: NetName=NetR2_1 Pin=R2-1
+Added Pin To Net: NetName=NetR2_1 Pin=U3-22
+Added Net: Name=NetR2_1
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component C1 CAP SMD
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component R2 RES SMD

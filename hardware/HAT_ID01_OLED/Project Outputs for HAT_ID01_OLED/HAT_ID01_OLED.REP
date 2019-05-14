@@ -1,0 +1,244 @@
+*************************************************************
+FileName = HAT_ID01_OLED.GBR
+AutoAperture = True
+*************************************************************
+Generating : Top Layer
+      File : HAT_ID01_OLED.GTL
+
+    Adding Layer      : Top Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D11
+    D12
+    D13
+    D14
+    D15
+    D16
+    D17
+    D18
+    D19
+    D20
+    D21
+    D22
+*************************************************************
+
+*************************************************************
+Generating : Bottom Layer
+      File : HAT_ID01_OLED.GBL
+
+    Adding Layer      : Bottom Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D15
+    D16
+    D17
+    D18
+    D19
+    D20
+    D21
+    D22
+    D23
+    D24
+    D25
+    D26
+    D27
+    D28
+    D29
+*************************************************************
+
+*************************************************************
+Generating : Top Paste
+      File : HAT_ID01_OLED.GTP
+
+    Adding Layer      : Top Paste
+
+    Adding Layer      : Top Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D11
+    D12
+    D13
+*************************************************************
+
+*************************************************************
+Generating : Top Overlay
+      File : HAT_ID01_OLED.GTO
+
+    Adding Layer      : Top Overlay
+
+
+Used DCodes :
+    D15
+    D30
+    D31
+*************************************************************
+
+*************************************************************
+Generating : Top Solder
+      File : HAT_ID01_OLED.GTS
+
+    Adding Layer      : Top Solder
+
+    Adding Layer      : Top Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D32
+    D33
+    D34
+    D35
+    D36
+    D37
+    D38
+    D39
+    D40
+    D41
+    D42
+*************************************************************
+
+*************************************************************
+Generating : Bottom Solder
+      File : HAT_ID01_OLED.GBS
+
+    Adding Layer      : Bottom Solder
+
+    Adding Layer      : Bottom Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D36
+    D37
+    D38
+    D39
+    D40
+    D41
+    D42
+    D43
+    D44
+    D45
+    D46
+    D47
+    D48
+    D49
+*************************************************************
+
+*************************************************************
+Generating : Bottom Overlay
+      File : HAT_ID01_OLED.GBO
+
+    Adding Layer      : Bottom Overlay
+
+
+Used DCodes :
+    D15
+    D30
+    D50
+    D51
+    D52
+*************************************************************
+
+*************************************************************
+Generating : Bottom Paste
+      File : HAT_ID01_OLED.GBP
+
+    Adding Layer      : Bottom Paste
+
+    Adding Layer      : Bottom Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D23
+    D24
+    D25
+    D26
+    D27
+    D28
+    D29
+*************************************************************
+
+*************************************************************
+Generating : Keep-Out Layer
+      File : HAT_ID01_OLED.GKO
+
+    Adding Layer      : Keep-Out Layer
+
+
+Used DCodes :
+    D15
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 1
+      File : HAT_ID01_OLED.GM1
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D15
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 13
+      File : HAT_ID01_OLED.GM13
+
+    Adding Layer      : Mechanical 13
+
+
+Used DCodes :
+    D52
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 15
+      File : HAT_ID01_OLED.GM15
+
+    Adding Layer      : Mechanical 15
+
+
+Used DCodes :
+    D52
+    D53
+*************************************************************
+
+*************************************************************
+Generating : Multi-Layer
+      File : HAT_ID01_OLED.GML
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D16
+    D17
+    D18
+    D19
+*************************************************************
+
+*************************************************************
+Generating : Dielectric 1
+      File : HAT_ID01_OLED.1
+
+    Adding Layer      : Dielectric 1
+
+
+Used DCodes :
+*************************************************************
+

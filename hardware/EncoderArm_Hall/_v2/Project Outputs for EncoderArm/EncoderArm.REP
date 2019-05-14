@@ -1,0 +1,232 @@
+*************************************************************
+FileName = EncoderArm.GBR
+AutoAperture = True
+*************************************************************
+Generating : Top Layer
+      File : EncoderArm.GTL
+
+    Adding Layer      : Top Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D11
+    D12
+    D13
+    D14
+    D15
+    D16
+    D17
+    D18
+    D19
+    D20
+    D21
+*************************************************************
+
+*************************************************************
+Generating : Bottom Layer
+      File : EncoderArm.GBL
+
+    Adding Layer      : Bottom Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D11
+    D12
+    D13
+    D14
+    D15
+    D16
+    D17
+    D18
+    D19
+    D20
+    D21
+*************************************************************
+
+*************************************************************
+Generating : Top Paste
+      File : EncoderArm.GTP
+
+    Adding Layer      : Top Paste
+
+    Adding Layer      : Top Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D11
+    D12
+    D13
+*************************************************************
+
+*************************************************************
+Generating : Top Overlay
+      File : EncoderArm.GTO
+
+    Adding Layer      : Top Overlay
+
+
+Used DCodes :
+    D14
+    D22
+    D23
+    D24
+*************************************************************
+
+*************************************************************
+Generating : Top Solder
+      File : EncoderArm.GTS
+
+    Adding Layer      : Top Solder
+
+    Adding Layer      : Top Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D25
+    D26
+    D27
+    D28
+    D29
+    D30
+    D31
+    D32
+    D33
+    D34
+*************************************************************
+
+*************************************************************
+Generating : Bottom Solder
+      File : EncoderArm.GBS
+
+    Adding Layer      : Bottom Solder
+
+    Adding Layer      : Bottom Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D25
+    D26
+    D27
+    D28
+    D29
+    D30
+    D31
+    D32
+    D33
+    D34
+*************************************************************
+
+*************************************************************
+Generating : Bottom Overlay
+      File : EncoderArm.GBO
+
+    Adding Layer      : Bottom Overlay
+
+
+Used DCodes :
+    D14
+    D22
+    D23
+    D24
+*************************************************************
+
+*************************************************************
+Generating : Bottom Paste
+      File : EncoderArm.GBP
+
+    Adding Layer      : Bottom Paste
+
+    Adding Layer      : Bottom Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D11
+    D12
+    D13
+*************************************************************
+
+*************************************************************
+Generating : Keep-Out Layer
+      File : EncoderArm.GKO
+
+    Adding Layer      : Keep-Out Layer
+
+
+Used DCodes :
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 1
+      File : EncoderArm.GM1
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D14
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 13
+      File : EncoderArm.GM13
+
+    Adding Layer      : Mechanical 13
+
+
+Used DCodes :
+    D35
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 15
+      File : EncoderArm.GM15
+
+    Adding Layer      : Mechanical 15
+
+
+Used DCodes :
+    D35
+    D36
+*************************************************************
+
+*************************************************************
+Generating : Multi-Layer
+      File : EncoderArm.GML
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D16
+    D17
+    D18
+    D19
+    D20
+*************************************************************
+
+*************************************************************
+Generating : Dielectric 1
+      File : EncoderArm.1
+
+    Adding Layer      : Dielectric 1
+
+
+Used DCodes :
+*************************************************************
+

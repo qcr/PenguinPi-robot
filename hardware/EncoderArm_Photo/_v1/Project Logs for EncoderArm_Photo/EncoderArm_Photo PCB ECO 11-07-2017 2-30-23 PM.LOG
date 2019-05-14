@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=VOUT2 Pin=P1-5
+Removed Pin From Net: NetName=VOUT1 Pin=P1-6
+Added Pin To Net: NetName=VOUT1 Pin=P1-5
+Added Pin To Net: NetName=VOUT2 Pin=P1-6
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component SL1 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component SL2 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component SR2 EE-SX1109 PhotoInterrupter
+Added Room: Name=EncoderArm_Photo

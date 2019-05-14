@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=3V3 Pin=LED5-2
+Added Component: Designator=LED7(LED YELLOW RightAngle)
+Added Pin To Net: NetName=VCC Pin=LED7-2
+Added Pin To Net: NetName=NetLED7_1 Pin=LED7-1
+Added Pin To Net: NetName=NetLED7_1 Pin=R14-1
+Added Net: Name=NetLED7_1
+Added Member To Class: ClassName=PenguinPi Member=Component LED7 PWR
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

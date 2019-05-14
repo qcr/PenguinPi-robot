@@ -1,0 +1,17 @@
+Removed Pin From Net: NetName=3V3 Pin=R2-2
+Removed Pin From Net: NetName=3V3 Pin=R4-2
+Removed Pin From Net: NetName=3V3 Pin=U1-2
+Removed Pin From Net: NetName=GND Pin=U1-12
+Removed Pin From Net: NetName=GND Pin=U1-21
+Removed Pin From Net: NetName=SCL Pin=U1-22
+Removed Pin From Net: NetName=SDA Pin=U1-23
+Removed Pin From Net: NetName=3V3 Pin=U1-24
+Removed Member From Class: ClassName=HAT_ID02_IMU Member=R2
+Removed Member From Class: ClassName=HAT_ID02_IMU Member=R4
+Removed Member From Class: ClassName=HAT_ID02_IMU Member=R5
+Removed Member From Class: ClassName=HAT_ID02_IMU Member=R6
+Removed Member From Class: ClassName=HAT_ID02_IMU Member=R13
+Removed Member From Class: ClassName=HAT_ID02_IMU Member=R14
+Removed Member From Class: ClassName=HAT_ID02_IMU Member=U1
+Added Member To Class: ClassName=HAT_ID02_IMU Member=Component C? CAP SMD
+Added Room: Name=HAT_ID02_IMU

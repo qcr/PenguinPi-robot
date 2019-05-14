@@ -1,0 +1,7 @@
+Change Component Comment : Designator=CHG Old Comment= New Comment=CHARGE
+Change Component Comment : Designator=FAULT Old Comment= New Comment=FAULT
+Change Component Designator: OldDesignator=CHG NewDesignator=LED6
+Change Component Designator: OldDesignator=FAULT NewDesignator=LED5
+Change Net Name : Old Net Name=NetCHG_2 New Net Name=NetLED6_2
+Change Net Name : Old Net Name=NetFAULT_2 New Net Name=NetLED5_2
+Added Member To Class: ClassName=PenguinPi Member=Component U1 LTM8061EV-8.2#PBF

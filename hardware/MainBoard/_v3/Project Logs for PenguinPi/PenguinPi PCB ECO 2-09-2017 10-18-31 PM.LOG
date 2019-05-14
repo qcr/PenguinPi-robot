@@ -1,0 +1,10 @@
+Removed Pin From Net: NetName=NetC9_2 Pin=X1-1
+Removed Pin From Net: NetName=NetC8_2 Pin=X1-2
+Change Component Footprint: Designator=X1 Old Footprint=XTAL AV Series New Footprint=XTAL ABM3B
+Change Component Comment : Designator=X1 Old Comment=32MHz New Comment=20MHz
+Added Pin To Net: NetName=NetC8_2 Pin=U3-7
+Added Pin To Net: NetName=NetC9_2 Pin=U3-8
+Added Pin To Net: NetName=NetC8_2 Pin=X1-1
+Added Pin To Net: NetName=GND Pin=X1-2
+Added Pin To Net: NetName=NetC9_2 Pin=X1-3
+Added Pin To Net: NetName=GND Pin=X1-4

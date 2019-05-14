@@ -1,0 +1,22 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: PenguinPi.PcbDoc   18/12/2017  2:17:37 PM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : PenguinPi.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      10mil (0.254mm)                                           Round             26        PTH        2.00inch (50.85mm)
+T2      15mil (0.381mm)                                           Round             59        PTH        11.89inch (302.02mm)
+T3      28mil (0.711mm)                                           Round             3         PTH        3.28inch (83.21mm)
+T4      43mil (1.1mm)                                             Round             88        PTH        12.72inch (323.20mm)
+T5      47mil (1.2mm)                                             Round             2         PTH        0.43inch (11.00mm)
+T6      55mil (1.4mm)                                             Round             2         PTH        0.16inch (4.00mm)
+T7      66mil (1.68mm)                                            Round             5         PTH        1.13inch (28.83mm)
+T8      75mil (1.9mm)                                             Round             2         PTH        0.20inch (5.00mm)
+T9      118mil (3mm)                                              Round             4         NPTH       6.50inch (165.00mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              191
+
+Total Processing Time (hh:mm:ss) : 00:00:00

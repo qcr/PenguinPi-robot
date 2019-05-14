@@ -1,0 +1,15 @@
+Removed Member From Class: ClassName=Power Member=Net*1_2
+Change Component Designator: OldDesignator=*1 NewDesignator=VR1
+Change Component Designator: OldDesignator=P1 NewDesignator=PI
+Change Component Designator: OldDesignator=VREG1 NewDesignator=VR2
+Added Component: Designator=LED1(RGB SMD)
+Added Pin To Net: NetName=NetLED1_1 Pin=LED1-1
+Added Pin To Net: NetName=NetLED1_2 Pin=LED1-2
+Added Pin To Net: NetName=NetLED1_3 Pin=LED1-3
+Added Pin To Net: NetName=3V3 Pin=LED1-4
+Change Net Name : Old Net Name=Net*1_2 New Net Name=NetC1_2
+Change Net Name : Old Net Name=Net*1_6 New Net Name=NetR3_2
+Change Net Name : Old Net Name=NetP1_15 New Net Name=NetPI_15
+Change Net Name : Old Net Name=NetP1_17 New Net Name=NetPI_17
+Added Member To Class: ClassName=PenguinPi Member=Component LED1 RGB SMD
+Added Member To Class: ClassName=Power Member=Wire NetC1_2

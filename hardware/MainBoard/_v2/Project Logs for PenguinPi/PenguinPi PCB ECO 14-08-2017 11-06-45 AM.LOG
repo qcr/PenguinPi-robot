@@ -1,0 +1,4 @@
+Change Component Comment : Designator=* Old Comment=XTAL New Comment=32MHz
+Change Component Designator: OldDesignator=* NewDesignator=X1
+Change Net Name : Old Net Name=Net*_1 New Net Name=NetC10_2
+Change Net Name : Old Net Name=Net*_2 New Net Name=NetC9_2

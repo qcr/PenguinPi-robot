@@ -1,0 +1,5 @@
+Change Physical Footprint: Designator=C8 Old Footprint=CAPC2012X07N New Footprint=CAPC2012X07N
+Change Physical Footprint: Designator=C9 Old Footprint=CAPC2012X07N New Footprint=CAPC2012X07N
+Change Physical Footprint: Designator=LED1 Old Footprint=LED RGB RightAngle New Footprint=LED RGB RightAngle
+Change Physical Footprint: Designator=P2 Old Footprint=XT30 - PCB mount New Footprint=XT30 - PCB mount
+Change Physical Footprint: Designator=RIGHT Old Footprint=HDR2X3 New Footprint=HDR2X3

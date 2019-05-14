@@ -1,0 +1,61 @@
+Removed Pin From Net: NetName=VCC Pin=L1-1
+Removed Pin From Net: NetName=VOUT1 Pin=L1-2
+Removed Pin From Net: NetName=GND Pin=L1-3
+Removed Pin From Net: NetName=VCC Pin=L2-1
+Removed Pin From Net: NetName=VOUT2 Pin=L2-2
+Removed Pin From Net: NetName=GND Pin=L2-3
+Removed Pin From Net: NetName=VCC Pin=R1-1
+Removed Pin From Net: NetName=VOUT1 Pin=R1-2
+Removed Pin From Net: NetName=GND Pin=R1-3
+Removed Pin From Net: NetName=VCC Pin=R2-1
+Removed Pin From Net: NetName=VOUT2 Pin=R2-2
+Removed Pin From Net: NetName=GND Pin=R2-3
+Removed Member From Class: ClassName=EncoderArm Member=L1
+Removed Member From Class: ClassName=EncoderArm Member=L2
+Change Component Footprint: Designator=R1 Old Footprint=SOT23-3N New Footprint=6-0805_M
+Change Component Footprint: Designator=R2 Old Footprint=SOT23-3N New Footprint=6-0805_M
+Change Component Comment : Designator=R1 Old Comment=A1120 Hall Effect New Comment=Res2
+Change Component Comment : Designator=R2 Old Comment=A1120 Hall Effect New Comment=Res2
+Added Component: Designator=Left1(EE-SX1109)
+Added Component: Designator=Left2(EE-SX1109)
+Added Component: Designator=R3(6-0805_M)
+Added Component: Designator=R4(6-0805_M)
+Added Component: Designator=Right1(EE-SX1109)
+Added Component: Designator=Right2(EE-SX1109)
+Added Pin To Net: NetName=GND Pin=Left1-2
+Added Pin To Net: NetName=VOUT1 Pin=Left1-3
+Added Pin To Net: NetName=GND Pin=Left2-1
+Added Pin To Net: NetName=GND Pin=Left2-2
+Added Pin To Net: NetName=VOUT2 Pin=Left2-3
+Added Pin To Net: NetName=VOUT1 Pin=R3-1
+Added Pin To Net: NetName=VOUT2 Pin=R4-1
+Added Pin To Net: NetName=GND Pin=Right1-2
+Added Pin To Net: NetName=VOUT1 Pin=Right1-3
+Added Pin To Net: NetName=GND Pin=Right2-1
+Added Pin To Net: NetName=GND Pin=Right2-2
+Added Pin To Net: NetName=VOUT2 Pin=Right2-3
+Added Pin To Net: NetName=3V3 Pin=R1-2
+Added Pin To Net: NetName=3V3 Pin=R2-2
+Added Pin To Net: NetName=3V3 Pin=R3-2
+Added Pin To Net: NetName=3V3 Pin=R4-2
+Added Net: Name=3V3
+Added Pin To Net: NetName=NetLeft1_1 Pin=Left1-1
+Added Pin To Net: NetName=NetLeft1_1 Pin=Left2-4
+Added Net: Name=NetLeft1_1
+Added Pin To Net: NetName=NetLeft1_4 Pin=Left1-4
+Added Pin To Net: NetName=NetLeft1_4 Pin=R1-1
+Added Net: Name=NetLeft1_4
+Added Pin To Net: NetName=NetR2_1 Pin=R2-1
+Added Pin To Net: NetName=NetR2_1 Pin=Right1-4
+Added Net: Name=NetR2_1
+Added Pin To Net: NetName=NetRight1_1 Pin=Right1-1
+Added Pin To Net: NetName=NetRight1_1 Pin=Right2-4
+Added Net: Name=NetRight1_1
+Change Class Name : Old Net Name=EncoderArm New Net Name=EncoderArm_Photo
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Left1 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Left2 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component R3 Res2
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component R4 Res2
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Right1 EE-SX1109 PhotoInterrupter
+Added Member To Class: ClassName=EncoderArm_Photo Member=Component Right2 EE-SX1109 PhotoInterrupter
+Added Room: Name=EncoderArm_Photo

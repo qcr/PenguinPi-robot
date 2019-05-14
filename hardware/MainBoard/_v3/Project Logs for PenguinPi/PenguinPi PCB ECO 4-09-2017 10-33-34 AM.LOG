@@ -1,0 +1,8 @@
+Added Component: Designator=D1(SODFL470X110-2N)
+Added Component: Designator=P3(Molex SL70553 2 way)
+Added Pin To Net: NetName=NetD1_1 Pin=D1-1
+Added Pin To Net: NetName=NetD1_2 Pin=D1-2
+Added Pin To Net: NetName=GND Pin=P3-0
+Added Pin To Net: NetName=NetP3_1 Pin=P3-1
+Added Member To Class: ClassName=PenguinPi Member=Component D1 SMD DIODE
+Added Member To Class: ClassName=PenguinPi Member=Component P3 Charger

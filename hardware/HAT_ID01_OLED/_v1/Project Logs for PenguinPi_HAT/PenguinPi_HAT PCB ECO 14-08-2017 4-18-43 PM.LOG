@@ -1,0 +1,16 @@
+Removed Pin From Net: NetName=DIP3 Pin=DIP1-4
+Removed Pin From Net: NetName=DIP2 Pin=DIP1-5
+Removed Pin From Net: NetName=DIP1 Pin=DIP1-6
+Removed Pin From Net: NetName=DIP0 Pin=DIP1-7
+Removed Pin From Net: NetName=DIP3 Pin=R8-2
+Removed Pin From Net: NetName=DIP2 Pin=R9-2
+Removed Pin From Net: NetName=DIP1 Pin=R10-2
+Removed Pin From Net: NetName=DIP0 Pin=R11-2
+Added Pin To Net: NetName=DIP0 Pin=DIP1-4
+Added Pin To Net: NetName=DIP1 Pin=DIP1-5
+Added Pin To Net: NetName=DIP2 Pin=DIP1-6
+Added Pin To Net: NetName=DIP3 Pin=DIP1-7
+Added Pin To Net: NetName=DIP0 Pin=R8-2
+Added Pin To Net: NetName=DIP1 Pin=R9-2
+Added Pin To Net: NetName=DIP2 Pin=R10-2
+Added Pin To Net: NetName=DIP3 Pin=R11-2

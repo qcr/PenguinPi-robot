@@ -1,0 +1,136 @@
+Added Component: Designator=C13(CAPC2012X07N)
+Added Component: Designator=C14(CAPC2012X07N)
+Added Component: Designator=C15(CAPC2012X07N)
+Added Component: Designator=C16(CAPC2012X07N)
+Added Component: Designator=C17(CAPC2012X07N)
+Added Component: Designator=C18(CAPC2012X07N)
+Added Component: Designator=C19(CAPC2012X07N)
+Added Component: Designator=C20(CAPC2012X07N)
+Added Component: Designator=C21(CAPC2012X07N)
+Added Component: Designator=C22(CAPC2012X07N)
+Added Component: Designator=C23(CAPC2012X07N)
+Added Component: Designator=C24(CAPC2012X07N)
+Added Component: Designator=C25(CAPC2012X07N)
+Added Component: Designator=D2(SODFL470X110-2N)
+Added Component: Designator=D3(DIODE-0.7)
+Added Component: Designator=L2(CM322522)
+Added Component: Designator=R19(RESC2012X07N)
+Added Component: Designator=R20(RESC2012X07N)
+Added Component: Designator=R21(RESC2012X07N)
+Added Component: Designator=R22(RESC2012X07N)
+Added Component: Designator=R23(RESC2012X07N)
+Added Component: Designator=R24(RESC2012X07N)
+Added Component: Designator=R25(RESC2012X07N)
+Added Component: Designator=U4(TSSOP16)
+Added Component: Designator=U5(IC_DIP8)
+Added Pin To Net: NetName=GND Pin=C13-1
+Added Pin To Net: NetName=GND Pin=C15-1
+Added Pin To Net: NetName=GND Pin=C16-1
+Added Pin To Net: NetName=GND Pin=C17-1
+Added Pin To Net: NetName=GND Pin=C18-1
+Added Pin To Net: NetName=GND Pin=C19-1
+Added Pin To Net: NetName=GND Pin=C20-1
+Added Pin To Net: NetName=GND Pin=C21-1
+Added Pin To Net: NetName=GND Pin=C22-1
+Added Pin To Net: NetName=GND Pin=C23-1
+Added Pin To Net: NetName=GND Pin=C24-1
+Added Pin To Net: NetName=GND Pin=C25-1
+Added Pin To Net: NetName=GND Pin=D3-1
+Added Pin To Net: NetName=GND Pin=R25-2
+Added Pin To Net: NetName=GND Pin=U4-12
+Added Pin To Net: NetName=CHG_IOUT Pin=U4-7
+Added Net: Name=CHG_IOUT
+Added Pin To Net: NetName=CHG_VREF Pin=C18-2
+Added Pin To Net: NetName=CHG_VREF Pin=R23-1
+Added Pin To Net: NetName=CHG_VREF Pin=U4-6
+Added Pin To Net: NetName=CHG_VREF Pin=U4-9
+Added Net: Name=CHG_VREF
+Added Pin To Net: NetName=D Pin=D3-2
+Added Pin To Net: NetName=D Pin=L2-1
+Added Pin To Net: NetName=D Pin=U5-5
+Added Pin To Net: NetName=D Pin=U5-6
+Added Pin To Net: NetName=D Pin=U5-7
+Added Pin To Net: NetName=D Pin=U5-8
+Added Net: Name=D
+Added Pin To Net: NetName=G Pin=U4-14
+Added Pin To Net: NetName=G Pin=U5-4
+Added Net: Name=G
+Added Pin To Net: NetName=NetC13_2 Pin=C13-2
+Added Pin To Net: NetName=NetC13_2 Pin=R20-1
+Added Pin To Net: NetName=NetC13_2 Pin=U4-1
+Added Net: Name=NetC13_2
+Added Pin To Net: NetName=NetC14_1 Pin=C14-1
+Added Pin To Net: NetName=NetC14_1 Pin=C19-2
+Added Pin To Net: NetName=NetC14_1 Pin=D2-2
+Added Pin To Net: NetName=NetC14_1 Pin=R19-2
+Added Pin To Net: NetName=NetC14_1 Pin=R21-2
+Added Pin To Net: NetName=NetC14_1 Pin=U4-15
+Added Net: Name=NetC14_1
+Added Pin To Net: NetName=NetC14_2 Pin=C14-2
+Added Pin To Net: NetName=NetC14_2 Pin=U4-13
+Added Net: Name=NetC14_2
+Added Pin To Net: NetName=NetC15_2 Pin=C15-2
+Added Pin To Net: NetName=NetC15_2 Pin=R21-1
+Added Pin To Net: NetName=NetC15_2 Pin=U4-2
+Added Net: Name=NetC15_2
+Added Pin To Net: NetName=NetC16_2 Pin=C16-2
+Added Pin To Net: NetName=NetC16_2 Pin=U4-5
+Added Net: Name=NetC16_2
+Added Pin To Net: NetName=NetC17_2 Pin=C17-2
+Added Pin To Net: NetName=NetC17_2 Pin=U4-3
+Added Net: Name=NetC17_2
+Added Pin To Net: NetName=NetC20_2 Pin=C20-2
+Added Pin To Net: NetName=NetC20_2 Pin=U4-16
+Added Net: Name=NetC20_2
+Added Pin To Net: NetName=NetC22_2 Pin=C22-2
+Added Pin To Net: NetName=NetC22_2 Pin=L2-2
+Added Pin To Net: NetName=NetC22_2 Pin=R22-2
+Added Pin To Net: NetName=NetC22_2 Pin=U4-11
+Added Net: Name=NetC22_2
+Added Pin To Net: NetName=NetC25_2 Pin=C25-2
+Added Pin To Net: NetName=NetC25_2 Pin=R24-2
+Added Pin To Net: NetName=NetC25_2 Pin=U4-4
+Added Net: Name=NetC25_2
+Added Pin To Net: NetName=NetR23_2 Pin=R23-2
+Added Pin To Net: NetName=NetR23_2 Pin=R25-1
+Added Pin To Net: NetName=NetR23_2 Pin=U4-8
+Added Net: Name=NetR23_2
+Added Pin To Net: NetName=S Pin=R19-1
+Added Pin To Net: NetName=S Pin=R20-2
+Added Pin To Net: NetName=S Pin=U5-1
+Added Pin To Net: NetName=S Pin=U5-2
+Added Pin To Net: NetName=S Pin=U5-3
+Added Net: Name=S
+Added Pin To Net: NetName=VBAT Pin=C21-2
+Added Pin To Net: NetName=VBAT Pin=C23-2
+Added Pin To Net: NetName=VBAT Pin=R22-1
+Added Pin To Net: NetName=VBAT Pin=U4-10
+Added Net: Name=VBAT
+Added Pin To Net: NetName=VDC Pin=D2-1
+Added Net: Name=VDC
+Added Member To Class: ClassName=PenguinPi Member=Component C13 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C14 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C15 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C16 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C17 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C18 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C19 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C20 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C21 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C22 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C23 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C24 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component C25 CAP SMD
+Added Member To Class: ClassName=PenguinPi Member=Component D2 SMD DIODE
+Added Member To Class: ClassName=PenguinPi Member=Component D3 D Zener
+Added Member To Class: ClassName=PenguinPi Member=Component L2 INDUCTOR SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R19 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R20 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R21 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R22 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R23 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R24 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component R25 RES SMD
+Added Member To Class: ClassName=PenguinPi Member=Component U4 MAX1873REEE
+Added Member To Class: ClassName=PenguinPi Member=Component U5 Si4435DDY
+Added Room: Name=PenguinPi
