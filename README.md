@@ -5,7 +5,7 @@ PenguinPi Robot
 
 This site describes an open-source low-cost robot for educational purposes: hardware and software.
 
-![PenguinPi robot](https://bitbucket.org/acrv/penguinpi-robot/src/master/software/doc/P1080377.JPG)
+![PenguinPi robot](software/doc/P1080377.JPG)
 
 The robot is used for teaching mobile robotics, robotic vision within QUT's EGB439 Advanced Robotics unit.
 
