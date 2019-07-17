@@ -1,13 +1,16 @@
 # Welcome to EGB439 Advanced Robotics
-  - Included in this repository is python, matlab and c code used to operate the
-    PenguinPi using the Raspbian Jessie operating system. Please note all code
-    stored here will restore you robot to default and changes will be lost
-  - if you wish to use a different operating system please speak to your tutor
   
-Folders
-  - ```matlab``` runs on your computer and talks to the robot
-  - ```python``` Python 3 code that runs on the Raspberry Pi
-  - ```atmelstudio``` C code that runs on the Atmel processor on the shield that connects the Pi to the robot hardware
+Included in this repository is the Python, MATLAB and C code used to operate the PenguinPi using the Raspbian Jessie operating system.
+  
+The main folders are:
+  - ```matlab``` runs on your computer and talks to the Python server runnng on the robot
+  - ```python``` Python 3 server that runs on the Raspberry Pi and accepts web service requests
+  - ```atmelstudio``` C code that runs on the Atmel processor (on the i/o board) that connects the Pi to the robot hardware
+
+The scripts that Launch on startup are:
+* `server-camera.py`
+* `server-motors_fixed.py`
+* `GPIOSoftShutdown.py`
 
 ## Defaults
 ### Raspberry pi login
@@ -17,10 +20,7 @@ Folders
 
 Change your host name https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/
 
-The scripts that Launch on startup are:
-* `server-camera.py`
-* `server-motors_fixed.py`
-* `GPIOSoftShutdown.py`
+
 
 if you wish to change this please speak to your tutor
 
@@ -156,22 +156,3 @@ and remove the # so it is
 # Uncomment the next line to enable packet forwarding for IPv4
 net.ipv4.ip_forward=1
 ```
-
-## Connecting to the internet 
-Run:
-```
-./InternetAccessClient/IAClientConfigCmd
-```
-Step through the instructions adding your user name and password when prompted and leaving the other fields unmodified.
-```
-Authentication server [http://ias-services.qut.edu.au/IAServer/]:
-Username: nxxxxxx
-Password: ***
-Domain [qut.edu.au]:
-```
-Run the comand. 
-```
-./InternetAccessClient/IAClient
-```
-This will notify of a secessful connection when finished note this may take a few minuets on the first connection. When connected press ctrl c to close the program.
-This last step will be repeted each time a connection is needed
