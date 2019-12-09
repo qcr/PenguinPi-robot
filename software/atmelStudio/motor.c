@@ -15,7 +15,18 @@ motor_velocity_control(Motor *motor)
 
     // Error
     motor->verror = vdmd - motor->velocity;
-    motor->verrorsum += motor->verror;
+
+    // Error integral
+    if (motor->Kvi > 0)
+        motor->verrorsum += motor->verror;
+    else
+        motor->verrorsum = 0;
+
+    // clip the integral
+    if (motor->verrorsum > 100)
+        motor->verrorsum = 100;
+    else if (motor->verrorsum < -100)
+        motor->verrorsum = -100;
 
     // PI velocity controller
     motor->command = motor->Kvp * motor->verror +
@@ -53,10 +64,9 @@ motor_init(Motor *motor, uint8_t id)
     motor->Kvp = 0;
     motor->Kvi = 1;
     motor->id = id;
-    motor->encoderMode = 0;
+    motor->encoderMode = 1;
 }
 
-#ifdef notdef
 // PIC: not sure I believe this approach, just sample B on an A edge...
 // encoder state transition lookup tables
 static int8_t 	mAQuadTable[4][4] = {{ 0, +1, -1,  2},
@@ -68,65 +78,64 @@ static int8_t  mBQuadTable[4][4] = {{ 0, -1, +1,  2},
 							 {+1,  0,  2, -1},
 							 {-1,  2,  0, +1},
 							 { 2, +1, -1,  0}};
-#endif
 
 void 
 motor_encoder_update( Motor *motor, uint8_t encA, uint8_t encB )
 {
 	
     switch(motor->encoderMode) {
-    case 0: //single encoder mode, on pin 1
-		if ( motor->encA_prev ^ encA ){
-			if( motor->command > 0){
-				motor->position++;
-			}else if( motor->command < 0 ){
-				motor->position--;
-			}
-			motor->encA_prev = encA;
-        }
-        break;
+        case 0: //single encoder mode, on pin 1
+            if ( motor->encA_prev ^ encA ){
+                if( motor->command > 0){
+                    motor->position++;
+                }else if( motor->command < 0 ){
+                    motor->position--;
+                }
+                motor->encA_prev = encA;
+            }
+            break;
 
-#ifdef notdef
-    case 1: { //standard quadrature
-		uint8_t lastEncSum 	= (motor->enc1PinState<<1)|(motor->enc2PinState);
-		uint8_t encSum 		= (enc_1_val<<1)|(enc_2_val);
-		int8_t  effect;
-		
-		if ( motor->which_motor == 1 ) {
-			//Motor B
-			effect 			= mBQuadTable[lastEncSum][encSum];
-		}
-		else {
-			//Motor A
-			effect 			= mAQuadTable[lastEncSum][encSum];
-		}
-		
-		motor->position 	+= effect;
-	
-		motor->enc1PinState = enc_1_val;
-		motor->enc2PinState = enc_2_val;
-        break;
-    }
-    case 2: { //x4 counting (xor'ed both channels)
-		uint8_t x4 = enc_1_val ^ enc_2_val;
-		if(motor->enc1PinState ^ x4){
-			if(motor->dir == 1){
-				motor->position++;
-				motor->lastDir = 1;
-			}else if(motor->dir == -1){
-				motor->position--;
-				motor->lastDir = -1;
-			}else{
-				//wheel slip!!
-				//probably going to still be rotating in the direction it just was, so use that past value
-				if(motor->lastDir == 1) 		motor->position++;
-				else if(motor->lastDir == -1) 	motor->position--;
-			}
-			motor->enc1PinState = x4;
-		}
-	}
-#endif
+        case 1: { //standard quadrature
+            uint8_t lastEncSum 	= (motor->encA_prev<<1)|(motor->encB_prev);
+            uint8_t encSum 		= (encA<<1)|(encB);
+            int8_t  effect;
+            
+            if ( motor->id == 1 ) {
+                //Motor B
+                effect 			= mBQuadTable[lastEncSum][encSum];
+            }
+            else {
+                //Motor A
+                effect 			= mAQuadTable[lastEncSum][encSum];
+            }
+            
+            motor->position 	+= effect;
+        
+            motor->encA_prev = encA;
+            motor->encB_prev = encB;
+            break;
         }
+#ifdef notdef
+        case 2: { //x4 counting (xor'ed both channels)
+            uint8_t x4 = enc_1_val ^ enc_2_val;
+            if(motor->enc1PinState ^ x4){
+                if(motor->dir == 1){
+                    motor->position++;
+                    motor->lastDir = 1;
+                }else if(motor->dir == -1){
+                    motor->position--;
+                    motor->lastDir = -1;
+                }else{
+                    //wheel slip!!
+                    //probably going to still be rotating in the direction it just was, so use that past value
+                    if(motor->lastDir == 1) 		motor->position++;
+                    else if(motor->lastDir == -1) 	motor->position--;
+                }
+                motor->enc1PinState = x4;
+            }
+        }
+#endif
+    }
 }
 
 #ifdef notdef
