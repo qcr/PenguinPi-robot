@@ -1,0 +1,30 @@
+#extends 'base.html'
+
+#block content
+<h1>EGB439 Localiser home page</h1>
+<table bgcolor="SkyBlue">
+    <tr>
+      <td>
+        <table  cellpadding="5">
+           <tr>
+            <td>Pose.x</td> <td>{{ '%.2f'%pose_x }}&thinsp;m</td>
+           </tr>
+            <td>Pose.y</td> <td>{{ '%.2f'%pose_y }}&thinsp;m</td>
+           </tr>
+            <td>Pose.&theta;</td> <td>{{ '%.2f'%pose_theta }}&thinsp;deg</td>
+           </tr>
+           <tr>
+               <td colspan="2"><hr/></td>
+           </tr>
+           <tr>
+            <td>Group</td> <td>{{ group }}</td>
+           </tr>
+        </table>
+    </td>
+    <td>
+       <img src="/camera/get" style="height:auto; width:100%; max-width:100%;" width="100%">
+    </td>
+    </tr>
+</table>
+   <br />
+#endblock

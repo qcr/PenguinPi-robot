@@ -1,4 +1,7 @@
 __pycache__
+build
+bin
+.vscode
 *.o
 *.elf
 *.hex

@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <head>
+        <title>EGB439 localizer</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='ppstyle.css', v=0.01) }}">
+#if refresh is defined
+        <meta http-equiv="refresh" content="{{ refresh }}">
+#endif
+    </head>
+   <body>
+#block content
+#endblock
+<br clear="all" />
+<hr>
+<div class="footer">
+Powered by Flask + Python.  Copyright (c) 2019 Serena, Rob and Peter
+</div>
+</body>
+</html>
