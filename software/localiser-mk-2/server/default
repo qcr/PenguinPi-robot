@@ -13,9 +13,7 @@ server {
 		try_files index.php index.html =404;
 	}
 
-	#location /pose/get/ {
-    #proxy_pass  http://127.0.0.1:9000/;
-	#}
+
 
      location /pose/get {
 		fastcgi_pass   127.0.0.1:9000;

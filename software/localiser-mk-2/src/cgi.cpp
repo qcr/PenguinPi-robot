@@ -4,6 +4,9 @@
 #include "fcgio.h"
 #include "pose.h"
 
+
+#include <unistd.h>
+
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
@@ -65,34 +68,53 @@ int main(void) {
     FCGX_Init();
     FCGX_InitRequest(&request, 0, 0);
 
-    try{
-        shared_memory_object shm_obj
-            (open_only               //open or create
-            ,"shared_memory"              //name
-            ,read_only                    //read-only mode
-            );
-        
-        std::size_t ShmSize = sizeof(Pose2D);
+// try{
 
-        //Map the second half of the memory
-        mapped_region region
-            ( shm_obj                      //Memory-mappable object
-            , read_only
-            );
 
-        std::cout << "Opened " << ShmSize << " bytes of memory" << endl;
+    // struct shm_remove
+    // {
+    //     ~shm_remove(){ shared_memory_object::remove("MySharedMemory"); }
+    // } remover;
 
-    } catch(interprocess_exception &ex){
-        std::cout << "Unexpected exception: " << ex.what() << std::endl;
-        shared_memory_object::remove("shared_memory");
-        return 1;
-    }
+    shared_memory_object shm_obj
+        (open_only               //open or create
+        ,"MySharedMemory"              //name
+        ,read_write                    //read-only mode
+        );
+    
+    std::size_t ShmSize = sizeof(SharedPose);
+
+    //Map the second half of the memory
+    mapped_region region
+        ( shm_obj                      //Memory-mappable object
+        , read_write
+        );
 
     //Get the address of the mapped region
     void * addr = region.get_address();
+    //std::cout << "Opened " << ShmSize << " bytes of memory at " << addr << endl;
 
-    //Construct the shared structure in memory
-    shared_memory_log * data = static_cast<shared_memory_log*>(addr);
+    // //Construct the shared structure in memory
+    SharedPose * shared_data = static_cast<SharedPose*>(addr);
+    Pose2D pose;
+
+    // while (1){
+    //     // Read pose 
+    //     shared_data->mutex.lock();
+    //     pose.x = shared_data->pose.x;
+    //     pose.y = shared_data->pose.y;
+    //     pose.theta = shared_data->pose.theta;
+    //     shared_data->mutex.unlock();
+
+    //     //if (strcmp(uri,"/pose/get/")==0){
+    //         // TODO json
+    //     std::cout << "Content-type: text/html\r\n"
+    //         << "\r\n"
+    //         << "{\"pose\": {\"x\": " << pose.x <<", \"y\": " << pose.y << ", \"theta\": " << pose.theta << "}}";
+    //     //} 
+    //     sleep(1);
+    // }
+
 
     while (FCGX_Accept_r(&request) == 0) {
         fcgi_streambuf cin_fcgi_streambuf(request.in);
@@ -107,15 +129,18 @@ int main(void) {
 
         string content = get_request_content(request);
 
-        if (content.length() == 0) {
-            content = ", World!";
-        }
+        // Read pose 
+        shared_data->mutex.lock();
+        pose.x = shared_data->pose.x;
+        pose.y = shared_data->pose.y;
+        pose.theta = shared_data->pose.theta;
+        shared_data->mutex.unlock();
 
         //if (strcmp(uri,"/pose/get/")==0){
             // TODO json
         std::cout << "Content-type: text/html\r\n"
-             << "\r\n"
-             << "{\"pose\": {\"x\": 0, \"theta\": 0, \"y\": 0}}";
+            << "\r\n"
+            << "{\"pose\": {\"x\": " << pose.x <<", \"y\": " << pose.y << ", \"theta\": " << pose.theta << "}}";
         //} 
     }
 
@@ -125,4 +150,10 @@ int main(void) {
     std::cerr.rdbuf(cerr_streambuf);
 
     return 0;
+
+    // } catch(interprocess_exception &ex){
+    // std::cout << "Unexpected exception: " << ex.what() << std::endl;
+    // shared_memory_object::remove("shared_memory");
+    // return 1;
+    // }
 }
