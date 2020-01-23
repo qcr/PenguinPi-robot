@@ -76,7 +76,7 @@ int main(void) {
             content = ", World!";
         }
 
-        if (strcmp(uri,"/pose/get/")==0){
+        //if (strcmp(uri,"/pose/get/")==0){
             // TODO json
         cout << "Content-type: text/html\r\n"
              << "\r\n"
@@ -88,21 +88,7 @@ int main(void) {
              << "    <h1>Pose:x,y</h1>\n"
              << "  </body>\n"
              << "</html>\n";
-        } else {
-
-        cout << "Content-type: text/html\r\n"
-             << "\r\n"
-             << "<html>\n"
-             << "  <head>\n"
-             << "    <title>Hello, World!</title>\n"
-             << "  </head>\n"
-             << "  <body>\n"
-             << "    <h1>Hello " << content << " from " << uri << " !</h1>\n"
-             << "  </body>\n"
-             << "</html>\n";
-
-        // Note: the fcgi_streambuf destructor will auto flush
-        }
+        //} 
     }
 
     // restore stdio streambufs

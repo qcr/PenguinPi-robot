@@ -54,7 +54,7 @@ int main(int argc, char * argv[]){
      }
      cout << "Localiser has attached the shared memory of " << sizeof(Pose2D) << " bytes ..." << endl;
 
-    semaphore1_id = semget((key_t)SEMAPHORE_KEY, 1, 0666 | IPC_CREAT);	
+  
 
     // Loop for now 
     while(1){
@@ -65,7 +65,6 @@ int main(int argc, char * argv[]){
         ShmPTR->x = latest_pose.x;
         ShmPTR->y = latest_pose.y;
         ShmPTR->theta = latest_pose.theta;
-
 
     }
 }
