@@ -2,8 +2,13 @@
 #include <iostream>
 #include <string.h>
 #include "fcgio.h"
+#include "pose.h"
+
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 using namespace std;
+using namespace boost::interprocess;
 
 // Maximum bytes
 const unsigned long STDIN_MAX = 1000000;
@@ -58,6 +63,29 @@ int main(void) {
 
     FCGX_Init();
     FCGX_InitRequest(&request, 0, 0);
+
+    try{
+        shared_memory_object shm_obj
+            (open_only               //open or create
+            ,"shared_memory"              //name
+            ,read_only                    //read-only mode
+            );
+        
+        std::size_t ShmSize = sizeof(Pose2D);
+
+        //Map the second half of the memory
+        mapped_region region
+            ( shm_obj                      //Memory-mappable object
+            , read_only
+            );
+
+        cout << "Opened " << ShmSize << " bytes of memory" << endl;
+
+    } catch(interprocess_exception &ex){
+        std::cout << "Unexpected exception: " << ex.what() << std::endl;
+        shared_memory_object::remove("shared_memory");
+        return 1;
+    }
 
     while (FCGX_Accept_r(&request) == 0) {
         fcgi_streambuf cin_fcgi_streambuf(request.in);

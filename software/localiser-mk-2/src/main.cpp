@@ -2,30 +2,18 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <sys/shm.h>
-#include <sys/ipc.h>
-#include <semaphore.h>
+
 #include <unistd.h>
 #include <stdint.h>
+
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 #include "vision.h"
 
 using namespace std;
 using namespace cv;
-
-#define	SEMAPHORE_KEY			(291623581)
-
-
-int init(key_t * ShmKEY, int * ShmID){
-
-    *(ShmKEY) = ftok("/etc", 'x');
-    *(ShmID) = shmget(*(ShmKEY), sizeof(struct Pose2D), IPC_CREAT | 0666);
-    if (*(ShmID) < 0){
-        return -1;
-    } else {
-        return 0;
-    }
-}
+using namespace boost::interprocess;
 
 int main(int argc, char * argv[]){
 
@@ -35,36 +23,40 @@ int main(int argc, char * argv[]){
     Mat image;
     image = imread(argv[1], IMREAD_COLOR); 
 
-    // Set up shared memory 
-    key_t   ShmKEY;
-    int     ShmID;
-    Pose2D *ShmPTR;
-    static int semaphore1_id;
 
-     if (init(&ShmKEY, &ShmID) < 0) {
-        cerr << "*** shmget error (server) ***" << endl;
-        exit(1);
-     }
-     cout << "Localiser has set up shared memory with key " << ShmKEY << " ..." << endl;
+    try{
 
-     ShmPTR = (struct Pose2D *) shmat(ShmID, NULL, 0);
-     if ((uintptr_t) ShmPTR == -1) {
-        cerr << "*** shmat error (server) ***" << endl; 
-        exit(1);
-     }
-     cout << "Localiser has attached the shared memory of " << sizeof(Pose2D) << " bytes ..." << endl;
+        //Erase previous shared memory
+        shared_memory_object::remove("shared_memory");
 
-  
+        shared_memory_object shm_obj
+            (create_only               //open or create
+            ,"shared_memory"              //name
+            ,read_write                    //read-only mode
+            );
+    
+        std::size_t ShmSize = sizeof(Pose2D);
+        shm_obj.truncate(ShmSize);
 
+        //Map the memory 
+        mapped_region region
+            ( shm_obj                      //Memory-mappable object
+            , read_write               //Access mode
+            );
+
+        cout << "Set up " << ShmSize << " bytes of memory" << endl;
+
+    } catch(interprocess_exception &ex){
+        std::cout << "Unexpected exception: " << ex.what() << std::endl;
+        shared_memory_object::remove("shared_memory");
+        return 1;
+    }
     // Loop for now 
     while(1){
         Pose2D latest_pose;
         int result = localiser.compute_pose(image, &latest_pose);
-
-        // Copy pose to shared memory 
-        ShmPTR->x = latest_pose.x;
-        ShmPTR->y = latest_pose.y;
-        ShmPTR->theta = latest_pose.theta;
-
     }
+
+    shared_memory_object::remove("shared_memory");
+
 }

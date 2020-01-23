@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 CGI_PORT=9000
 WEBAPP_LOCATION=/var/www/EGB439
@@ -20,7 +21,8 @@ mkdir -p build
 echo "Building all targets..."
 cd build 
 cmake ..
-make 
+make clean
+make
 
 echo "Starting server..."
 sudo /etc/init.d/nginx stop
@@ -30,7 +32,7 @@ echo "Killing and restarting service on $CGI_PORT..."
 fuser -k $CGI_PORT/tcp
 cgi-fcgi -start -connect $HOST:$CGI_PORT ./cgi_app
 
-echo "Starting localiser..."
-./localiser
+echo "Starting localiser with dummy image..."
+./localiser ../testing/Flask-desktop-testbed/camv2img.jpg 
 
 echo "DONE"

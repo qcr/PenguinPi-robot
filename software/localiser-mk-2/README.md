@@ -10,7 +10,7 @@ Install nginx server and PHP
 
 ``` 
 $ sudo apt update
-$ sudo apt install nginx php7.2 php7.2-fpm libfcgi libfcgi-dev build-essential libc-dev
+$ sudo apt install nginx php7.2 php7.2-fpm libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev
 
 ```
 
