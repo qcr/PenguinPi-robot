@@ -25,8 +25,6 @@ IM_HEIGHT = 480
 
 app = Flask(__name__)
 
-# display_img = None
-robot = False
 # robot estimated pose
 x = 0
 y = 0
@@ -59,12 +57,10 @@ def home():
 @app.route('/camera/get', methods = ['GET'])
 def picam():
 
-    global display_img,image
-    if robot:
-        # encode the grey scale image as PNG
-        image_data = cv2.imencode('.png', display_img)[1]
-    else:
-        image_data = cv2.imencode('.png', image)[1]
+    global display_img
+
+    # encode the grey scale image as PNG
+    image_data = cv2.imencode('.png', display_img)[1]
     # make it streamable and return an HTTP image response
     return send_file(io.BytesIO(image_data), 'image/png')
 
@@ -120,7 +116,7 @@ class Contours:
 
 
 def LocalizerThread():
-    global x, y, theta, display_img, image
+    global x, y, theta, display_img
 
     log.info('Localizer thread launched, running at %.1f Hz' % args.localizer_rate)
     dt = 1/args.localizer_rate
@@ -146,16 +142,13 @@ def LocalizerThread():
         # Get the image, rectify and find contours 
         im1 =  camera.read()
         im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
-        img = cv2.warpPerspective(im1, h, (500,500))
-        mask = cv2.inRange(img, 220,255)
-        mask = cv2.flip(mask,1)
+        im1 = cv2.warpPerspective(im1, h, (500,500))
+        display_img = im1
+        # display_img = cv2.flip(im1.copy(),-1)
+        # display_img = cv2.flip(display_img, 1)
+        mask = cv2.inRange(im1, 220,255)
         im2, robot_contours, hierarchy_rbt = cv2.findContours(mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-     
-
-        image = cv2.flip(img.copy(),1)
-        # image = cv2.flip(img1, 1)
-    
-
+      
         # cv2.imshow('im',mask)
         # cv2.waitKey()
         # Process contours into boxes 
@@ -193,8 +186,7 @@ def LocalizerThread():
                 center_box = box
        
         # Find the 2 LEDs closest to center LED
-        if center_box:  
-            robot = True
+        if center_box:   
             dists_boxes = []
             for box2 in boxes:
                 if (center_box != box2):
@@ -206,26 +198,15 @@ def LocalizerThread():
 
             dists_boxes = sorted(dists_boxes, key=lambda x: x[0])
             closest_two = dists_boxes[0:2]
-            # display_img1 = im1 
+            
             # Use point between the two closest LEDs and center of middle LED to find angle
             mid_point_x = (closest_two[0][1].cx + closest_two[1][1].cx)/2
             mid_point_y = (closest_two[0][1].cy + closest_two[1][1].cy)/2
 
             angle = np.arctan2(center_box.cy-mid_point_y, center_box.cx-mid_point_x)
-            ang = angle.copy()
-            l = 35
-            cv2.arrowedLine(image, (round(center_box.cx), round(center_box.cy)), (round(center_box.cx + l * math.cos(ang)), round(center_box.cy + l * math.sin(ang))), (200), 2)
-            # cv2.arrowedLine(image, (round(center_box.cx), round(500-center_box.cy)), (round(center_box.cx + l * math.sin(ang)), round(500-center_box.cy + l * math.cos(ang))), (200), 2)
-            # display_img1 = im1
-            # display_img1 = cv2.flip(img.copy(),-1)
-            # display_img = cv2.flip(display_img1, 1)
-    
-            # cv2.imshow("im",im1)
-            # cv2.waitKey()
-
-            angle = np.rad2deg(-angle)
+            angle = np.rad2deg(angle)
             x = (center_box.cx / 500)*2
-            y = 2-(center_box.cy / 500)*2
+            y = (center_box.cy / 500)*2
 
 
             log.debug("Pose: %8.3f %8.3f %8.2f",  x, y, angle)
@@ -233,10 +214,8 @@ def LocalizerThread():
             
         else:
             log.debug("Nothing found")
-            robot = False
-            theta = 0
-            x = 0
-            y = 0
+
+
 
   # do clever stuff here
         #   if you want to create a cv2 image with overlayed graphics in it, I can make
