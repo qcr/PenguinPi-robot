@@ -6,6 +6,7 @@
 
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/sync/interprocess_mutex.hpp>
 
 using namespace std;
 using namespace boost::interprocess;
@@ -24,7 +25,7 @@ string get_request_content(const FCGX_Request & request) {
     if (content_length_str) {
         content_length = strtol(content_length_str, &content_length_str, 10);
         if (*content_length_str) {
-            cerr << "Can't Parse 'CONTENT_LENGTH='"
+            std::cerr << "Can't Parse 'CONTENT_LENGTH='"
                  << FCGX_GetParam("CONTENT_LENGTH", request.envp)
                  << "'. Consuming stdin up to " << STDIN_MAX << endl;
         }
@@ -38,15 +39,15 @@ string get_request_content(const FCGX_Request & request) {
     }
 
     char * content_buffer = new char[content_length];
-    cin.read(content_buffer, content_length);
-    content_length = cin.gcount();
+    std::cin.read(content_buffer, content_length);
+    content_length = std::cin.gcount();
 
     // Chew up any remaining stdin - this shouldn't be necessary
     // but is because mod_fastcgi doesn't handle it correctly.
 
     // ignore() doesn't set the eof bit in some versions of glibc++
     // so use gcount() instead of eof()...
-    do cin.ignore(1024); while (cin.gcount() == 1024);
+    do std::cin.ignore(1024); while (std::cin.gcount() == 1024);
 
     string content(content_buffer, content_length);
     delete [] content_buffer;
@@ -55,9 +56,9 @@ string get_request_content(const FCGX_Request & request) {
 
 int main(void) {
     // Backup the stdio streambufs
-    streambuf * cin_streambuf  = cin.rdbuf();
-    streambuf * cout_streambuf = cout.rdbuf();
-    streambuf * cerr_streambuf = cerr.rdbuf();
+    streambuf * cin_streambuf  = std::cin.rdbuf();
+    streambuf * cout_streambuf = std::cout.rdbuf();
+    streambuf * cerr_streambuf = std::cerr.rdbuf();
 
     FCGX_Request request;
 
@@ -79,7 +80,7 @@ int main(void) {
             , read_only
             );
 
-        cout << "Opened " << ShmSize << " bytes of memory" << endl;
+        std::cout << "Opened " << ShmSize << " bytes of memory" << endl;
 
     } catch(interprocess_exception &ex){
         std::cout << "Unexpected exception: " << ex.what() << std::endl;
@@ -87,14 +88,20 @@ int main(void) {
         return 1;
     }
 
+    //Get the address of the mapped region
+    void * addr = region.get_address();
+
+    //Construct the shared structure in memory
+    shared_memory_log * data = static_cast<shared_memory_log*>(addr);
+
     while (FCGX_Accept_r(&request) == 0) {
         fcgi_streambuf cin_fcgi_streambuf(request.in);
         fcgi_streambuf cout_fcgi_streambuf(request.out);
         fcgi_streambuf cerr_fcgi_streambuf(request.err);
 
-        cin.rdbuf(&cin_fcgi_streambuf);
-        cout.rdbuf(&cout_fcgi_streambuf);
-        cerr.rdbuf(&cerr_fcgi_streambuf);
+        std::cin.rdbuf(&cin_fcgi_streambuf);
+        std::cout.rdbuf(&cout_fcgi_streambuf);
+        std::cerr.rdbuf(&cerr_fcgi_streambuf);
 
         const char * uri = FCGX_GetParam("REQUEST_URI", request.envp);
 
@@ -106,23 +113,16 @@ int main(void) {
 
         //if (strcmp(uri,"/pose/get/")==0){
             // TODO json
-        cout << "Content-type: text/html\r\n"
+        std::cout << "Content-type: text/html\r\n"
              << "\r\n"
-             << "<html>\n"
-             << "  <head>\n"
-             << "    <title>Pose:x,y</title>\n"
-             << "  </head>\n"
-             << "  <body>\n"
-             << "    <h1>Pose:x,y</h1>\n"
-             << "  </body>\n"
-             << "</html>\n";
+             << "{\"pose\": {\"x\": 0, \"theta\": 0, \"y\": 0}}";
         //} 
     }
 
     // restore stdio streambufs
-    cin.rdbuf(cin_streambuf);
-    cout.rdbuf(cout_streambuf);
-    cerr.rdbuf(cerr_streambuf);
+    std::cin.rdbuf(cin_streambuf);
+    std::cout.rdbuf(cout_streambuf);
+    std::cerr.rdbuf(cerr_streambuf);
 
     return 0;
 }

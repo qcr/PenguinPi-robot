@@ -8,6 +8,7 @@
 
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/sync/interprocess_mutex.hpp>
 
 #include "vision.h"
 
@@ -51,6 +52,11 @@ int main(int argc, char * argv[]){
         shared_memory_object::remove("shared_memory");
         return 1;
     }
+
+    //Get the address of the mapped region
+    void * addr = region.get_address();
+
+
     // Loop for now 
     while(1){
         Pose2D latest_pose;
