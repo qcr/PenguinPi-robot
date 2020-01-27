@@ -14,6 +14,8 @@ $ sudo apt install nginx php7.2 php7.2-fpm libfcgi libfcgi-dev build-essential l
 
 ```
 
+Install OpenCV 4.2 [from sources](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html)
+
 Copy config and web files across
 
 ```

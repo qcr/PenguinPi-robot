@@ -18,8 +18,6 @@ using namespace boost::interprocess;
 
 
 
-
-
 int main(int argc, char * argv[]){
 
     Localiser localiser;
@@ -66,7 +64,7 @@ int main(int argc, char * argv[]){
 
             shared_data->mutex.unlock();
 
-            usleep(10);
+            usleep(10); // TODO set rate somewhere
             
         }
 
