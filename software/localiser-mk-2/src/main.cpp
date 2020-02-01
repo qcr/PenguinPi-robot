@@ -22,6 +22,9 @@ int main(int argc, char * argv[]){
 
     Localiser localiser;
 
+    // Print localiser info 
+    cout << localiser << endl;
+
     // Use dummy image 
     Mat image;
     image = imread(argv[1], IMREAD_COLOR); 
@@ -54,8 +57,12 @@ int main(int argc, char * argv[]){
         while(1){
 
             Pose2D latest_pose;
+
+            // TODO get image from pi cam 
+
             int result = localiser.compute_pose(image, &latest_pose);
 
+            /* ~~~~~~ BEGIN CRITICAL SECTION ~~~~~~~~~ */
             shared_data->mutex.lock();
 
             shared_data->pose.x = latest_pose.x;
@@ -63,6 +70,8 @@ int main(int argc, char * argv[]){
             shared_data->pose.theta = latest_pose.theta;
 
             shared_data->mutex.unlock();
+
+            /* ~~~~~~ END CRITICAL SECTION ~~~~~~~~~ */
 
             usleep(10); // TODO set rate somewhere
             

@@ -1,23 +1,32 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/types_c.h>
+
 #include <stdint.h>
+#include <iostream>
+#include <vector>
+
 #include "pose.h"
 
 using namespace cv; 
 
-class Box {
-  public:
-    double x, y, w, h, cx, cy; 
-    Box (double x, double y, double w, double h) : x(x), y(y), w(w), h(h), cx(x + w/2.0), cy (y + h/2.0) { }
-};
-
-// TODO contour class
-
 class Localiser {
     private:
-      const uint16_t srcPoints[4][2] {{558, 6},{107, 5},{77, 473}, {580, 474}};
-      const uint16_t dstPoints[4][2] {{0,0},{500,0},{500,500}, {0,500}};
+      std::vector<Point2f> srcPoints;
+      std::vector<Point2f> dstPoints;
+      Mat homography;
+      Size size; 
+      int upper_bound;
+      int lower_bound;
+      int flipCode;
+
+
     public:
         Localiser ();
         int compute_pose(Mat img, Pose2D * result);
+        friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
 };

@@ -6,6 +6,7 @@ find_package(Boost REQUIRED)
 add_executable(localiser 
     src/main.cpp 
     src/vision.cpp
+    src/contours.cpp
 )
 
 include_directories(localiser 
