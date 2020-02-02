@@ -24,17 +24,17 @@ cmake ..
 make clean
 make
 
-echo "Starting server..."
-sudo /etc/init.d/nginx stop
-sudo /etc/init.d/nginx start 
+# echo "Starting server..."
+# sudo /etc/init.d/nginx stop
+# sudo /etc/init.d/nginx start 
 
-echo "Starting localiser with dummy image..."
-./localiser ../testing/Flask-desktop-testbed/camv2img.jpg &
+# echo "Starting localiser with dummy image..."
+# ./localiser ../testing/Flask-desktop-testbed/camv2img.jpg &
 
-echo "Killing and restarting service on $CGI_PORT..." 
-fuser -k $CGI_PORT/tcp
-sleep 3
-cgi-fcgi -start -connect $HOST:$CGI_PORT $0/build/cgi_app
+# echo "Killing and restarting service on $CGI_PORT..." 
+# fuser -k $CGI_PORT/tcp
+# sleep 3
+# cgi-fcgi -start -connect $HOST:$CGI_PORT $0/build/cgi_app
 
 
 

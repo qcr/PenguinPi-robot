@@ -2,59 +2,16 @@
 
 A version of the EGB439 localiser that uses compiled binaries for speed and shared memory constructs for safety.
 
-## Getting Started
-
-Intended to run on a raspberry pi.
+### Prerequisites
 
 Install nginx server and PHP
 
 ``` 
 $ sudo apt update
 $ sudo apt install nginx php7.2 php7.2-fpm libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev
-
 ```
-
-Install OpenCV 4.2 [from sources](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html)
-
-Copy config and web files across
-
-```
-$ sudo ./setup.sh
-```
-
-Build the localiser
-
-```
-mkdir build && cd build
-cmake ..
-make
-``
-
-Start the server
-
-```
-$ sudo /etc/init.d/nginx start
-```
-
-Check the server is running on port 8080
-
-```
-$ sudo netstat -tlpn| grep nginx
-``` 
-
-Check php is running
-
-```
-$ sudo systemctl status php7.2-fpm
-```
-
-TODO finish setting up server
-
-### Prerequisites
 
 Install OpenCV C++ libraries including contrib.
-
-Install requirements: 
 
 ```
 sudo apt-get install build-essential
@@ -84,17 +41,38 @@ Install as system library
 ```
 sudo make install
 ```
-
-
-
 ### Installing
+
+Copy config and web files across and build the server programs
+
+```
+$ sudo ./setup.sh
+```
 
 ### Usage
 
-To kill a process running on a port (eg the CGI server):
+Start the server
 
 ```
+$ sudo /etc/init.d/nginx stop
+$ sudo /etc/init.d/nginx start 
+```
+
+Check the server is running on port 8080
+
+```
+$ sudo netstat -tlpn| grep nginx
+``` 
+
+Run the localiser with a test image
+
+```
+./localiser ../testing/Flask-desktop-testbed/camv2img.jpg &
+```
+
+Kill any services running on port 9000 and start the CGI script
 fuser -k 9000/tcp
+cgi-fcgi -start -connect $HOST:$CGI_PORT $0/build/cgi_app
 ```
 
 
