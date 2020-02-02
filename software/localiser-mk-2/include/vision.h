@@ -7,12 +7,16 @@
 #include <opencv2/imgproc/types_c.h>
 
 #include <stdint.h>
+#include <math.h> 
 #include <iostream>
 #include <vector>
+
 
 #include "pose.h"
 
 using namespace cv; 
+
+#define INIT_VAL  (10000)   // A large value for initialising a search for an index
 
 class Localiser {
     private:
@@ -23,8 +27,6 @@ class Localiser {
       int upper_bound;
       int lower_bound;
       int flipCode;
-
-
     public:
         Localiser ();
         int compute_pose(Mat img, Pose2D * result);

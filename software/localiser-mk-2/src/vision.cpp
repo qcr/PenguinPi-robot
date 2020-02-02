@@ -24,8 +24,6 @@ Localiser :: Localiser () :
 
 int Localiser::compute_pose(Mat img, Pose2D * result){
 
-
-
     Mat img2, img3, mask, mask2;
     std::vector<Mat> robot_contours;
     
@@ -38,6 +36,8 @@ int Localiser::compute_pose(Mat img, Pose2D * result){
     Contours conts;
     conts.get_contours(robot_contours);
     std::vector<Box> boxes = conts.get_boxes();
+
+    uint NUM_BOXES = boxes.size();
 
     // Find outer limits of IR LEDs        
     uint min_x = 1e5;
@@ -61,16 +61,75 @@ int Localiser::compute_pose(Mat img, Pose2D * result){
     }
 
     // Find the center LED
-    Box * center_box = NULL;
-    for (auto box : boxes){
-        if (box.cx < max_x && box.cx > min_x && box.cy < max_y && box.cy > min_y){
-            center_box = &box;
+    // Should I get a pointer or an index?
+    std::size_t center_box_ix = INIT_VAL;
+    for(std::size_t i=0; i<boxes.size(); ++i){
+        if (boxes[i].cx < max_x && boxes[i].cx > min_x && boxes[i].cy < max_y && boxes[i].cy > min_y){
+            center_box_ix = i;
         }
     }
 
     // Found robot 
-    if (center_box != NULL){
+    if (center_box_ix != INIT_VAL){
 
+        // Store the distance from each box to the center box 
+        float dists_boxes[NUM_BOXES];
+        std::memset(dists_boxes, INIT_VAL, NUM_BOXES*sizeof(float));
+
+        for(std::size_t i=0; i<boxes.size(); ++i){
+            if (center_box_ix != i){
+                std::complex<float> a(boxes[center_box_ix].cx, boxes[center_box_ix].cy);
+                std::complex<float> b(boxes[i].cx, boxes[i].cy);
+                std::complex<float> diff(a-b);
+                float dist_box = std::abs(diff);
+                dists_boxes[i] = dist_box;
+            }
+        }
+
+        // Get the two closest boxes 
+
+
+        int min_indices[2] = {0,1}; // min_indices[0] points to the closest box, ..[1] to the second closest
+
+        int temp;
+
+        // Base case - ensure min_dist < min_dist_2
+        if (dists_boxes[min_indices[0]] > dists_boxes[min_indices[1]]){
+            temp = min_indices[0];
+            min_indices[0] = min_indices[1];
+            min_indices[1] = temp;
+        }
+
+        for(int i=0; i<NUM_BOXES; i++){
+
+            // Case -0. ith distance is greater than min_dist and min_dist 2
+            // do nothing
+
+            // case 1. ith distance is less than min_dist and min_dist 2
+            if (dists_boxes[i] < dists_boxes[min_indices[0]]){
+
+                min_indices[1] = min_indices[0];
+                min_indices[0] = i;
+            // case 2. ith distance is less than only min_dist_2
+            } else if (dists_boxes[i] < dists_boxes[min_indices[1]]){
+                min_indices[1] = i;
+            }
+        }
+
+        // Use point between the two closest LEDs and center of middle LED to find angle
+
+        float mid_point_x = (boxes[min_indices[0]].cx + boxes[min_indices[1]].cx)/2.0;
+        float mid_point_y = (boxes[min_indices[0]].cy + boxes[min_indices[1]].cy)/2.0;
+        
+        float angle = atan2((boxes[center_box_ix].cy - mid_point_y), (boxes[center_box_ix].cx-mid_point_x));
+
+        float theta = -angle*180/M_PI;
+        float x = (boxes[center_box_ix].cx / 500.0)*2.0;
+        float y = 2.0 - (boxes[center_box_ix].cy / 500.0)*2.0;
+
+        result->x = x;
+        result->y = y;
+        result->theta = theta;
 
     } else { // found no robot
         result->x=0;
@@ -78,13 +137,8 @@ int Localiser::compute_pose(Mat img, Pose2D * result){
         result->theta=0;
     }
 
-
-
-            
-
     return 0;
 }
-
 
 std::ostream & operator<<(std::ostream & os, const Localiser & localiser)
 {
