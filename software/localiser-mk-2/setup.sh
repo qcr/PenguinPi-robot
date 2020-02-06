@@ -13,8 +13,8 @@ echo "Copying nginx configuration..."
 sudo cp server/default /etc/nginx/sites-available/default
 
 # Copy php settings
-sudo cp server/php.ini /etc/php/7.2/fpm/php.ini
-sudo cp server/index.php $WEBAPP_LOCATION
+# sudo cp server/php.ini /etc/php/7.2/fpm/php.ini
+# sudo cp server/index.php $WEBAPP_LOCATION
 
 echo "Creating build directory ..."
 mkdir -p build
