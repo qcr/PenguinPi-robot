@@ -7,7 +7,7 @@ HOST=127.0.0.1
 
 echo "Setting up server directory structure in $WEBAPP_LOCATION..."
 sudo mkdir -p $WEBAPP_LOCATION
-sudo rm -r $WEBAPP_LOCATION/*
+sudo rm -r $WEBAPP_LOCATION
 
 echo "Copying nginx configuration..."
 sudo cp server/default /etc/nginx/sites-available/default

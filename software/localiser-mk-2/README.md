@@ -8,7 +8,7 @@ Install nginx server and PHP
 
 ``` 
 $ sudo apt update
-$ sudo apt install nginx php7.2 php7.2-fpm libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev
+$ sudo apt install nginx libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev
 ```
 
 Install OpenCV C++ libraries including contrib.
@@ -71,6 +71,8 @@ Run the localiser with a test image
 ```
 
 Kill any services running on port 9000 and start the CGI script
+
+```
 fuser -k 9000/tcp
 cgi-fcgi -start -connect $HOST:$CGI_PORT $0/build/cgi_app
 ```
