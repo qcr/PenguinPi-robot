@@ -2,9 +2,10 @@
 #include "contours.h"
 
 using namespace cv; 
+using namespace std;
 
 Localiser :: Localiser () : 
-    size(500,500), lower_bound(220), upper_bound(255), flipCode(1)  
+    camera(), camera_image(), size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
     {
 
     const float in[] = {558,6,107,5,77,473,580,474};
@@ -19,16 +20,38 @@ Localiser :: Localiser () :
         dstPoints.push_back(output_point);
     }
     homography = findHomography(srcPoints, dstPoints);
+    
+    camera.set(CAP_PROP_FORMAT, CV_8UC1);
+    cout << "Opening camera.. " << endl;
+    if (!camera.open()) { cerr << "Error opening camera " << endl; }
 
 }
 
-int Localiser::compute_pose(Mat img, Pose2D * result){
+Localiser :: ~Localiser(){
+    camera.release();
+}
+
+
+int Localiser::update_camera_img(void){
+    camera.grab();
+    camera.retrieve(camera_image);
+    camera_save_timer++;
+
+    if (!(camera_save_timer%5)){
+        cv::imwrite("/home/pi/raspicam_cv_image.jpg",camera_image);
+    }
+
+    return 0;
+}
+
+
+int Localiser::compute_pose(Pose2D * result){
 
     Mat img2, img3, mask, mask2;
     std::vector<Mat> robot_contours;
     
-    cvtColor(img, img2, COLOR_BGR2GRAY);
-    warpPerspective(img2, img3, homography, size); 
+    //cvtColor(camera_image, img2, COLOR_BGR2GRAY);
+    warpPerspective(camera_image, img3, homography, size); 
     inRange(img3, lower_bound, upper_bound, mask);
     flip(mask,mask2,flipCode);                          // Flip around y axis
     findContours(mask2, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);

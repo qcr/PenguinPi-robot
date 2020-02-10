@@ -11,6 +11,9 @@
 #include <iostream>
 #include <vector>
 
+//#include <raspicam/raspicam.h>
+#include <raspicam/raspicam_cv.h>
+#include <ctime>
 
 #include "pose.h"
 
@@ -20,6 +23,8 @@ using namespace cv;
 
 class Localiser {
     private:
+      raspicam::RaspiCam_Cv camera;
+      Mat camera_image;
       std::vector<Point2f> srcPoints;
       std::vector<Point2f> dstPoints;
       Mat homography;
@@ -27,8 +32,11 @@ class Localiser {
       int upper_bound;
       int lower_bound;
       int flipCode;
+      uint8_t camera_save_timer;
     public:
         Localiser ();
-        int compute_pose(Mat img, Pose2D * result);
+        int update_camera_img(void);
+        int compute_pose(Pose2D * result);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
+        ~Localiser ();
 };

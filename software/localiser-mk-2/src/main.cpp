@@ -26,8 +26,8 @@ int main(int argc, char * argv[]){
     cout << localiser << endl;
 
     // Use dummy image 
-    Mat image;
-    image = imread(argv[1], IMREAD_COLOR); 
+    //Mat image;
+    //image = imread(argv[1], IMREAD_COLOR); 
 
     try{
         struct shm_remove
@@ -60,7 +60,9 @@ int main(int argc, char * argv[]){
 
             // TODO get image from pi cam 
 
-            int result = localiser.compute_pose(image, &latest_pose);
+            localiser.update_camera_img();
+
+            int result = localiser.compute_pose(&latest_pose);
 
             /* ~~~~~~ BEGIN CRITICAL SECTION ~~~~~~~~~ */
             shared_data->mutex.lock();
