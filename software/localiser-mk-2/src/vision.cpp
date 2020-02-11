@@ -38,7 +38,7 @@ int Localiser::update_camera_img(void){
     camera_save_timer++;
 
     if (!(camera_save_timer%5)){
-        cv::imwrite("/home/pi/raspicam_cv_image.jpg",camera_image);
+        cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",camera_image);
     }
 
     return 0;
