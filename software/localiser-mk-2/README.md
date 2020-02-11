@@ -41,9 +41,23 @@ Install as system library
 ```
 sudo make install
 ```
+
+Install raspicam library, must be installed as system library and on cmake path https://github.com/cedricve/raspicam
+
+
 ### Installing
 
-Copy config and web files across and build the server programs
+Build the server programs. On rpi you must do this as root.
+
+```
+mkdir build
+cd build
+sudo cmake ..
+sudo make
+sudo make install
+```
+
+Copy web server files across.
 
 ```
 $ sudo ./setup.sh
@@ -51,31 +65,24 @@ $ sudo ./setup.sh
 
 ### Usage
 
-Start the server
+Start the server and cgi endpoint
 
 ```
-$ sudo /etc/init.d/nginx stop
-$ sudo /etc/init.d/nginx start 
+sudo ./RUN.sh
 ```
 
 Check the server is running on port 8080
+Note: to avoid conflict with old localiser, server has been set to port 8008 for now.
 
 ```
-$ sudo netstat -tlpn| grep nginx
+sudo netstat -tlpn| grep nginx
 ``` 
 
-Run the localiser with a test image
+Check endpoints
 
-```
-./localiser ../testing/Flask-desktop-testbed/camv2img.jpg &
-```
-
-Kill any services running on port 9000 and start the CGI script
-
-```
-fuser -k 9000/tcp
-cgi-fcgi -start -connect $HOST:$CGI_PORT $0/build/cgi_app
-```
+``` 
+wget <host>:8080/pose/get
+wget <host>:8080/camera/get
 
 
 ## Authors
