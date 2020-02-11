@@ -14,6 +14,10 @@ server {
 	}
 
 
+     location /camera/get {
+		sendfile on;
+                try_files $uri /camera/get/arena.jpg;
+     }
 
      location /pose/get {
 		fastcgi_pass   127.0.0.1:9000;
@@ -35,6 +39,8 @@ server {
 		fastcgi_param  SERVER_PORT        $server_port;
 		fastcgi_param  SERVER_NAME        $server_name;
      } 
+
+
 
 	# pass PHP scripts to FastCGI server
 	#
