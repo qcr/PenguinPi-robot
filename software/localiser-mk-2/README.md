@@ -1,6 +1,8 @@
-# Project Title
+# Localiser with Nginx + C++
 
 A version of the EGB439 localiser that uses compiled binaries for speed and shared memory constructs for safety.
+These instructions are for building on the target raspberry pi.
+Future project: set up toolchain for cross-compilation.
 
 ### Prerequisites
 
@@ -22,6 +24,7 @@ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libp
 Get the source:
 
 ```
+cd ~/Downloads
 git clone https://github.com/opencv/opencv.git
 git clone https://github.com/opencv/opencv_contrib.git
 ```
@@ -42,7 +45,18 @@ Install as system library
 sudo make install
 ```
 
-Install raspicam library, must be installed as system library and on cmake path https://github.com/cedricve/raspicam
+Install raspicam library, must be installed as system library and on cmake path:
+
+```
+cd ~/Downloads
+git clone https://github.com/cedricve/raspicam .
+cd raspicam
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 
 ### Installing
@@ -50,6 +64,7 @@ Install raspicam library, must be installed as system library and on cmake path 
 Build the server programs. On rpi you must do this as root.
 
 ```
+cd <localiser mk 2 location>
 mkdir build
 cd build
 sudo cmake ..
@@ -83,6 +98,7 @@ Check endpoints
 ``` 
 wget <host>:8080/pose/get
 wget <host>:8080/camera/get
+```
 
 
 ## Authors
