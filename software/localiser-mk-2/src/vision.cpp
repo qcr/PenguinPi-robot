@@ -1,6 +1,7 @@
 #include "vision.h"
 #include "contours.h"
 
+
 using namespace cv; 
 using namespace std;
 
@@ -22,6 +23,8 @@ Localiser :: Localiser () :
     homography = findHomography(srcPoints, dstPoints);
     
     camera.set(CAP_PROP_FORMAT, CV_8UC1);
+    camera.set(CAP_PROP_FRAME_WIDTH, 640);
+    camera.set(CAP_PROP_FRAME_HEIGHT, 480);
     cout << "Opening camera.. " << endl;
     if (!camera.open()) { cerr << "Error opening camera " << endl; }
 
@@ -62,6 +65,10 @@ int Localiser::compute_pose(Pose2D * result){
 
     uint NUM_BOXES = boxes.size();
 
+    #ifdef DEBUG
+    cout << "num boxes: " << NUM_BOXES << endl;
+    #endif 
+
     // Find outer limits of IR LEDs        
     uint min_x = 1e5;
     uint max_x = 0;
@@ -94,6 +101,10 @@ int Localiser::compute_pose(Pose2D * result){
 
     // Found robot 
     if (center_box_ix != INIT_VAL){
+
+        #ifdef DEBUG
+        cout << "Found robot!" << endl;
+        #endif
 
         // Store the distance from each box to the center box 
         float dists_boxes[NUM_BOXES];
@@ -140,6 +151,9 @@ int Localiser::compute_pose(Pose2D * result){
         }
 
         // Use point between the two closest LEDs and center of middle LED to find angle
+        #ifdef DEBUG
+        cout << "Found indices: " << min_indices[0] << "," << min_indices[1] << endl << endl;
+        #endif
 
         float mid_point_x = (boxes[min_indices[0]].cx + boxes[min_indices[1]].cx)/2.0;
         float mid_point_y = (boxes[min_indices[0]].cy + boxes[min_indices[1]].cy)/2.0;
@@ -150,11 +164,18 @@ int Localiser::compute_pose(Pose2D * result){
         float x = (boxes[center_box_ix].cx / 500.0)*2.0;
         float y = 2.0 - (boxes[center_box_ix].cy / 500.0)*2.0;
 
+        #ifdef DEBUG
+        cout << "x,y,theta: " << x << "," << y << "," << theta << endl;
+        #endif
+
         result->x = x;
         result->y = y;
         result->theta = theta;
 
     } else { // found no robot
+        #ifdef DEBUG
+        cout << "Did not find robot!" << endl;
+        #endif
         result->x=0;
         result->y=0;
         result->theta=0;

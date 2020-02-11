@@ -6,9 +6,9 @@
 struct Pose2D {
 
   Pose2D() : x(0), y(0), theta(0) {};
-  double x;
-  double y;
-  double theta;
+  float x;
+  float y;
+  float theta;
 } ;
 
 
