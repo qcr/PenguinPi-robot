@@ -1,6 +1,8 @@
-# Project Title
+# Localiser with Nginx + C++
 
 A version of the EGB439 localiser that uses compiled binaries for speed and shared memory constructs for safety.
+These instructions are for building on the target raspberry pi.
+Future project: set up toolchain for cross-compilation.
 
 ### Prerequisites
 
@@ -22,6 +24,7 @@ sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libp
 Get the source:
 
 ```
+cd ~/Downloads
 git clone https://github.com/opencv/opencv.git
 git clone https://github.com/opencv/opencv_contrib.git
 ```
@@ -41,9 +44,35 @@ Install as system library
 ```
 sudo make install
 ```
+
+Install raspicam library, must be installed as system library and on cmake path:
+
+```
+cd ~/Downloads
+git clone https://github.com/cedricve/raspicam .
+cd raspicam
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+
+
 ### Installing
 
-Copy config and web files across and build the server programs
+Build the server programs. On rpi you must do this as root.
+
+```
+cd <localiser mk 2 location>
+mkdir build
+cd build
+sudo cmake ..
+sudo make
+sudo make install
+```
+
+Copy web server files across.
 
 ```
 $ sudo ./setup.sh
@@ -51,30 +80,24 @@ $ sudo ./setup.sh
 
 ### Usage
 
-Start the server
+Start the server and cgi endpoint
 
 ```
-$ sudo /etc/init.d/nginx stop
-$ sudo /etc/init.d/nginx start 
+sudo ./RUN.sh
 ```
 
 Check the server is running on port 8080
+Note: to avoid conflict with old localiser, server has been set to port 8008 for now.
 
 ```
-$ sudo netstat -tlpn| grep nginx
+sudo netstat -tlpn| grep nginx
 ``` 
 
-Run the localiser with a test image
+Check endpoints
 
-```
-./localiser ../testing/Flask-desktop-testbed/camv2img.jpg &
-```
-
-Kill any services running on port 9000 and start the CGI script
-
-```
-fuser -k 9000/tcp
-cgi-fcgi -start -connect $HOST:$CGI_PORT $0/build/cgi_app
+``` 
+wget <host>:8080/pose/get
+wget <host>:8080/camera/get
 ```
 
 
