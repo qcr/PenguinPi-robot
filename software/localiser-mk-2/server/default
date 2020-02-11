@@ -16,7 +16,6 @@ server {
 
      location /camera/get {
 		sendfile on;
-		#index arena.jpg;
                 try_files $uri /camera/get/arena.jpg;
      }
 
