@@ -1,4 +1,6 @@
+
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/mat.hpp>
@@ -11,7 +13,7 @@
 #include <iostream>
 #include <vector>
 
-#ifndef DESKTOP
+#ifndef NO_CAMERA
 #include <raspicam/raspicam_cv.h>
 #endif 
 
@@ -26,9 +28,9 @@ using namespace cv;
 class Localiser {
     private:
 
-      #ifndef DESKTOP
+      #ifndef NO_CAMERA
       raspicam::RaspiCam_Cv camera;
-      #ifndef DESKTOP
+      #endif
 
       Mat camera_image;
       std::vector<Point2f> srcPoints;
@@ -41,11 +43,10 @@ class Localiser {
       uint8_t camera_save_timer;
     public:
 
-        #ifndef DESKTOP
+        #ifndef NO_CAMERA
         Localiser ();
-        #else 
+        #endif 
         Localiser (const char * img_file);
-        #endif
         int update_camera_img(void);
         int compute_pose(Pose2D * result);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);

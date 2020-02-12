@@ -19,4 +19,6 @@ sudo /etc/init.d/nginx start
 sudo cgi-fcgi -start -connect 127.0.0.1:9000 build/cgi_app
 
 sudo ./build/localiser
+# Get PID of the localiser 
+echo $! > server/console/localiser_PID.txt
 

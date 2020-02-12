@@ -5,12 +5,7 @@ set(raspicam_DIR "/usr/local/lib/cmake")
 
 # Compile without rpi libs if on desktop
 
-option(DESKTOP "Compile for desktop testing" OFF) #OFF by default
-if(DESKTOP)
-    add_definitions(-DDESKTOP=1)
-else()
-    #add some other compilation flags
-endif(DESKTOP)
+option(NO_CAMERA "Compile for desktop testing" FALSE) #OFF by default
 
 option(DEBUG "Compile for desktop testing" OFF) #OFF by default
 if(DEBUG)
@@ -21,7 +16,10 @@ endif(DEBUG)
 
 find_package( OpenCV REQUIRED )
 find_package(Boost REQUIRED)
-find_package(raspicam REQUIRED)
+
+if (NO_CAMERA==FALSE)
+    find_package(raspicam REQUIRED)
+endif()
 
 add_executable(localiser 
     src/main.cpp 
@@ -29,18 +27,29 @@ add_executable(localiser
     src/contours.cpp
 )
 
+
+target_link_libraries(localiser
+    ${OpenCV_LIBS}
+)
+
+target_link_libraries(localiser
+    rt
+    pthread
+    ${Boost_LIBRARIES}
+    ${OpenCV_LIBS}
+)
+
+if(NO_CAMERA)
+    target_compile_definitions(localiser PRIVATE NO_CAMERA=1)
+else()
+    target_link_libraries(localiser "${raspicam_CV_LIBS}")
+endif(NO_CAMERA)
+
 include_directories(localiser 
     ${PROJECT_SOURCE_DIR}/include 
     ${Boost_INCLUDE_DIR}
 )
-target_link_libraries(localiser 
-    rt
-    pthread
-    #${raspicam_LIBS}
-    ${raspicam_CV_LIBS}
-    ${Boost_LIBRARIES}
-    ${OpenCV_LIBS}   
-)
+
 
 add_executable(cgi_app src/cgi.cpp)
 target_link_libraries(cgi_app 
@@ -50,6 +59,6 @@ target_link_libraries(cgi_app
     ${Boost_LIBRARIES}
 )
 
-unset(DESKTOP CACHE)
+unset(NO_CAMERA CACHE)
 unset(DEBUG CACHE)
 

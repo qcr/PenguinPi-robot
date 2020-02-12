@@ -20,7 +20,11 @@ using namespace boost::interprocess;
 
 int main(int argc, char * argv[]){
 
+    #ifndef NO_CAMERA
     Localiser localiser;
+    #else 
+    Localiser localiser("/var/www/EGB439/console/arena.jpg");
+    #endif
 
     // Print localiser info 
     cout << localiser << endl;

@@ -5,7 +5,7 @@
 using namespace cv; 
 using namespace std;
 
-#ifndef DESKTOP
+#ifndef NO_CAMERA
 Localiser :: Localiser () : 
     camera(), camera_image(), size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
     {
@@ -32,7 +32,8 @@ Localiser :: Localiser () :
     if (!camera.open()) { cerr << "Error opening camera " << endl; }
 
 }
-#else 
+#endif
+
 Localiser :: Localiser (const char * img_file) : 
     size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
     {
@@ -50,13 +51,13 @@ Localiser :: Localiser (const char * img_file) :
     }
     homography = findHomography(srcPoints, dstPoints);
 
-    camera_image = imread(img_file,CV_LOAD_IMAGE_GRAYSCALE)
+    camera_image = cv::imread(img_file, IMREAD_GRAYSCALE); //)
 }
-#endif 
+
 
 Localiser :: ~Localiser(){
 
-    #ifndef DESKTOP
+    #ifndef NO_CAMERA
     camera.release();
     #endif 
 }
@@ -64,7 +65,7 @@ Localiser :: ~Localiser(){
 
 int Localiser::update_camera_img(void){
 
-    #ifndef DESKTOP
+    #ifndef NO_CAMERA
     camera.grab();
     camera.retrieve(camera_image);
     #endif
@@ -74,6 +75,8 @@ int Localiser::update_camera_img(void){
     if (!(camera_save_timer%5)){
         cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",camera_image);
     }
+
+    
 
     return 0;
 }
