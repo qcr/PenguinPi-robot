@@ -3,6 +3,22 @@ project(Localiser)
 
 set(raspicam_DIR "/usr/local/lib/cmake")
 
+# Compile without rpi libs if on desktop
+
+option(DESKTOP "Compile for desktop testing" OFF) #OFF by default
+if(DESKTOP)
+    add_definitions(-DDESKTOP=1)
+else()
+    #add some other compilation flags
+endif(DESKTOP)
+
+option(DEBUG "Compile for desktop testing" OFF) #OFF by default
+if(DEBUG)
+    add_definitions(-DDEBUG=1)
+else()
+    #add some other compilation flags
+endif(DEBUG)
+
 find_package( OpenCV REQUIRED )
 find_package(Boost REQUIRED)
 find_package(raspicam REQUIRED)
@@ -34,4 +50,6 @@ target_link_libraries(cgi_app
     ${Boost_LIBRARIES}
 )
 
+unset(DESKTOP CACHE)
+unset(DEBUG CACHE)
 

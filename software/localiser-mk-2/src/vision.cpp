@@ -5,6 +5,7 @@
 using namespace cv; 
 using namespace std;
 
+#ifndef DESKTOP
 Localiser :: Localiser () : 
     camera(), camera_image(), size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
     {
@@ -21,23 +22,53 @@ Localiser :: Localiser () :
         dstPoints.push_back(output_point);
     }
     homography = findHomography(srcPoints, dstPoints);
-    
+
     camera.set(CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CAP_PROP_FRAME_WIDTH, 640);
     camera.set(CAP_PROP_FRAME_HEIGHT, 480);
+
+    // TODO syslog
     cout << "Opening camera.. " << endl;
     if (!camera.open()) { cerr << "Error opening camera " << endl; }
 
 }
+#else 
+Localiser :: Localiser (const char * img_file) : 
+    size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
+    {
+
+    const float in[] = {558,6,107,5,77,473,580,474};
+    const float out[] = {0,0,500,0,500,500,0,500};
+
+    for (int i=0; i<8; i+=2){
+
+        Point2f input_point(in[i],in[i+1]);
+        Point2f output_point(out[i],out[i+1]);
+
+        srcPoints.push_back(input_point);
+        dstPoints.push_back(output_point);
+    }
+    homography = findHomography(srcPoints, dstPoints);
+
+    camera_image = imread(img_file,CV_LOAD_IMAGE_GRAYSCALE)
+}
+#endif 
 
 Localiser :: ~Localiser(){
+
+    #ifndef DESKTOP
     camera.release();
+    #endif 
 }
 
 
 int Localiser::update_camera_img(void){
+
+    #ifndef DESKTOP
     camera.grab();
     camera.retrieve(camera_image);
+    #endif
+
     camera_save_timer++;
 
     if (!(camera_save_timer%5)){

@@ -9,8 +9,8 @@ Future project: set up toolchain for cross-compilation.
 Install nginx server and PHP
 
 ``` 
-$ sudo apt update
-$ sudo apt install nginx libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev
+sudo apt update
+sudo apt install nginx libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php7.2 php-fpm php-mysql
 ```
 
 Install OpenCV C++ libraries including contrib.

@@ -2,15 +2,12 @@
 
 
 function dragElement(elmnt) {
+
+    // Attach event listeners
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    if (document.getElementById(elmnt.id + "header")) {
       // if present, the header is where you move the DIV from:
-      document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-    } else {
-      // otherwise, move the DIV from anywhere inside the DIV:
-      elmnt.onmousedown = dragMouseDown;
-    }
-  
+    document.getElementById(elmnt.id).onmousedown = dragMouseDown;
+
     function dragMouseDown(e) {
       console.log("drag mouse down")
       e = e || window.event;
@@ -45,8 +42,14 @@ function dragElement(elmnt) {
   }
 
   $(document).ready( function() {
-    dragElement(document.getElementById("mydiv"));
-  }
-  );
+
+    // Attach event listeners to draggable markers 
+
+    var tie_points = ["NW","NE","SE","SW"];
+
+    for (var i=0; i< tie_points.length; i++){
+        dragElement(document.getElementById(tie_points[i]));
+    }
+  });
 
 
