@@ -30,11 +30,13 @@ int SocketServer :: connect(void){
         return -1;
     }
 
+
+    /*
     int enable = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
         cerr << "setsockopt(SO_REUSEADDR) failed" << endl;
         return -1;
-    }
+    }*/
 
     if (bind(sockfd, (const struct sockaddr *)&server_addr, sizeof(struct sockaddr_un))) {
         cerr << "Failed to bind socket" << endl;
@@ -66,7 +68,9 @@ int SocketServer :: wait_for_request () {
         return -1;
     }
     else {
+        #ifdef DEBUG
         cout << "Message from socket: " << buf << endl;
+        #endif
         return 0;
     }
 }

@@ -1,5 +1,10 @@
 #include "localiser.h"
 
+#ifdef PROFILE
+#include <chrono>
+#endif
+
+
 using namespace std;
 
 namespace PenguinPi {
@@ -90,17 +95,36 @@ int Localiser::listen(void){
     request[LOC_REQ_TYPE_LEN] = '\0';
     int request_type = atoi(request);
 
+    #ifdef DEBUG
     cout << "Request code: " << request_type << endl;
+    #endif
     return request_type;
 }
 
 int Localiser::send_pose(void){
 
+    #ifdef PROFILE
+    auto t1 = std::chrono::high_resolution_clock::now();
+    #endif 
+
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
     PenguinPi::Pose2D latest_pose;
     update_camera_img();
+    
+    #ifdef PROFILE
+    auto t2 = std::chrono::high_resolution_clock::now();
+    #endif
+
     compute_pose(&latest_pose);
+
+    #ifdef PROFILE
+    auto t3 = std::chrono::high_resolution_clock::now();
+    auto camera_duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+    auto imgproc_duration = std::chrono::duration_cast<std::chrono::microseconds>(t3-t2).count();
+    cout << "Time taken for camera: " << camera_duration << " us, img proc: " << imgproc_duration << endl;
+    #endif
+
     sprintf(response,"{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}\0",latest_pose.x,latest_pose.y,latest_pose.theta);
     sock.pack_response(response);
     sock.send_response();
@@ -187,6 +211,8 @@ int Localiser::save_pose_img(void){
 }
 
 int Localiser::compute_pose(Pose2D * result){
+
+
 
     // Apply homography to extract arena image from camera image
     cv::Mat registered_img, mask;

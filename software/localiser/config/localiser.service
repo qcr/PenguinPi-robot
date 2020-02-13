@@ -3,7 +3,7 @@ Description=egb439localiser
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/localiser 
+ExecStart=/usr/local/bin/localiser
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/penguinpi
@@ -14,6 +14,9 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=on-failure
 RestartSec=5s
+CPUSchedulingPriority=80
+Nice=-15
+Type=simple
 
 [Install]
 WantedBy=multi-user.target
