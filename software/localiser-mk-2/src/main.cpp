@@ -19,10 +19,6 @@ int main(int argc, char * argv[]){
     // Print localiser info 
     cout << localiser << endl;
 
-    // Use dummy image 
-    //Mat image;
-    //image = imread(argv[1], IMREAD_COLOR); 
-
     #ifdef DEBUG
     cout << "Setting up shared memory..." << endl;
     #endif 
@@ -54,6 +50,7 @@ int main(int argc, char * argv[]){
         cout << "Entering main program loop.." << endl;
         #endif
 
+        uint8_t camera_save_timer = 0;
         // Compute pose forever 
         while(1){
 
@@ -77,9 +74,11 @@ int main(int argc, char * argv[]){
 
             /* ~~~~~~ END CRITICAL SECTION ~~~~~~~~~ */
 
+            if (!(camera_save_timer % 10)){
             // Save the pose image
-            localiser.save_pose_img();
-
+                localiser.save_pose_img();
+            }
+            camera_save_timer++;
             usleep(1000); // TODO set rate somewhere
             
         }

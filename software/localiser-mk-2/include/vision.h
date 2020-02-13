@@ -42,7 +42,6 @@ class Localiser {
       int upper_bound;
       int lower_bound;
       int flipCode;
-      uint8_t camera_save_timer;
     public:
 
         

@@ -11,7 +11,7 @@ Localiser :: Localiser () :
     #ifdef CAMERA
     camera(),
     #endif 
-    camera_image(), pose_image(), cartesian_size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
+    camera_image(), pose_image(), cartesian_size(500,500), lower_bound(220), upper_bound(255), flipCode(1)   
     {
 
     #ifdef CAMERA
@@ -60,7 +60,6 @@ Localiser :: ~Localiser(){
 int Localiser::update_camera_img(void){
 
     #ifdef CAMERA
-    Mat img;
     camera.grab();
     camera.retrieve(camera_image);
     //cvtColor(img, camera_image, COLOR_BGR2GRAY);
@@ -70,14 +69,8 @@ int Localiser::update_camera_img(void){
 
 int Localiser::save_pose_img(void){
 
-    
-
-    if (!camera_save_timer){
-        Mat out_img; 
-        //cvtColor(camera_image, out_img, cv::COLOR_GRAY2BGR);
-        cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",pose_image);
-    }    
-    camera_save_timer++;
+    //cvtColor(camera_image, out_img, cv::COLOR_GRAY2BGR);
+    cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",pose_image);
     return 0;
 }
 
@@ -97,6 +90,11 @@ int Localiser::compute_pose(Pose2D * result){
     #endif 
 
     inRange(registered_img, lower_bound, upper_bound, mask);
+
+    // Save pose image without arrow in case localisation fails.
+    // Calls to /camera/get must succeed even if localisation fails.
+    pose_image = registered_img;
+
     //flip(mask,mask2,flipCode);                          // Flip around y axis
     findContours(mask, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 
@@ -240,6 +238,7 @@ int Localiser::compute_pose(Pose2D * result){
         result->x=0;
         result->y=0;
         result->theta=0;
+        return 1;
     }
     return 0;
 }
