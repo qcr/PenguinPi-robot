@@ -50,6 +50,11 @@ Localiser :: Localiser () :
     std::strcpy(config.sun_path, "/var/run/penguinpi/localiser.sock");
     config.buflen = LOC_MSG_LEN;
     sock.configure(&config);
+
+    #ifdef CAMERA
+    update_camera_img();
+    save_camera_img();
+    #endif
 }
 
 int Localiser::init_networking(void){

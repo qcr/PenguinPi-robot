@@ -30,6 +30,7 @@ int main(int argc, char * argv[]){
             }
 
             case LOC_REQ_SAVE_CAM_IMG: {
+                localiser.update_camera_img();
                 localiser.save_camera_img();
                 break;
             }

@@ -12,18 +12,42 @@ SOURCES_DIR=$PWD
 
 debug=FALSE
 
+arch=$(dpkg --print-architecture)
+echo "Detected architecture $arch"
+
 echo "Checking permissions..."
 
-if groups $USER | grep -q '\b$WEB_USER\b'; then
-    echo "User ${USER} already in group in $WEB_USER"
-else
-    echo "Adding user ${USER} to $WEB_USER..."
-    sudo usermod -a -G $WEB_USER $USER
-fi
+for group in $WEB_USER video
+do
+    if groups $SUDO_USER | grep -q '\b$group\b'; then
+        echo "User ${SUDO_USER} already in group in $group"
+    else
+        echo "Adding user ${SUDO_USER} to $group..."
+        sudo usermod -a -G $group $SUDO_USER
+    fi
+done
+
+echo "Adding ${WEB_USER} to video group..."
+sudo usermod -a -G video $WEB_USER
 
 echo "Setting up server directory structure in $WEB_DIR..."
 sudo rm -r -f $WEB_DIR
 sudo mkdir -p $WEB_DIR
+
+echo "Creating runfile directory in " $RUNFILE_DIR
+mkdir -p $RUNFILE_DIR
+
+echo "Copying php settings..."
+PHP_VERSION=$(php -r "echo PHP_VERSION;" | grep --only-matching --perl-regexp "7.\d+")
+cp config/php.ini /etc/php/$PHP_VERSION/fpm/php.ini
+
+echo "Copying nginx configuration..."
+REPLACE_PHP="s/<PHP_VERSION>/${PHP_VERSION}/g"
+sed -i $REPLACE_PHP config/default
+cp config/default /etc/nginx/sites-available/default
+
+echo "Copying application..."
+cp -r www/* $WEB_DIR
 
 for f in /var/www /etc/nginx /etc/php $WEB_DIR
 do
@@ -33,8 +57,8 @@ do
     sudo chmod -R 2775 $f
 done
 
-arch=$(dpkg --print-architecture)
-echo "Detected architecture $arch"
+echo "Restarting nginx.."
+sudo service nginx reload
 
 if [ $arch = "armhf" ]; then 
     echo "Compiling with camera module"
@@ -72,21 +96,3 @@ sudo systemctl stop localiser
 sudo systemctl start localiser
 sudo systemctl enable localiser
 
-echo "Copying nginx configuration..."
-cp config/default /etc/nginx/sites-available/default
-
-echo "Copying php settings..."
-PHP_VERSION=$(php -r "echo PHP_VERSION;" | grep --only-matching --perl-regexp "7.\d+")
-cp config/php.ini /etc/php/$PHP_VERSION/fpm/php.ini
-
-echo "Copying application..."
-rm -f -r $WEB_DIR/*
-cp -r www/* $WEB_DIR
-
-echo "Adding r/w permissions for $WEB_USER..."
-sudo chgrp -R $WEB_USER $WEB_DIR
-sudo chown -R $WEB_USER: $WEB_DIR
-sudo chmod -R 2775 $WEB_DIR
-
-echo "Restarting nginx.."
-sudo service nginx reload
