@@ -6,13 +6,13 @@ echo "Detected architecture $arch"
 
 if [ $arch = "armhf" ]; then 
     echo "Compiling with camera module"
-    camera="TRUE"
+    camera=TRUE
 else 
     echo "Compiling without camera module"
-    camera="FALSE"
+    camera=FALSE
 fi
 
 mkdir -p build
 cd build
-cmake -DCAMERA=$CAMERA ..
+cmake -DCAMERA=$camera ..
 make

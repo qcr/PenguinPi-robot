@@ -40,9 +40,9 @@ target_link_libraries(localiser
 )
 
 if(CAMERA)
+    target_link_libraries(localiser "${raspicam_CV_LIBS}")
     target_compile_definitions(localiser PRIVATE CAMERA=1)
 else()
-    target_link_libraries(localiser "${raspicam_CV_LIBS}")
 endif(CAMERA)
 
 if(DEBUG)

@@ -7,11 +7,15 @@ using namespace std;
 
 
 Localiser :: Localiser () : 
-    camera_image(HEIGHT, WIDTH, CV_32FC3), cartesian_size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
+
+    #ifdef CAMERA
+    camera(),
+    #endif 
+    camera_image(), cartesian_size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
     {
 
     #ifdef CAMERA
-    camera();
+
     camera.set(CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CAP_PROP_FRAME_WIDTH, 640);
     camera.set(CAP_PROP_FRAME_HEIGHT, 480);
@@ -56,17 +60,17 @@ Localiser :: ~Localiser(){
 int Localiser::update_camera_img(void){
 
     #ifdef CAMERA
-    Mat 3_channel_img;
+    Mat img;
     camera.grab();
-    camera.retrieve(3_channel_img);
-    cvtColor(3_channel_img, camera_img, COLOR_BGR2GRAY);
+    camera.retrieve(camera_image);
+    //cvtColor(img, camera_image, COLOR_BGR2GRAY);
     #endif
 
     camera_save_timer++;
 
     if (!(camera_save_timer%5)){
         Mat out_img; 
-        cvtColor(camera_image, out_img, cv::COLOR_GRAY2BGR);
+        //cvtColor(camera_image, out_img, cv::COLOR_GRAY2BGR);
         cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",camera_image);
         //cv::imwrite("arena.ppm",out_img);
     }    
