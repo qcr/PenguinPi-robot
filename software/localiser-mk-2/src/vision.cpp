@@ -69,6 +69,8 @@ int Localiser::update_camera_img(void){
 
 int Localiser::save_pose_img(void){
 
+    // Collect test images
+    //cv::imwrite("test_img.jpg",camera_image);
     //cvtColor(camera_image, out_img, cv::COLOR_GRAY2BGR);
     cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",pose_image);
     return 0;
