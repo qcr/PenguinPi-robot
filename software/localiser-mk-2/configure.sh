@@ -43,8 +43,16 @@ else
     done
 fi
 
-echo "Adding user ${USER} to www-data..."
-sudo usermod -a -G www-data $USER
+
+echo "Checking permissions..."
+
+if groups $SUDO_USER | grep -q '\bwww-data\b'; then
+    echo "User ${SUDO_USER} already in group in www-data"
+else
+    echo "Adding user ${SUDO_USER} to www-data..."
+    sudo usermod -a -G www-data $SUDO_USER
+    echo "Please reboot and run this script again."
+fi
 
 for f in /var/www /etc/nginx /etc/php
 do
