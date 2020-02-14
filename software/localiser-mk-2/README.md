@@ -67,6 +67,9 @@ Start the server and cgi endpoint (do not need to be root):
 ./LOCALISER.sh
 ```
 
+
+### Troubleshooting
+
 Check the server is running on port 8080
 Note: to avoid conflict with old localiser, server has been set to port 8008 for now.
 
@@ -87,13 +90,22 @@ wget <host>:8080/pose/get
 wget <host>:8080/camera/get
 ```
 
-If you need to restart the server for troubleshooting:
+Restart the cgi endpoint:
+
+```
+fuser -k 9000/tcp
+cgi-fcgi -start -connect 127.0.0.1:9000 build/cgi_app
+```
+
+Rstart the server:
 
 ```
 sudo systemctl restart php7.2-fpm  # could be different php version
 sudo /etc/init.d/nginx stop
 sudo /etc/init.d/nginx start
 ```
+
+
 
 
 ## Authors
