@@ -23,7 +23,7 @@
     <body>
 
     <div id="arena_image"> 
-        <img src="arena.jpg">
+        <img src="/camera/get/arena.jpg">
         <div> 
             <?php echo $tie_point_html; ?>
         </div>

@@ -90,7 +90,7 @@ wget <host>:8080/camera/get
 If you need to restart the server for troubleshooting:
 
 ```
-sudo systemctl restart php7.2-fpm
+sudo systemctl restart php7.2-fpm  # could be different php version
 sudo /etc/init.d/nginx stop
 sudo /etc/init.d/nginx start
 ```

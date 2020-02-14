@@ -52,6 +52,7 @@ else
     echo "Adding user ${SUDO_USER} to www-data..."
     sudo usermod -a -G www-data $SUDO_USER
     echo "Please reboot and run this script again."
+    exit 0
 fi
 
 for f in /var/www /etc/nginx /etc/php
