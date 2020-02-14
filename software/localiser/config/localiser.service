@@ -14,9 +14,6 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=on-failure
 RestartSec=5s
-CPUSchedulingPriority=80
-Nice=-15
-Type=simple
 
 [Install]
 WantedBy=multi-user.target

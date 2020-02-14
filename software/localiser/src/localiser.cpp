@@ -17,8 +17,12 @@ Localiser :: Localiser () :
     cartesian_size(ARENA_WIDTH_PIXELS,ARENA_HEIGHT_PIXELS) {
 
     #ifdef CAMERA
+
+    raspicam::RASPICAM_EXPOSURE exposure = raspicam::RASPICAM_EXPOSURE_SPORTS;
     camera.set(CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CAP_PROP_FRAME_WIDTH, PICAM_IMG_WIDTH);
+    camera.set(CAP_PROP_FPS, TARGET_FPS);
+    //camera.set(CAP_PROP_EXPOSURE, exposure);
     camera.set(CAP_PROP_FRAME_HEIGHT, PICAM_IMG_HEIGHT);
     cout << "Opening camera.. " << endl; 
     if (!camera.open()) { cerr << "Error opening camera " << endl; }

@@ -9,7 +9,7 @@ WEB_USER=www-data
 INSTALL_DIR=/usr/local
 USER=$(whoami)
 SOURCES_DIR=$PWD
-
+PROFILE=TRUE
 debug=FALSE
 
 arch=$(dpkg --print-architecture)
@@ -76,7 +76,7 @@ cp CMakeLists.txt $BUILD_DIR
 cd $BUILD_DIR
 mkdir build 
 cd build
-cmake -DCAMERA=$camera -DDEBUG=$debug -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
+cmake -DCAMERA=$camera -DDEBUG=$debug -DPROFILE=$PROFILE -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
 make
 
 echo "Installing into $INSTALL_DIR"
