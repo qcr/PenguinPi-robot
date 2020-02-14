@@ -2,7 +2,7 @@
 set -e
 
 echo "Installing packages..."
-pkg_list="nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php7.2 php-fpm php-mysql cmake git \
+pkg_list="nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git \
  libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev \
  libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libcanberra-gtk-module libcanberra-gtk3-module"
 

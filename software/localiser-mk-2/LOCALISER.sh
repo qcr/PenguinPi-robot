@@ -19,7 +19,8 @@ echo "Copying web console..."
 cp server/console/* $WEBAPP_LOCATION/console
 
 # Copy php settings
-cp server/php.ini /etc/php/7.2/fpm/php.ini
+PHP_VERSION=$(php -r "echo PHP_VERSION;" | grep --only-matching --perl-regexp "7.\d+")
+cp server/php.ini /etc/php/$PHP_VERSION/fpm/php.ini
 
 # if [ $# == 0 ]
 # then
