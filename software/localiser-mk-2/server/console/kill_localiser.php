@@ -6,9 +6,10 @@
     }
     
     function deliver_response($status, $status_message, $data) {
+        
         $string = file_get_contents("localiser_PID.txt");
         $PID = trim($string);
-        $signal = 9;
+        $signal = 15;
 
         // TODO GET ONLY NUMBER 
         posix_kill($PID,$signal);

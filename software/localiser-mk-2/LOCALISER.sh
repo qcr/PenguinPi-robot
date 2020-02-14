@@ -29,19 +29,20 @@ cp server/php.ini /etc/php/7.2/fpm/php.ini
 # fi
 # echo $LOCALHOST
 
-# TODO PERMISSIONS
-
-
 echo "Killing old cgi scripts..."
 fuser -k 9000/tcp
+
+trap "exit" INT TERM ERR
+trap "kill 0" EXIT
 
 echo "Restarting cgi script..."
 cgi-fcgi -start -connect 127.0.0.1:9000 build/cgi_app
 
 echo "Starting localiser..."
-./build/localiser > /dev/null 2>&1
+./build/localiser > /dev/null 2>&1 &
 localiser_pid=$!
 echo "Localiser PID:" 
 echo $localiser_pid
 echo $localiser_pid > /var/www/EGB439/console/localiser_PID.txt
 
+wait

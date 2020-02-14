@@ -61,7 +61,7 @@ Build as regular user:
 
 ### Usage
 
-Start the server and cgi endpoint
+Start the server and cgi endpoint (do not need to be root):
 
 ```
 ./LOCALISER.sh
