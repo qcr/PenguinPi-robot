@@ -25,6 +25,7 @@ add_executable(localiser
     src/main.cpp 
     src/vision.cpp
     src/contours.cpp
+    src/led.cpp
 )
 
 

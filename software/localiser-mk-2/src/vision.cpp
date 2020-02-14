@@ -98,6 +98,11 @@ int Localiser::compute_pose(Pose2D * result){
     //flip(mask,mask2,flipCode);                          // Flip around y axis
     findContours(mask, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 
+    for( int i = 0; i< robot_contours.size(); i++ ) {
+       Scalar color = 100;
+       drawContours( pose_image, robot_contours,  i, color);
+     }
+
     #ifdef DEBUG 
     cout << "Displaying LED mask... " << endl;
     cv::namedWindow( "LED mask", WINDOW_AUTOSIZE );// Create a window for display.
@@ -107,12 +112,21 @@ int Localiser::compute_pose(Pose2D * result){
 
     Contours conts;
     conts.get_contours(robot_contours);
-    std::vector<Box> boxes = conts.get_boxes();
+    std::vector<Led> leds = conts.get_leds();
 
-    uint NUM_BOXES = boxes.size();
+    uint NUM_LEDS = leds.size();
 
     #ifdef DEBUG
-    cout << "num boxes: " << NUM_BOXES << endl;
+    
+    cout << "Contours:" << endl;
+    for (auto contour : robot_contours){
+        cout << contour << endl;
+    }
+
+    cout << "num leds found: " << NUM_LEDS << endl;
+    for (auto led: leds){
+        cout << led << endl;
+    }
     #endif 
 
     // Find outer limits of IR LEDs        
@@ -121,98 +135,98 @@ int Localiser::compute_pose(Pose2D * result){
     uint min_y = 1e5;
     uint max_y = 0;
 
-    for (auto box : boxes){
-        if (box.cx < min_x){
-            min_x = box.cx;
+    for (auto led : leds){
+        if (led.cx < min_x){
+            min_x = led.cx;
         }
-        if (box.cx > max_x){
-            max_x = box.cx;
+        if (led.cx > max_x){
+            max_x = led.cx;
         }
-        if (box.cy < min_y){
-            min_y = box.cy;
+        if (led.cy < min_y){
+            min_y = led.cy;
         }
-        if (box.cy > max_y){
-            max_y = box.cy;
+        if (led.cy > max_y){
+            max_y = led.cy;
         }
     }
 
     // Find the center LED
     // Should I get a pointer or an index?
-    std::size_t center_box_ix = INIT_VAL;
-    for(std::size_t i=0; i<boxes.size(); ++i){
-        if (boxes[i].cx < max_x && boxes[i].cx > min_x && boxes[i].cy < max_y && boxes[i].cy > min_y){
-            center_box_ix = i;
+    std::size_t center_led_ix = INIT_VAL;
+    for(std::size_t i=0; i<leds.size(); ++i){
+        if (leds[i].cx < max_x && leds[i].cx > min_x && leds[i].cy < max_y && leds[i].cy > min_y){
+            center_led_ix = i;
         }
     }
     
     // Found robot 
-    if (center_box_ix != INIT_VAL){
+    if (center_led_ix != INIT_VAL){
 
         #ifdef DEBUG
         cout << "Found robot!" << endl;
         #endif
 
-        // Store the distance from each box to the center box 
-        float dists_boxes[NUM_BOXES];
-        std::memset(dists_boxes, INIT_VAL, NUM_BOXES*sizeof(float));
+        // Store the distance from each led to the center led 
+        int dists_leds[NUM_LEDS];
+        std::memset(dists_leds, INIT_VAL, NUM_LEDS*sizeof(float));
 
-        for(std::size_t i=0; i<boxes.size(); ++i){
-            if (center_box_ix != i){
-                std::complex<float> a(boxes[center_box_ix].cx, boxes[center_box_ix].cy);
-                std::complex<float> b(boxes[i].cx, boxes[i].cy);
-                std::complex<float> diff(a-b);
-                float dist_box = std::abs(diff);
-                dists_boxes[i] = dist_box;
+        for(std::size_t i=0; i<leds.size(); ++i){
+            if (center_led_ix != i){
+                int diff_x = leds[center_led_ix].cx - leds[center_led_ix].cy;
+                int diff_y = leds[i].cx - leds[i].cy;
+                float dist_led_float = sqrt((float)(pow( diff_x,2) + pow(diff_y,2)));
+                int dist_led = (int) round(dist_led_float);
+                dists_leds[i] = dist_led;
             }
         }
 
-        // Get the two closest boxes 
+        // Get the two closest leds 
 
-        int min_indices[2] = {0,1}; // min_indices[0] points to the closest box, ..[1] to the second closest
+        int min_indices[2] = {0,1}; // min_indices[0] points to the closest led, ..[1] to the second closest
 
         int temp;
 
         // Base case - ensure min_dist < min_dist_2
-        if (dists_boxes[min_indices[0]] > dists_boxes[min_indices[1]]){
+        if (dists_leds[min_indices[0]] > dists_leds[min_indices[1]]){
             temp = min_indices[0];
             min_indices[0] = min_indices[1];
             min_indices[1] = temp;
         }
 
-        for(int i=0; i<NUM_BOXES; i++){
+        for(int i=0; i<NUM_LEDS; i++){
 
             // Case -0. ith distance is greater than min_dist and min_dist 2
             // do nothing
 
             // case 1. ith distance is less than min_dist and min_dist 2
-            if (dists_boxes[i] < dists_boxes[min_indices[0]]){
+            if (dists_leds[i] < dists_leds[min_indices[0]]){
 
                 min_indices[1] = min_indices[0];
                 min_indices[0] = i;
             // case 2. ith distance is less than only min_dist_2
-            } else if (dists_boxes[i] < dists_boxes[min_indices[1]]){
+            } else if (dists_leds[i] < dists_leds[min_indices[1]]){
                 min_indices[1] = i;
             }
         }
 
         // Use point between the two closest LEDs and center of middle LED to find angle
         #ifdef DEBUG
-        cout << "Found indices: " << min_indices[0] << "," << min_indices[1] << endl << endl;
+        cout << "Found two leds closest to center LED:" << std::endl;
         #endif
 
-        float mid_point_x = (boxes[min_indices[0]].cx + boxes[min_indices[1]].cx)/2.0;
-        float mid_point_y = (boxes[min_indices[0]].cy + boxes[min_indices[1]].cy)/2.0;
+        int mid_point_x = round((leds[min_indices[0]].cx + leds[min_indices[1]].cx)/2.0);
+        int mid_point_y = round((leds[min_indices[0]].cy + leds[min_indices[1]].cy)/2.0);
         
-        float angle_rad = atan2((boxes[center_box_ix].cy - mid_point_y), (boxes[center_box_ix].cx-mid_point_x));
+        float angle_rad = atan2((float)(leds[center_led_ix].cy - mid_point_y), (float)(leds[center_led_ix].cx-mid_point_x));
 
         float angle_deg = -angle_rad*180.0/M_PI;
-        float x = (boxes[center_box_ix].cx / 500.0)*2.0;
-        float y = 2.0 - (boxes[center_box_ix].cy / 500.0)*2.0; // convert from img coords to cartesian
+        float x = ((float) leds[center_led_ix].cx / 500.0)*2.0;
+        float y = 2.0 - ((float)leds[center_led_ix].cy / 500.0)*2.0; // convert from img coords to cartesian
 
         int arrow_len_pixels = 35;
         pose_image = registered_img.clone();
-        Point pt1(round(boxes[center_box_ix].cx), round(boxes[center_box_ix].cy));
-        Point pt2(round(boxes[center_box_ix].cx + arrow_len_pixels * cos(angle_rad)), round(boxes[center_box_ix].cy+ arrow_len_pixels* sin(angle_rad)));
+        Point pt1(leds[center_led_ix].cx, leds[center_led_ix].cy);
+        Point pt2(leds[center_led_ix].cx + arrow_len_pixels * cos(angle_rad), leds[center_led_ix].cy+ arrow_len_pixels* sin(angle_rad));
         cv::arrowedLine(pose_image, pt1, pt2, 200);
 
         #ifdef DEBUG
@@ -221,7 +235,7 @@ int Localiser::compute_pose(Pose2D * result){
        //Mat arrow_img = camera_image.clone();
 
         cv::namedWindow( "Img with arrow", WINDOW_AUTOSIZE );// Create a window for display.
-        cv::imshow( "img with arrow", pose_img );                   // Show our image inside it.
+        cv::imshow( "img with arrow", pose_image );                   // Show our image inside it.
         waitKey(0);    
         #endif
 

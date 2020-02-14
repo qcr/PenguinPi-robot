@@ -11,13 +11,13 @@ void Contours :: get_contours(std::vector<Mat> contours){
 
         if (area > minimum_area_){
             list_contours_.push_back(contour);
-            Box box(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-            list_boxes_.push_back(box);
+            Led led(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+            list_leds_.push_back(led);
         }
     }
     return;
 }
 
-std::vector<Box> Contours :: get_boxes(){
-    return list_boxes_;
+std::vector<Led> Contours :: get_leds(){
+    return list_leds_;
 }
