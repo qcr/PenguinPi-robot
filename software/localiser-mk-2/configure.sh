@@ -1,29 +1,50 @@
 #!/bin/bash
 set -e
 
-echo "Installing packages..."
-pkg_list="nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git \
- libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev \
- libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libcanberra-gtk-module libcanberra-gtk3-module"
-
-for package in $pkg_list
+POSITIONAL=()
+while [[ $# -gt 0 ]]
 do
-    if sudo apt -y install $package >/dev/null 2> /dev/null; then
-        echo $package
-    else
-        echo "$package **** FAILED ****"
-    fi
+key="$1"
+
+case $key in
+    -s|--skip-pkg-install)
+    #EXTENSION="$2"
+    skip_deps=1
+    shift # past argument
+    ;;
+    --default)
+    DEFAULT=YES
+    shift # past argument
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
 done
+set -- "${POSITIONAL[@]}" # restore positional parameters
 
-username=$USER
-echo "Checking permissions..."
 
-if getent group www-data | grep -q "\b${username}\b"; then
-    echo "User in www-data"
+if [ $skip_deps ]; then
+    echo "Skipping deps"
 else
-    echo "Adding user to www-data..."
-    sudo usermod -a -G www-data $username
+    echo "Installing packages..."
+    pkg_list="nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git \
+    libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev \
+    libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libcanberra-gtk-module libcanberra-gtk3-module"
+
+    for package in $pkg_list
+    do
+        if sudo apt -y install $package >/dev/null 2> /dev/null; then
+            echo $package
+        else
+            echo "$package **** FAILED ****"
+        fi
+    done
 fi
+
+echo "Adding user ${USER} to www-data..."
+sudo usermod -a -G www-data $USER
 
 for f in /var/www /etc/nginx /etc/php
 do
