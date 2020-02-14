@@ -11,7 +11,7 @@ Localiser :: Localiser () :
     #ifdef CAMERA
     camera(),
     #endif 
-    camera_image(), cartesian_size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
+    camera_image(), pose_image(), cartesian_size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
     {
 
     #ifdef CAMERA
@@ -64,16 +64,20 @@ int Localiser::update_camera_img(void){
     camera.grab();
     camera.retrieve(camera_image);
     //cvtColor(img, camera_image, COLOR_BGR2GRAY);
-    #endif
+    #endif 
+    return 0;
+}
 
-    camera_save_timer++;
+int Localiser::save_pose_img(void){
 
-    if (!(camera_save_timer%5)){
+    
+
+    if (!camera_save_timer){
         Mat out_img; 
         //cvtColor(camera_image, out_img, cv::COLOR_GRAY2BGR);
-        cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",camera_image);
-        //cv::imwrite("arena.ppm",out_img);
+        cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",pose_image);
     }    
+    camera_save_timer++;
     return 0;
 }
 
@@ -201,19 +205,31 @@ int Localiser::compute_pose(Pose2D * result){
         float mid_point_x = (boxes[min_indices[0]].cx + boxes[min_indices[1]].cx)/2.0;
         float mid_point_y = (boxes[min_indices[0]].cy + boxes[min_indices[1]].cy)/2.0;
         
-        float angle = atan2((boxes[center_box_ix].cy - mid_point_y), (boxes[center_box_ix].cx-mid_point_x));
+        float angle_rad = atan2((boxes[center_box_ix].cy - mid_point_y), (boxes[center_box_ix].cx-mid_point_x));
 
-        float theta = -angle*180/M_PI;
+        float angle_deg = -angle_rad*180.0/M_PI;
         float x = (boxes[center_box_ix].cx / 500.0)*2.0;
-        float y = 2.0 - (boxes[center_box_ix].cy / 500.0)*2.0;
+        float y = 2.0 - (boxes[center_box_ix].cy / 500.0)*2.0; // convert from img coords to cartesian
+
+        int arrow_len_pixels = 35;
+        pose_image = registered_img.clone();
+        Point pt1(round(boxes[center_box_ix].cx), round(boxes[center_box_ix].cy));
+        Point pt2(round(boxes[center_box_ix].cx + arrow_len_pixels * cos(angle_rad)), round(boxes[center_box_ix].cy+ arrow_len_pixels* sin(angle_rad)));
+        cv::arrowedLine(pose_image, pt1, pt2, 200);
 
         #ifdef DEBUG
-        cout << "x,y,theta: " << x << "," << y << "," << theta << endl;
+        cout << "x,y,theta: " << x << "," << y << "," << angle_deg  << endl;
+        
+       //Mat arrow_img = camera_image.clone();
+
+        cv::namedWindow( "Img with arrow", WINDOW_AUTOSIZE );// Create a window for display.
+        cv::imshow( "img with arrow", pose_img );                   // Show our image inside it.
+        waitKey(0);    
         #endif
 
         result->x = x;
         result->y = y;
-        result->theta = theta;
+        result->theta = angle_deg;
 
     } else { // found no robot
 

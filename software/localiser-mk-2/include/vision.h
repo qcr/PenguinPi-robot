@@ -34,6 +34,7 @@ class Localiser {
       #endif
 
       Mat camera_image;
+      Mat pose_image;
       std::vector<Point2f> srcPoints;
       std::vector<Point2f> dstPoints;
       Mat homography;
@@ -49,6 +50,7 @@ class Localiser {
          
         //Localiser (const char * img_file);
         int update_camera_img(void);
+        int save_pose_img(void);
         int compute_pose(Pose2D * result);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
         ~Localiser ();

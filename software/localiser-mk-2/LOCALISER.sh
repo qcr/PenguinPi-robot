@@ -32,6 +32,7 @@ cp server/php.ini /etc/php/$PHP_VERSION/fpm/php.ini
 
 echo "Killing old cgi scripts..."
 fuser -k 9000/tcp
+sleep 2
 
 trap "exit" INT TERM ERR
 trap "kill 0" EXIT

@@ -77,6 +77,9 @@ int main(int argc, char * argv[]){
 
             /* ~~~~~~ END CRITICAL SECTION ~~~~~~~~~ */
 
+            // Save the pose image
+            localiser.save_pose_img();
+
             usleep(1000); // TODO set rate somewhere
             
         }
