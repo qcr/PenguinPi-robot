@@ -5,9 +5,9 @@ set(raspicam_DIR "/usr/local/lib/cmake")
 
 # Compile without rpi libs if on desktop
 
-option(NO_CAMERA "Compile for desktop testing" FALSE) #OFF by default
+option(CAMERA "Compile for raspberry pi target" TRUE) # on by default
+option(DEBUG "Verbose" FALSE) #OFF by default
 
-option(DEBUG "Compile for desktop testing" OFF) #OFF by default
 if(DEBUG)
     add_definitions(-DDEBUG=1)
 else()
@@ -44,6 +44,12 @@ if(NO_CAMERA)
 else()
     target_link_libraries(localiser "${raspicam_CV_LIBS}")
 endif(NO_CAMERA)
+
+if(DEBUG)
+    target_compile_definitions(localiser PRIVATE DEBUG=1)
+else()
+    #add some other compilation flags
+endif(DEBUG)
 
 include_directories(localiser 
     ${PROJECT_SOURCE_DIR}/include 

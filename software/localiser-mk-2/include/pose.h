@@ -14,15 +14,6 @@ struct Pose2D {
 
 struct SharedPose
 {
-  //  enum { NumItems = 100 };
-  //  enum { LineSize = 100 };
-
-  //  SharedPose()
-  //     :  current_line(0)
-  //     ,  end_a(false)
-  //     ,  end_b(false)
-  //  {}
-
    //Mutex to protect access to the queue
   std::mutex mutex;
 

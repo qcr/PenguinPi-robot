@@ -5,40 +5,33 @@
 using namespace cv; 
 using namespace std;
 
-#ifndef NO_CAMERA
+
 Localiser :: Localiser () : 
-    camera(), camera_image(), size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
+    camera_image(HEIGHT, WIDTH, CV_32FC3), cartesian_size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
     {
 
-    const float in[] = {558,6,107,5,77,473,580,474};
-    const float out[] = {0,0,500,0,500,500,0,500};
-
-    for (int i=0; i<8; i+=2){
-
-        Point2f input_point(in[i],in[i+1]);
-        Point2f output_point(out[i],out[i+1]);
-
-        srcPoints.push_back(input_point);
-        dstPoints.push_back(output_point);
-    }
-    homography = findHomography(srcPoints, dstPoints);
-
+    #ifdef CAMERA
+    camera();
     camera.set(CAP_PROP_FORMAT, CV_8UC1);
     camera.set(CAP_PROP_FRAME_WIDTH, 640);
     camera.set(CAP_PROP_FRAME_HEIGHT, 480);
-
-    // TODO syslog
-    cout << "Opening camera.. " << endl;
+    cout << "Opening camera.. " << endl; 
     if (!camera.open()) { cerr << "Error opening camera " << endl; }
+    #else 
+    camera_image = cv::imread("/var/www/EGB439/console/arena.jpg", IMREAD_GRAYSCALE);
+    #ifdef DEBUG 
+    cout << "Displaying image... " << endl;
+    cv::namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
+    cv::imshow( "Display window", camera_image );                   // Show our image inside it.
+    waitKey(0);                                          // Wait for a keystroke in the window
+    #endif 
+    #endif 
 
-}
-#endif
 
-Localiser :: Localiser (const char * img_file) : 
-    size(500,500), lower_bound(220), upper_bound(255), flipCode(1), camera_save_timer(0)  
-    {
-
-    const float in[] = {558,6,107,5,77,473,580,474};
+    #ifdef DEBUG 
+    cout << "Setting up homography transform..." << endl;
+    #endif
+    const float in[] = {107,5,558,6,580,474,77,473};
     const float out[] = {0,0,500,0,500,500,0,500};
 
     for (int i=0; i<8; i+=2){
@@ -50,14 +43,11 @@ Localiser :: Localiser (const char * img_file) :
         dstPoints.push_back(output_point);
     }
     homography = findHomography(srcPoints, dstPoints);
-
-    camera_image = cv::imread(img_file, IMREAD_GRAYSCALE); //)
 }
-
 
 Localiser :: ~Localiser(){
 
-    #ifndef NO_CAMERA
+    #ifdef CAMERA
     camera.release();
     #endif 
 }
@@ -65,33 +55,49 @@ Localiser :: ~Localiser(){
 
 int Localiser::update_camera_img(void){
 
-    #ifndef NO_CAMERA
+    #ifdef CAMERA
+    Mat 3_channel_img;
     camera.grab();
-    camera.retrieve(camera_image);
+    camera.retrieve(3_channel_img);
+    cvtColor(3_channel_img, camera_img, COLOR_BGR2GRAY);
     #endif
 
     camera_save_timer++;
 
     if (!(camera_save_timer%5)){
+        Mat out_img; 
+        cvtColor(camera_image, out_img, cv::COLOR_GRAY2BGR);
         cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",camera_image);
-    }
-
-    
-
+        //cv::imwrite("arena.ppm",out_img);
+    }    
     return 0;
 }
 
 
 int Localiser::compute_pose(Pose2D * result){
 
-    Mat img2, img3, mask, mask2;
+    Mat registered_img, mask;
     std::vector<Mat> robot_contours;
+
+    warpPerspective(camera_image, registered_img, homography, cartesian_size); 
     
-    //cvtColor(camera_image, img2, COLOR_BGR2GRAY);
-    warpPerspective(camera_image, img3, homography, size); 
-    inRange(img3, lower_bound, upper_bound, mask);
-    flip(mask,mask2,flipCode);                          // Flip around y axis
-    findContours(mask2, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
+    #ifdef DEBUG 
+    cout << "Displaying registered image... " << endl;
+    cv::namedWindow( "Registered image", WINDOW_AUTOSIZE );// Create a window for display.
+    cv::imshow( "Registered image", registered_img );                   // Show our image inside it.
+    waitKey(0);  
+    #endif 
+
+    inRange(registered_img, lower_bound, upper_bound, mask);
+    //flip(mask,mask2,flipCode);                          // Flip around y axis
+    findContours(mask, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
+
+    #ifdef DEBUG 
+    cout << "Displaying LED mask... " << endl;
+    cv::namedWindow( "LED mask", WINDOW_AUTOSIZE );// Create a window for display.
+    cv::imshow( "LED mask", mask );                   // Show our image inside it.
+    waitKey(0);  
+    #endif 
 
     Contours conts;
     conts.get_contours(robot_contours);
@@ -132,7 +138,7 @@ int Localiser::compute_pose(Pose2D * result){
             center_box_ix = i;
         }
     }
-
+    
     // Found robot 
     if (center_box_ix != INIT_VAL){
 
@@ -155,7 +161,6 @@ int Localiser::compute_pose(Pose2D * result){
         }
 
         // Get the two closest boxes 
-
 
         int min_indices[2] = {0,1}; // min_indices[0] points to the closest box, ..[1] to the second closest
 
@@ -207,20 +212,21 @@ int Localiser::compute_pose(Pose2D * result){
         result->theta = theta;
 
     } else { // found no robot
+
         #ifdef DEBUG
         cout << "Did not find robot!" << endl;
         #endif
+
         result->x=0;
         result->y=0;
         result->theta=0;
     }
-
     return 0;
 }
 
 std::ostream & operator<<(std::ostream & os, const Localiser & localiser)
 {
-    os << "Homography source points:" << std::endl;
+    os << std::endl << "Homography source points:" << std::endl;
     for (auto i: localiser.srcPoints)
         os << i << " ";
     os << std::endl;
@@ -229,6 +235,6 @@ std::ostream & operator<<(std::ostream & os, const Localiser & localiser)
         os << i << " ";
     os << std::endl;
     os << "Homography between points: " << std::endl;
-    os << localiser.homography << std::endl;
+    os << localiser.homography << std::endl << std::endl;
     return os;
 }

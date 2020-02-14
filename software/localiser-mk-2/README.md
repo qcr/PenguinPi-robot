@@ -6,21 +6,7 @@ Future project: set up toolchain for cross-compilation.
 
 ### Prerequisites
 
-Install nginx server and PHP
-
-``` 
-sudo apt update
-sudo apt install nginx libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php7.2 php-fpm php-mysql
-```
-
 Install OpenCV C++ libraries including contrib.
-
-```
-sudo apt-get install build-essential
-sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
-sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
-```
-
 Get the source:
 
 ```
@@ -58,24 +44,19 @@ make
 sudo make install
 ```
 
-
 ### Installing
 
-Build the server programs. On rpi you must do this as root.
+
+Configure as root:
 
 ```
-cd <localiser mk 2 location>
-mkdir build
-cd build
-sudo cmake ..
-sudo make
-sudo make install
+sudo ./CONFIGURE.sh
 ```
 
-Copy web server files across.
+Build as regular user:
 
 ```
-$ sudo ./setup.sh
+./build.sh
 ```
 
 ### Usage
@@ -83,7 +64,7 @@ $ sudo ./setup.sh
 Start the server and cgi endpoint
 
 ```
-sudo ./RUN.sh
+./LOCALISER.sh
 ```
 
 Check the server is running on port 8080
@@ -93,11 +74,25 @@ Note: to avoid conflict with old localiser, server has been set to port 8008 for
 sudo netstat -tlpn| grep nginx
 ``` 
 
+Check the http service is running on port 8080 (8008) and the CGI script on 9000
+
+```
+nmap 127.0.0.1
+```
+
 Check endpoints
 
 ``` 
 wget <host>:8080/pose/get
 wget <host>:8080/camera/get
+```
+
+If you need to restart the server for troubleshooting:
+
+```
+sudo systemctl restart php7.2-fpm
+sudo /etc/init.d/nginx stop
+sudo /etc/init.d/nginx start
 ```
 
 

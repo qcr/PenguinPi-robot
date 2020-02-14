@@ -1,30 +1,20 @@
 #include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 #include <unistd.h>
 #include <stdint.h>
-#include <mutex>          // std::mutex
-
-#include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
 
 #include "vision.h"
+#include "shmemkey.h"
 
 using namespace std;
 using namespace cv;
 using namespace boost::interprocess;
 
-
-
 int main(int argc, char * argv[]){
 
-    #ifndef NO_CAMERA
     Localiser localiser;
-    #else 
-    Localiser localiser("/var/www/EGB439/console/arena.jpg");
-    #endif
+     
+    //Localiser localiser("/var/www/EGB439/console/arena.jpg");
+    
 
     // Print localiser info 
     cout << localiser << endl;
@@ -33,15 +23,18 @@ int main(int argc, char * argv[]){
     //Mat image;
     //image = imread(argv[1], IMREAD_COLOR); 
 
+    #ifdef DEBUG
+    cout << "Setting up shared memory..." << endl;
+    #endif 
+
     try{
         struct shm_remove
         {
-            shm_remove() { shared_memory_object::remove("MySharedMemory"); }
-            ~shm_remove(){ shared_memory_object::remove("MySharedMemory"); }
+            shm_remove() { shared_memory_object::remove(SHARED_MEMORY_KEY); }
+            ~shm_remove(){ shared_memory_object::remove(SHARED_MEMORY_KEY); }
         } remover;
 
-        shared_memory_object shm_obj
-            (create_only,"MySharedMemory",read_write);
+        shared_memory_object shm_obj(create_only,SHARED_MEMORY_KEY,read_write);
     
         size_t ShmSize = sizeof(SharedPose);
         shm_obj.truncate(ShmSize);
@@ -52,10 +45,14 @@ int main(int argc, char * argv[]){
         //Get the address of the mapped region
         void * addr = mpdregion.get_address();
 
-        cout << "Set up " << ShmSize << " bytes of memory at" << addr << endl;
+        cout << "Set up " << ShmSize << " bytes of memory at " << addr << endl;
 
         //Construct the shared structure in memory
         SharedPose * shared_data = new (addr) SharedPose;
+
+        #ifdef DEBUG 
+        cout << "Entering main program loop.." << endl;
+        #endif
 
         // Compute pose forever 
         while(1){
@@ -69,6 +66,7 @@ int main(int argc, char * argv[]){
             int result = localiser.compute_pose(&latest_pose);
 
             /* ~~~~~~ BEGIN CRITICAL SECTION ~~~~~~~~~ */
+
             shared_data->mutex.lock();
 
             shared_data->pose.x = latest_pose.x;
@@ -79,7 +77,7 @@ int main(int argc, char * argv[]){
 
             /* ~~~~~~ END CRITICAL SECTION ~~~~~~~~~ */
 
-            usleep(10); // TODO set rate somewhere
+            usleep(1000); // TODO set rate somewhere
             
         }
 

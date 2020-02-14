@@ -2,14 +2,14 @@
 #include <iostream>
 #include <string.h>
 #include "fcgio.h"
-#include "pose.h"
-
-
 #include <unistd.h>
 
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
+
+#include "pose.h"
+#include "shmemkey.h"
 
 using namespace std;
 using namespace boost::interprocess;
@@ -73,12 +73,12 @@ int main(void) {
 
     // struct shm_remove
     // {
-    //     ~shm_remove(){ shared_memory_object::remove("MySharedMemory"); }
+    //     ~shm_remove(){ shared_memory_object::remove("SharedPoseMemory"); }
     // } remover;
 
     shared_memory_object shm_obj
         (open_only               //open or create
-        ,"MySharedMemory"              //name
+        ,SHARED_MEMORY_KEY              //name
         ,read_write                    //read-only mode
         );
     

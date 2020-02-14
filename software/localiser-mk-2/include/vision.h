@@ -8,27 +8,28 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgproc/types_c.h>
 
+
 #include <stdint.h>
 #include <math.h> 
 #include <iostream>
 #include <vector>
 
-#ifndef NO_CAMERA
+#ifdef CAMERA
 #include <raspicam/raspicam_cv.h>
 #endif 
-
-#include <ctime>
 
 #include "pose.h"
 
 using namespace cv; 
 
-#define INIT_VAL  (10000)   // A large value for initialising a search for an index
+#define INIT_VAL    (10000)   // A large value for initialising a search for an index
+#define WIDTH       (640)
+#define HEIGHT      (480)
 
 class Localiser {
     private:
 
-      #ifndef NO_CAMERA
+      #ifdef CAMERA
       raspicam::RaspiCam_Cv camera;
       #endif
 
@@ -36,17 +37,17 @@ class Localiser {
       std::vector<Point2f> srcPoints;
       std::vector<Point2f> dstPoints;
       Mat homography;
-      Size size; 
+      Size cartesian_size; 
       int upper_bound;
       int lower_bound;
       int flipCode;
       uint8_t camera_save_timer;
     public:
 
-        #ifndef NO_CAMERA
+        
         Localiser ();
-        #endif 
-        Localiser (const char * img_file);
+         
+        //Localiser (const char * img_file);
         int update_camera_img(void);
         int compute_pose(Pose2D * result);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
