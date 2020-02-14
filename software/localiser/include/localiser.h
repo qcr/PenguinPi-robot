@@ -10,21 +10,23 @@
 
 
 #include <stdint.h>
-#include <math.h> 
 #include <iostream>
 #include <vector>
-
 #ifdef CAMERA
 #include <raspicam/raspicam_cv.h>
 #endif 
 
 #include "pose.h"
+#include "vision_utils.h"
 
 using namespace cv; 
 
-#define INIT_VAL    (10000)   // A large value for initialising a search for an index
-#define WIDTH       (640)
-#define HEIGHT      (480)
+namespace PenguinPi {
+
+#define MINIMUM_BLOB_AREA           (5)
+#define ARROW_LENGTH                (35)
+#define ARROW_THICKNESS             (2)
+#define ARROW_INTENSITY             (200)
 
 class Localiser {
     private:
@@ -41,16 +43,14 @@ class Localiser {
       Size cartesian_size; 
       int upper_bound;
       int lower_bound;
-      int flipCode;
     public:
 
-        
         Localiser ();
-         
-        //Localiser (const char * img_file);
         int update_camera_img(void);
         int save_pose_img(void);
         int compute_pose(Pose2D * result);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
         ~Localiser ();
 };
+
+}

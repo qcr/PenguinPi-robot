@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <stdint.h>
 
-#include "vision.h"
+#include "localiser.h"
 #include "shmemkey.h"
 
 using namespace std;
@@ -11,11 +11,10 @@ using namespace boost::interprocess;
 
 int main(int argc, char * argv[]){
 
-    Localiser localiser;
+    PenguinPi::Localiser localiser;
      
     //Localiser localiser("/var/www/EGB439/console/arena.jpg");
     
-
     // Print localiser info 
     cout << localiser << endl;
 

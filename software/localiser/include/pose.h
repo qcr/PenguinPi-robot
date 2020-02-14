@@ -1,7 +1,5 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
-#include <mutex>          // std::mutex
-
-
+#include <mutex>  
 
 struct Pose2D {
 
@@ -9,14 +7,12 @@ struct Pose2D {
   float x;
   float y;
   float theta;
-} ;
+};
 
 
-struct SharedPose
-{
-   //Mutex to protect access to the queue
+struct SharedPose {
+
   std::mutex mutex;
-
   Pose2D pose;
 };
 

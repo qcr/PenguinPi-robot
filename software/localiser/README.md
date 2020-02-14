@@ -1,8 +1,8 @@
 # Localiser with Nginx + C++
 
 A version of the EGB439 localiser that uses compiled binaries for speed and shared memory constructs for safety.
-These instructions are for building on the target raspberry pi.
-Future project: set up toolchain for cross-compilation.
+These instructions will work on both the raspberry pi and a desktop computer.
+If used on a desktop computer, localiser will use a static test image.
 
 ### Prerequisites
 
@@ -50,7 +50,13 @@ sudo make install
 Configure as root:
 
 ```
-sudo ./CONFIGURE.sh
+sudo ./configure.sh
+```
+
+Or to skip installing dependencies, use the -s flag:
+
+```
+sudo ./configure.sh -s
 ```
 
 Build as regular user:
@@ -70,7 +76,8 @@ Start the server and cgi endpoint (do not need to be root):
 
 ### Troubleshooting
 
-Check the server is running on port 8080
+Check the server is running on port 8080.
+
 Note: to avoid conflict with old localiser, server has been set to port 8008 for now.
 
 ```
@@ -97,7 +104,7 @@ fuser -k 9000/tcp
 cgi-fcgi -start -connect 127.0.0.1:9000 build/cgi_app
 ```
 
-Rstart the server:
+Restart the server:
 
 ```
 sudo systemctl restart php7.2-fpm  # could be different php version

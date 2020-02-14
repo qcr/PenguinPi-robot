@@ -23,8 +23,8 @@ endif()
 
 add_executable(localiser 
     src/main.cpp 
-    src/vision.cpp
-    src/contours.cpp
+    src/vision_utils.cpp
+    src/localiser.cpp
     src/led.cpp
 )
 
