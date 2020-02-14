@@ -17,7 +17,7 @@ endif(DEBUG)
 find_package( OpenCV REQUIRED )
 find_package(Boost REQUIRED)
 
-if (NO_CAMERA==FALSE)
+if (CAMERA)
     find_package(raspicam REQUIRED)
 endif()
 
@@ -39,11 +39,11 @@ target_link_libraries(localiser
     ${OpenCV_LIBS}
 )
 
-if(NO_CAMERA)
-    target_compile_definitions(localiser PRIVATE NO_CAMERA=1)
+if(CAMERA)
+    target_compile_definitions(localiser PRIVATE CAMERA=1)
 else()
     target_link_libraries(localiser "${raspicam_CV_LIBS}")
-endif(NO_CAMERA)
+endif(CAMERA)
 
 if(DEBUG)
     target_compile_definitions(localiser PRIVATE DEBUG=1)
@@ -56,7 +56,6 @@ include_directories(localiser
     ${Boost_INCLUDE_DIR}
 )
 
-
 add_executable(cgi_app src/cgi.cpp)
 target_link_libraries(cgi_app 
     rt 
@@ -65,6 +64,6 @@ target_link_libraries(cgi_app
     ${Boost_LIBRARIES}
 )
 
-unset(NO_CAMERA CACHE)
+unset(CAMERA CACHE)
 unset(DEBUG CACHE)
 
