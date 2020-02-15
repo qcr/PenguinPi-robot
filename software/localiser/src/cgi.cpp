@@ -117,19 +117,17 @@ int main(void) {
             pose.theta = shared_data->pose.theta;
             shared_data->mutex.unlock();
 
-            //if (strcmp(uri,"/pose/get/")==0){
-                // TODO json
             std::cout << "Content-type: text/html\r\n"
                 << "\r\n"
                 << "{\"pose\": {\"x\": " << pose.x <<", \"y\": " << pose.y << ", \"theta\": " << pose.theta << "}}";
-            //} 
+            
         }
     } catch(interprocess_exception &ex) {
     std::cout << "CGI endpoint encountered unexpected exception: " << ex.what() << std::endl;
     // shared_memory_object::remove("shared_memory");
     return 1;
     }
-    
+
     // restore stdio streambufs
     std::cin.rdbuf(cin_streambuf);
     std::cout.rdbuf(cout_streambuf);

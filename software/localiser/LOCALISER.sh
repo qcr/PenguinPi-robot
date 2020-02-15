@@ -37,12 +37,11 @@ trap "exit" INT TERM ERR
 trap "kill 0" EXIT
 
 echo "Starting localiser..."
-./build/localiser > /dev/null 2>&1 &
-localiser_pid=$!
-echo "Localiser PID:" 
-echo $localiser_pid
-echo $localiser_pid > /var/www/EGB439/console/localiser_PID.txt
 
+./build/localiser > /dev/null 2>&1 & 
+localiser_pid=$!
+echo "Localiser PID:" $localiser_pid
+echo $localiser_pid > /var/www/EGB439/console/localiser_PID.txt
 sleep 1 
 
 echo "Restarting cgi script..."

@@ -9,8 +9,7 @@ Localiser :: Localiser () :
     #ifdef CAMERA
     camera(),
     #endif 
-    camera_image(), pose_image(), cartesian_size(500,500), lower_bound(220), upper_bound(255)
-    {
+    camera_image(), pose_image(), cartesian_size(ARENA_WIDTH_PIXELS,ARENA_HEIGHT_PIXELS) {
 
     #ifdef CAMERA
     camera.set(CAP_PROP_FORMAT, CV_8UC1);
@@ -18,20 +17,22 @@ Localiser :: Localiser () :
     camera.set(CAP_PROP_FRAME_HEIGHT, PICAM_IMG_HEIGHT);
     cout << "Opening camera.. " << endl; 
     if (!camera.open()) { cerr << "Error opening camera " << endl; }
+
     #else 
     camera_image = cv::imread("/var/www/EGB439/console/arena.jpg", IMREAD_GRAYSCALE);
+
     #ifdef DEBUG 
     cout << "Displaying image... " << endl;
-    cv::namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-    cv::imshow( "Display window", camera_image );                   // Show our image inside it.
-    cv::waitKey(0);                                          // Wait for a keystroke in the window
+    cv::namedWindow( "Display window", WINDOW_AUTOSIZE );
+    cv::imshow( "Display window", camera_image );             
+    cv::waitKey(0);                 
     #endif 
     #endif 
-
 
     #ifdef DEBUG 
     cout << "Setting up homography transform..." << endl;
     #endif
+
     const pixel_coord in[] = {107,5,558,6,580,474,77,473};
     const pixel_coord out[] = {0,0,ARENA_WIDTH_PIXELS,0,ARENA_WIDTH_PIXELS,ARENA_HEIGHT_PIXELS,0,ARENA_HEIGHT_PIXELS};
 
@@ -40,10 +41,10 @@ Localiser :: Localiser () :
         cv::Point input_point(in[i],in[i+1]);
         cv::Point output_point(out[i],out[i+1]);
 
-        srcPoints.push_back(input_point);
-        dstPoints.push_back(output_point);
+        tiepoint_src.push_back(input_point);
+        tiepoint_dest.push_back(output_point);
     }
-    homography = findHomography(srcPoints, dstPoints);
+    homography = findHomography(tiepoint_src, tiepoint_dest);
 }
 
 
@@ -56,25 +57,25 @@ int Localiser::compute_pose(Pose2D * result){
     
     #ifdef DEBUG 
     cout << "Displaying registered image... " << endl;
-    cv::namedWindow( "Registered image", WINDOW_AUTOSIZE );// Create a window for display.
-    cv::imshow( "Registered image", registered_img );                   // Show our image inside it.
+    cv::namedWindow( "Registered image", WINDOW_AUTOSIZE );
+    cv::imshow( "Registered image", registered_img );   
     waitKey(0);  
     #endif 
 
     // Threshold image to find bright points
-    cv::inRange(registered_img, lower_bound, upper_bound, mask);
+    cv::inRange(registered_img, MASK_LOWER_BOUND, MASK_UPPER_BOUND, mask);
 
     // Save image without pose in case localisation fails
     pose_image = registered_img.clone();
 
     // Extract features
     cv::findContours(mask, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
-    for( int i = 0; i< robot_contours.size(); i++ ) {
-       cv::Scalar color = 100;
-       drawContours( pose_image, robot_contours,  i, color);
-    }
 
     #ifdef DEBUG 
+    for( int i = 0; i< robot_contours.size(); i++ ) {
+        cv::Scalar color = 100;
+        drawContours( pose_image, robot_contours,  i, color);
+    }
     cv::namedWindow( "LED mask", WINDOW_AUTOSIZE );
     cv::imshow( "LED mask", mask );     
     waitKey(0);  
@@ -145,19 +146,21 @@ int Localiser::compute_pose(Pose2D * result){
         // Use point between the two closest LEDs and center of middle LED to find angle
         eucl_dist center_led_to_nearest_pixels_x = (eucl_dist)leds[CENTER].centroid.x - (eucl_dist)mid_point_x;
         eucl_dist center_led_to_nearest_pixels_y = (eucl_dist)leds[CENTER].centroid.y - (eucl_dist)mid_point_y;
-        radians angle_rad = atan2(center_led_to_nearest_pixels_y,center_led_to_nearest_pixels_x);
-        degrees angle_deg = (degrees)round(-angle_rad*DEG_PER_RAD);
+        radians angle_rad = (radians) atan2(center_led_to_nearest_pixels_y,center_led_to_nearest_pixels_x);
+        degrees angle_deg = (degrees) round(-angle_rad*DEG_PER_RAD);
 
         // Draw pose
         Point pt1( leds[CENTER].centroid.x, leds[CENTER].centroid.y);
-        Point pt2( (pixel_coord)((eucl_dist) leds[CENTER].centroid.x + ARROW_LENGTH * cos(angle_rad)), (pixel_coord)((eucl_dist)leds[CENTER].centroid.y+ ARROW_LENGTH* sin(angle_rad)));
+        Point pt2( (pixel_coord)((eucl_dist) leds[CENTER].centroid.x + ARROW_LENGTH * cos(angle_rad)), 
+                    (pixel_coord)((eucl_dist)leds[CENTER].centroid.y+ ARROW_LENGTH* sin(angle_rad))
+                );
         cv::arrowedLine(pose_image, pt1, pt2, ARROW_INTENSITY, ARROW_THICKNESS);
 
         #ifdef DEBUG
         cout << "Angle in radians: " << angle_rad << endl;
         cout << "x,y,theta: " << x << "," << y << "," << angle_deg  << endl;
-        cv::namedWindow( "Img with arrow", WINDOW_AUTOSIZE );// Create a window for display.
-        cv::imshow( "img with arrow", pose_image );                   // Show our image inside it.
+        cv::namedWindow( "Img with arrow", WINDOW_AUTOSIZE );
+        cv::imshow( "img with arrow", pose_image );   
         waitKey(0);    
         #endif
 
@@ -196,11 +199,11 @@ int Localiser::save_pose_img(void){
 std::ostream & operator<<(std::ostream & os, const Localiser & localiser)
 {
     os << std::endl << "Homography source points:" << std::endl;
-    for (auto i: localiser.srcPoints)
+    for (auto i: localiser.tiepoint_src)
         os << i << " ";
     os << std::endl;
     os << "Homography destination points:" << std::endl;
-    for (auto i: localiser.dstPoints)
+    for (auto i: localiser.tiepoint_dest)
         os << i << " ";
     os << std::endl;
     os << "Homography between points: " << std::endl;

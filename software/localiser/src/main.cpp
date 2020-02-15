@@ -55,8 +55,6 @@ int main(int argc, char * argv[]){
 
             Pose2D latest_pose;
 
-            // TODO get image from pi cam 
-
             localiser.update_camera_img();
 
             int result = localiser.compute_pose(&latest_pose);
@@ -73,8 +71,8 @@ int main(int argc, char * argv[]){
 
             /* ~~~~~~ END CRITICAL SECTION ~~~~~~~~~ */
 
-            if (!(camera_save_timer % 10)){
-            // Save the pose image
+            // Save the pose image periodically
+            if (!(camera_save_timer % 25)){
                 localiser.save_pose_img();
             }
             camera_save_timer++;

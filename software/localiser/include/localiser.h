@@ -23,6 +23,8 @@ using namespace cv;
 
 namespace PenguinPi {
 
+#define MASK_LOWER_BOUND            (220)
+#define MASK_UPPER_BOUND            (255)
 #define MINIMUM_BLOB_AREA           (5)
 #define ARROW_LENGTH                (35)
 #define ARROW_THICKNESS             (2)
@@ -37,12 +39,10 @@ class Localiser {
 
       Mat camera_image;
       Mat pose_image;
-      std::vector<Point2f> srcPoints;
-      std::vector<Point2f> dstPoints;
+      std::vector<Point2f> tiepoint_src;
+      std::vector<Point2f> tiepoint_dest;
       Mat homography;
       Size cartesian_size; 
-      int upper_bound;
-      int lower_bound;
     public:
 
         Localiser ();

@@ -3,15 +3,11 @@ project(Localiser)
 
 set(raspicam_DIR "/usr/local/lib/cmake")
 
-# Compile without rpi libs if on desktop
-
 option(CAMERA "Compile for raspberry pi target" TRUE) # on by default
 option(DEBUG "Verbose" FALSE) #OFF by default
 
 if(DEBUG)
     add_definitions(-DDEBUG=1)
-else()
-    #add some other compilation flags
 endif(DEBUG)
 
 find_package( OpenCV REQUIRED )
@@ -28,7 +24,6 @@ add_executable(localiser
     src/led.cpp
 )
 
-
 target_link_libraries(localiser
     ${OpenCV_LIBS}
 )
@@ -43,13 +38,10 @@ target_link_libraries(localiser
 if(CAMERA)
     target_link_libraries(localiser "${raspicam_CV_LIBS}")
     target_compile_definitions(localiser PRIVATE CAMERA=1)
-else()
 endif(CAMERA)
 
 if(DEBUG)
     target_compile_definitions(localiser PRIVATE DEBUG=1)
-else()
-    #add some other compilation flags
 endif(DEBUG)
 
 include_directories(localiser 
@@ -58,6 +50,7 @@ include_directories(localiser
 )
 
 add_executable(cgi_app src/cgi.cpp)
+
 target_link_libraries(cgi_app 
     rt 
     fcgi++ 
