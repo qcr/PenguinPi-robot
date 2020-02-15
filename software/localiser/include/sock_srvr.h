@@ -1,0 +1,47 @@
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <cstring>
+
+
+#define BUFFER_SIZE             (1024)
+#define MAX_SOCK_PATH_CHARS     (108)
+#define MAX_UNAME_CHARS         (32)
+#define BACKLOG                 (5)
+
+typedef char unamestr[MAX_UNAME_CHARS];
+typedef char sockpath[MAX_SOCK_PATH_CHARS];
+
+struct socksrvconf {
+    socksrvconf() : app_group(0), buflen(0) {};
+    sockpath sun_path;
+    gid_t app_group;
+    size_t buflen;
+};
+
+class SocketServer {
+    private:
+        sockaddr_un server_addr;
+        sockaddr_un client_addr;
+        socklen_t clientlen;
+        gid_t app_group;
+        int sockfd;
+        int clientfd;
+        int buflen;
+        char * buf;
+    public:
+        SocketServer (socksrvconf * config);
+        int connect(void);
+        int wait_for_request(); 
+        int pack_response(void * data);
+        int send_response();
+        ~SocketServer ();
+        friend std::ostream & operator<<(std::ostream & os, const SocketServer & sock);
+
+};
+
+

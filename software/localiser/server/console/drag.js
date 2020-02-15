@@ -44,19 +44,19 @@ function dragElement(elmnt) {
   $(document).ready( function() {
 
 
-    $.ajax({
-      type: "POST",
-      url: "kill_localiser.php" ,
-      data: {},
-      success : function() { 
+  //   $.ajax({
+  //     type: "POST",
+  //     url: "kill_localiser.php" ,
+  //     data: {},
+  //     success : function() { 
 
-          // here is the code that will run on client side after running clear.php on server
+  //         // here is the code that will run on client side after running clear.php on server
 
-          // function below reloads current page
-          console.log("sent request to kill localiser script");
+  //         // function below reloads current page
+  //         console.log("sent request to kill localiser script");
 
-      }
-  });
+  //     }
+  // });
 
     // Attach event listeners to draggable markers 
 

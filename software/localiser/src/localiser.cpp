@@ -19,7 +19,7 @@ Localiser :: Localiser () :
     if (!camera.open()) { cerr << "Error opening camera " << endl; }
 
     #else 
-    camera_image = cv::imread("/var/www/EGB439/console/arena.jpg", IMREAD_GRAYSCALE);
+    camera_image = cv::imread("/var/www/penguinpi/console/arena.jpg", IMREAD_GRAYSCALE);
 
     #ifdef DEBUG 
     cout << "Displaying image... " << endl;
@@ -178,7 +178,6 @@ Localiser :: ~Localiser(){
     #endif 
 }
 
-
 int Localiser::update_camera_img(void){
 
     #ifdef CAMERA
@@ -192,7 +191,7 @@ int Localiser::save_pose_img(void){
 
     // Collect test images
     //cv::imwrite("test_img.jpg",camera_image);
-    cv::imwrite("/var/www/EGB439/camera/get/arena.jpg",pose_image);
+    cv::imwrite("/var/www/penguinpi/camera/get/arena.jpg",pose_image);
     return 0;
 }
 

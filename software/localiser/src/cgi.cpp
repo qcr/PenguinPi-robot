@@ -4,9 +4,9 @@
 #include "fcgio.h"
 #include <unistd.h>
 
-#include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
+// #include <boost/interprocess/shared_memory_object.hpp>
+// #include <boost/interprocess/mapped_region.hpp>
+// #include <boost/interprocess/sync/interprocess_mutex.hpp>
 
 #include "pose.h"
 #include "shmemkey.h"

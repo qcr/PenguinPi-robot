@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+APP=penguinpi
+WEB_DIR=/var/www/$APP
+RUNFILE_DIR=/var/run/$APP
+WEB_USER=www-data
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
@@ -24,7 +29,6 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-
 if [ $skip_deps ]; then
     echo "Skipping deps"
 else
@@ -43,23 +47,40 @@ else
     done
 fi
 
-
 echo "Checking permissions..."
 
-if groups $SUDO_USER | grep -q '\bwww-data\b'; then
-    echo "User ${SUDO_USER} already in group in www-data"
+if groups $SUDO_USER | grep -q '\b$WEB_USER\b'; then
+    echo "User ${SUDO_USER} already in group in $WEB_USER"
 else
-    echo "Adding user ${SUDO_USER} to www-data..."
-    sudo usermod -a -G www-data $SUDO_USER
-    echo "Please reboot and run this script again."
-    exit 0
+    echo "Adding user ${SUDO_USER} to $WEB_USER..."
+    sudo usermod -a -G $WEB_USER $SUDO_USER
 fi
 
 for f in /var/www /etc/nginx /etc/php
 do
-    echo "Adding $f r/w permissions for www-data..."
-    sudo chgrp -R www-data $f
-    sudo chown -R www-data: $f
+    echo "Adding $f r/w permissions for $WEB_USER..."
+    sudo chgrp -R $WEB_USER $f
+    sudo chown -R $WEB_USER: $f
     sudo chmod -R 2775 $f
 done
+
+echo "Setting up server directory structure in $WEB_DIR..."
+rm -r -f $WEB_DIR
+mkdir -p $WEB_DIR/camera/get
+mkdir -p $WEB_DIR/pose/get
+mkdir -p $WEB_DIR/console
+sudo chown $WEB_USER:$WEB_USER $WEB_DIR
+chmod -R g+rwx $WEB_DIR
+
+echo "Making directory in /var/run for PID and socket files..."
+runfile_dir=/var/run/penguinpi
+sudo rm -r -f $RUNFILE_DIR
+sudo mkdir $RUNFILE_DIR
+sudo chown $WEB_USER:$WEB_USER $RUNFILE_DIR
+chmod -R g+rwx $RUNFILE_DIR
+
+echo "Done! Run ./build.sh (without sudo)"
+
+
+
 

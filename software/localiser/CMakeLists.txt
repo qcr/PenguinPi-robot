@@ -21,6 +21,7 @@ add_executable(localiser
     src/main.cpp 
     src/vision_utils.cpp
     src/localiser.cpp
+    src/sock_srvr.cpp
     src/led.cpp
 )
 
@@ -47,15 +48,6 @@ endif(DEBUG)
 include_directories(localiser 
     ${PROJECT_SOURCE_DIR}/include 
     ${Boost_INCLUDE_DIR}
-)
-
-add_executable(cgi_app src/cgi.cpp)
-
-target_link_libraries(cgi_app 
-    rt 
-    fcgi++ 
-    fcgi 
-    ${Boost_LIBRARIES}
 )
 
 unset(CAMERA CACHE)

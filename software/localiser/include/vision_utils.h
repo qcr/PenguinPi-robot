@@ -3,6 +3,7 @@
 
 #include <math.h> 
 
+
 #include "types.h"
 #include "led.h"
 
@@ -22,8 +23,11 @@
 namespace PenguinPi {
 
 int filter_contours(const std::vector<cv::Mat> contours, std::vector<PenguinPi::Led> &dest, const pixel_area minimum_area);
+
 int find_led_bounds(std::vector<PenguinPi::Led> leds, cv::Point &min, cv::Point &max);
+
 size_t find_center_led(const std::vector<PenguinPi::Led> leds, const cv::Point min, const cv::Point max);
+
 int get_distances_to_center_led(std::vector<PenguinPi::Led> &leds, const std::size_t center_led_index);
 
 }

@@ -97,13 +97,6 @@ wget <host>:8080/pose/get
 wget <host>:8080/camera/get
 ```
 
-Restart the cgi endpoint:
-
-```
-fuser -k 9000/tcp
-cgi-fcgi -start -connect 127.0.0.1:9000 build/cgi_app
-```
-
 Restart the server:
 
 ```
