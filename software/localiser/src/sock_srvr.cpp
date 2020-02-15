@@ -13,8 +13,6 @@ SocketServer :: SocketServer (socksrvconf * config) : server_addr(), client_addr
     strcpy(server_addr.sun_path, config->sun_path);
     app_group = config->app_group;
     buf = new char[buflen+1];
-    uid_t calling_user = getuid();
-    chown(server_addr.sun_path, calling_user, app_group);
 
 }
 
@@ -41,6 +39,9 @@ int SocketServer :: connect(void){
         cerr << "Failed to set socket as passive" << endl;
         return -1;
     };
+
+    uid_t calling_user = getuid();
+    chown(server_addr.sun_path, calling_user, app_group);
 
     return 0;
 
