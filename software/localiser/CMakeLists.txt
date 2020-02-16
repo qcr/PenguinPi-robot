@@ -53,3 +53,7 @@ include_directories(localiser
 unset(CAMERA CACHE)
 unset(DEBUG CACHE)
 
+install(TARGETS localiser
+        RUNTIME DESTINATION bin)
+
+

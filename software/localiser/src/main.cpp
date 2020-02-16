@@ -8,20 +8,18 @@
 using namespace std;
 
 void print_help(char * argv[]){
-    cerr << "Usage: " << argv[0] << " <www-data-gid> " << "<socket address> " << endl;
+    cerr << "Usage: " << argv[0] << " <socket address> " << endl;
 }
 
 int main(int argc, char * argv[]){
 
-    if (argc != 3){
+    if (argc != 2){
         print_help(argv);
         return -1;
     }
 
     socksrvconf config;
-    gid_t app_group = atoi(argv[1]);
-    config.app_group = app_group;
-    std::strcpy(config.sun_path, argv[2]);
+    std::strcpy(config.sun_path, argv[1]);
     config.buflen = sizeof(PenguinPi::Pose2D);
 
     SocketServer sock(&config);

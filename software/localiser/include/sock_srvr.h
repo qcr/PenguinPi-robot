@@ -17,9 +17,8 @@ typedef char unamestr[MAX_UNAME_CHARS];
 typedef char sockpath[MAX_SOCK_PATH_CHARS];
 
 struct socksrvconf {
-    socksrvconf() : app_group(0), buflen(0) {};
+    socksrvconf() : buflen(0) {};
     sockpath sun_path;
-    gid_t app_group;
     size_t buflen;
 };
 
@@ -28,7 +27,6 @@ class SocketServer {
         sockaddr_un server_addr;
         sockaddr_un client_addr;
         socklen_t clientlen;
-        gid_t app_group;
         int sockfd;
         int clientfd;
         int buflen;

@@ -11,7 +11,6 @@ SocketServer :: SocketServer (socksrvconf * config) : server_addr(), client_addr
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sun_family = AF_UNIX;
     strcpy(server_addr.sun_path, config->sun_path);
-    app_group = config->app_group;
     buf = new char[buflen+1];
 
 }
@@ -39,9 +38,6 @@ int SocketServer :: connect(void){
         cerr << "Failed to set socket as passive" << endl;
         return -1;
     };
-
-    uid_t calling_user = getuid();
-    chown(server_addr.sun_path, calling_user, app_group);
 
     return 0;
 
@@ -81,6 +77,6 @@ SocketServer :: ~SocketServer () {
 std::ostream & operator<<(std::ostream & os, const SocketServer & sock)
 {
     os << std::endl << "Socketserver:" << std::endl;
-    os << "Server with family " << sock.server_addr.sun_family << " at " << sock.server_addr.sun_path << " and owner group " << sock.app_group << std::endl;
+    os << "Server with family " << sock.server_addr.sun_family << " at " << sock.server_addr.sun_path << std::endl;
     return os;
 }
