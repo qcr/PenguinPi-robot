@@ -6,7 +6,21 @@ If used on a desktop computer, localiser will use a static test image.
 
 ### Prerequisites
 
+Install nginx and php:
+
+```
+sudo apt install nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git
+```
+
 Install OpenCV C++ libraries including contrib.
+
+Install opencv prerequisites:
+
+```
+sudo apt install libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev 
+sudo apt install libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libcanberra-gtk-module libcanberra-gtk3-module
+111
+
 Get the source:
 
 ```

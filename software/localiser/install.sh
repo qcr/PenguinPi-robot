@@ -9,52 +9,7 @@ WEB_USER=www-data
 INSTALL_DIR=/usr/local
 USER=$(whoami)
 
-POSITIONAL=()
-while [[ $# -gt 0 ]]
-do
-key="$1"
-
-install_deps=0
 debug=FALSE
-
-case $key in
-    -n|--no-skip-deps)
-    #EXTENSION="$2"
-    install_deps=1
-    shift 
-    ;;
-    -d|--debug)
-    #EXTENSION="$2"
-    debug=TRUE
-    shift 
-    ;;
-    --default)
-    DEFAULT=YES
-    shift # past argument
-    ;;
-    *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
-    ;;
-esac
-done
-set -- "${POSITIONAL[@]}" # restore positional parameters
-
-if [ $install_deps ]; then
-    echo "Installing packages..."
-    pkg_list="nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git \
-    libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev \
-    libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libcanberra-gtk-module libcanberra-gtk3-module"
-
-    for package in $pkg_list
-    do
-        if sudo apt -y install $package >/dev/null 2> /dev/null; then
-            echo $package
-        else
-            echo "$package **** FAILED ****"
-        fi
-    done
-fi
 
 echo "Checking permissions..."
 
@@ -98,8 +53,8 @@ sudo make install
 
 echo "Setting up startup service..."
 cd ..
-SERVICE_FILE=config/localiser.service
-sudo cp $SERVICE_FILE /etc/systemd/system/$SERVICE_FILE
+SERVICE_FILE=localiser.service
+sudo cp config/$SERVICE_FILE /etc/systemd/system/$SERVICE_FILE
 sudo chmod 644 /etc/systemd/system/$SERVICE_FILE
 
 echo "Killing any open TCP ports..."

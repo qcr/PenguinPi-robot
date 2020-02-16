@@ -22,7 +22,7 @@ if ($errno!=0){
 }
 
 
-fwrite($sock, 'SOME COMMAND'."\r\n");
+fwrite($sock, '0'."\r\n");
 
 echo fread($sock, 128)."\n";
 

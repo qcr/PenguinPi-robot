@@ -17,6 +17,7 @@
 #endif 
 
 #include "pose.h"
+#include "sock_srvr.h"
 #include "vision_utils.h"
 
 using namespace cv; 
@@ -33,6 +34,7 @@ namespace PenguinPi {
 #define LOC_MSG_LEN                 (128)
 
 #define LOC_REQ_TYPE_OFFSET         (0)
+#define LOC_REQ_TYPE_LEN            (1)
 #define LOC_REQ_PARAM_OFFSET        (1)
 #define LOC_REQ_PAYLOAD_OFFSET      (16)
 
@@ -51,6 +53,7 @@ class Localiser {
 
       Mat camera_image;
       Mat pose_image;
+      SocketServer sock;
       std::vector<Point2f> tiepoint_src;
       std::vector<Point2f> tiepoint_dest;
       Mat homography;
@@ -58,10 +61,13 @@ class Localiser {
     public:
 
         Localiser ();
+        int init_networking(void);
+        int listen(void);
         int update_camera_img(void);
         int save_pose_img(void);
         int save_camera_img(void);
         int compute_pose(Pose2D * result);
+        int pose_get(void);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
         ~Localiser ();
 };

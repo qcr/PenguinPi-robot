@@ -29,14 +29,16 @@ class SocketServer {
         socklen_t clientlen;
         int sockfd;
         int clientfd;
-        int buflen;
-        char * buf;
     public:
-        SocketServer (socksrvconf * config);
+        char * buf;
+        int buflen;
+        SocketServer () ;
+        SocketServer (socksrvconf * config) ;
+        int configure(socksrvconf * config) ;
         int connect(void);
-        int wait_for_request(); 
+        int wait_for_request(void); 
         int pack_response(void * data);
-        int send_response();
+        int send_response(void);
         ~SocketServer ();
         friend std::ostream & operator<<(std::ostream & os, const SocketServer & sock);
 

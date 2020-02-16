@@ -9,7 +9,7 @@ Localiser :: Localiser () :
     #ifdef CAMERA
     camera(),
     #endif 
-    camera_image(), pose_image(), cartesian_size(ARENA_WIDTH_PIXELS,ARENA_HEIGHT_PIXELS) {
+    cartesian_size(ARENA_WIDTH_PIXELS,ARENA_HEIGHT_PIXELS) {
 
     #ifdef CAMERA
     camera.set(CAP_PROP_FORMAT, CV_8UC1);
@@ -45,8 +45,50 @@ Localiser :: Localiser () :
         tiepoint_dest.push_back(output_point);
     }
     homography = findHomography(tiepoint_src, tiepoint_dest);
+
+    socksrvconf config;
+    std::strcpy(config.sun_path, "/var/run/penguinpi/localiser.sock");
+    config.buflen = LOC_MSG_LEN;
+    sock.configure(&config);
 }
 
+int Localiser::init_networking(void){
+    if(sock.connect()){
+        cerr << "Socket failed to connect, exiting..." << endl;
+        return -1;
+    }
+    return 0;
+}
+
+int Localiser::listen(void){
+    
+    if (sock.wait_for_request()){
+        cerr << "Error getting request from socket!" << endl;
+        return -1;
+    }
+
+    // Get the request type from the buffer
+    char request[LOC_REQ_TYPE_LEN+1];
+    memcpy(request, (sock.buf + LOC_REQ_TYPE_OFFSET), LOC_REQ_TYPE_LEN);
+    request[LOC_REQ_TYPE_LEN] = '\0';
+    int request_type = atoi(request);
+
+    cout << "Request code: " << request_type << endl;
+    return request_type;
+}
+
+int Localiser::pose_get(void){
+
+    char response[LOC_MSG_LEN];
+    memset(response,0,LOC_MSG_LEN);
+    PenguinPi::Pose2D latest_pose;
+    update_camera_img();
+    compute_pose(&latest_pose);
+    sprintf(response,"{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}\0",latest_pose.x,latest_pose.y,latest_pose.theta);
+    sock.pack_response(response);
+    sock.send_response();
+    return 0;
+}
 
 int Localiser::compute_pose(Pose2D * result){
 
@@ -171,13 +213,6 @@ int Localiser::compute_pose(Pose2D * result){
     return 0;
 }
 
-Localiser :: ~Localiser(){
-
-    #ifdef CAMERA
-    camera.release();
-    #endif 
-}
-
 int Localiser::update_camera_img(void){
 
     #ifdef CAMERA
@@ -209,7 +244,15 @@ std::ostream & operator<<(std::ostream & os, const Localiser & localiser)
     os << std::endl;
     os << "Homography between points: " << std::endl;
     os << localiser.homography << std::endl << std::endl;
+    os << "Socket:" << localiser.sock << endl;
     return os;
+}
+
+Localiser :: ~Localiser(){
+
+    #ifdef CAMERA
+    camera.release();
+    #endif 
 }
 
 }

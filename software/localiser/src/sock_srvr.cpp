@@ -5,14 +5,21 @@
 
 using namespace std;
 
-SocketServer :: SocketServer (socksrvconf * config) : server_addr(), client_addr(), buflen(config->buflen) {
+SocketServer :: SocketServer () {}
 
+// : server_addr(), client_addr(), 
+SocketServer :: SocketServer (socksrvconf * config) {
+    configure(config);
+}
+
+int SocketServer :: configure(socksrvconf * config){
+
+    buflen = config->buflen;
     clientlen = sizeof(client_addr);
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sun_family = AF_UNIX;
     strcpy(server_addr.sun_path, config->sun_path);
     buf = new char[buflen+1];
-
 }
 
 int SocketServer :: connect(void){
@@ -49,15 +56,18 @@ int SocketServer :: wait_for_request () {
     clientfd = accept(sockfd, (struct sockaddr *) &client_addr, &clientlen);
     if (clientfd < 0) {
         cerr << ("ERROR on accept") << endl;
+        return -1;
     }
 
     bzero(buf,buflen);
     int n = read(clientfd,buf,buflen);
     if (n < 0) {
         cerr << "ERROR reading from socket" << endl;
+        return -1;
     }
     else {
-        cout << "Here is the message: " << buf << endl;
+        cout << "Message from socket: " << buf << endl;
+        return 0;
     }
 }
 
