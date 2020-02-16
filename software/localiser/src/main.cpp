@@ -31,8 +31,6 @@ int main(int argc, char * argv[]){
     cout << "Entering main program loop.." << endl;
     #endif
 
-    uint8_t camera_save_timer = 0;
-
     while(1){
 
         PenguinPi::Pose2D latest_pose;
@@ -54,12 +52,9 @@ int main(int argc, char * argv[]){
         // Send data on the socket 
         sock.send_response();
 
-        // Save the pose image periodically
-        if (!(camera_save_timer % 25)){
-            localiser.save_pose_img();
-        }
-        camera_save_timer++;
-        
+        // Save the pose image
+        localiser.save_pose_img();
+
     }
 
 }

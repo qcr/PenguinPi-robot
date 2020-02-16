@@ -23,7 +23,7 @@ server {
 
      location /camera/get {
 		sendfile on;
-        try_files $uri /camera/get/arena.jpg;
+        try_files arena.jpg;
      }
 
 	# pass PHP scripts to FastCGI server
