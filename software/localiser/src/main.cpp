@@ -7,19 +7,10 @@
 
 using namespace std;
 
-void print_help(char * argv[]){
-    cerr << "Usage: " << argv[0] << " <socket address> " << endl;
-}
-
 int main(int argc, char * argv[]){
 
-    if (argc != 2){
-        print_help(argv);
-        return -1;
-    }
-
     socksrvconf config;
-    std::strcpy(config.sun_path, argv[1]);
+    std::strcpy(config.sun_path, "localiser.socket");
     config.buflen = sizeof(PenguinPi::Pose2D);
 
     SocketServer sock(&config);

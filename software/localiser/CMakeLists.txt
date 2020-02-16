@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(Localiser)
 
 set(raspicam_DIR "/usr/local/lib/cmake")
+set(PROJECT_VERSION 1.0)
 
 option(CAMERA "Compile for raspberry pi target" TRUE) # on by default
 option(DEBUG "Verbose" FALSE) #OFF by default
@@ -11,7 +12,6 @@ if(DEBUG)
 endif(DEBUG)
 
 find_package( OpenCV REQUIRED )
-find_package(Boost REQUIRED)
 
 if (CAMERA)
     find_package(raspicam REQUIRED)
@@ -26,13 +26,8 @@ add_executable(localiser
 )
 
 target_link_libraries(localiser
-    ${OpenCV_LIBS}
-)
-
-target_link_libraries(localiser
-    rt
     pthread
-    ${Boost_LIBRARIES}
+    rt
     ${OpenCV_LIBS}
 )
 
@@ -47,13 +42,13 @@ endif(DEBUG)
 
 include_directories(localiser 
     ${PROJECT_SOURCE_DIR}/include 
-    ${Boost_INCLUDE_DIR}
 )
 
 unset(CAMERA CACHE)
 unset(DEBUG CACHE)
 
 install(TARGETS localiser
-        RUNTIME DESTINATION bin)
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib)
 
 

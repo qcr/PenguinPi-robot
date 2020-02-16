@@ -72,6 +72,7 @@ int SocketServer :: send_response(){
 
 SocketServer :: ~SocketServer () {
     delete buf;
+    close(sockfd);
 }
 
 std::ostream & operator<<(std::ostream & os, const SocketServer & sock)
