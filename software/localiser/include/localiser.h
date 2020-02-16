@@ -31,17 +31,25 @@ namespace PenguinPi {
 #define ARROW_THICKNESS             (2)
 #define ARROW_INTENSITY             (200)
 
-#define LOC_MSG_LEN                 (128)
+#define LOC_MSG_LEN                 (256)
 
 #define LOC_REQ_TYPE_OFFSET         (0)
 #define LOC_REQ_TYPE_LEN            (1)
-#define LOC_REQ_PARAM_OFFSET        (1)
-#define LOC_REQ_PAYLOAD_OFFSET      (16)
+#define LOC_REQ_CORNER_OFFSET       (1)
+#define LOC_REQ_CORNER_LEN          (1)
+#define LOC_REQ_COORD_LEN           (4)
 
 #define LOC_REQ_GET_POSE            (0)
 #define LOC_REQ_SAVE_POSE_IMG       (1)
 #define LOC_REQ_SAVE_CAM_IMG        (2)
-#define LOC_REQ_POST_TIEPOINT       (3)
+#define LOC_REQ_GET_TIEPOINT        (3)
+#define LOC_REQ_POST_TIEPOINT       (4)
+
+#define TIEPOINT_NW                 (0)
+#define TIEPOINT_NE                 (1)
+#define TIEPOINT_SE                 (2)
+#define TIEPOINT_SW                 (3)
+#define TIE_POINT_WIDTH             (4) // number of characters per tie point in message
 
 
 class Localiser {
@@ -54,8 +62,8 @@ class Localiser {
       Mat camera_image;
       Mat pose_image;
       SocketServer sock;
-      std::vector<Point2f> tiepoint_src;
-      std::vector<Point2f> tiepoint_dest;
+      std::vector<Point> tiepoint_src;
+      std::vector<Point> tiepoint_dest;
       Mat homography;
       Size cartesian_size; 
     public:
@@ -67,7 +75,9 @@ class Localiser {
         int save_pose_img(void);
         int save_camera_img(void);
         int compute_pose(Pose2D * result);
-        int pose_get(void);
+        int send_pose(void);
+        int send_tie_points(void);
+        int update_tie_point(void);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
         ~Localiser ();
 };

@@ -5,7 +5,6 @@ function dragElement(elmnt) {
 
     // Attach event listeners
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      // if present, the header is where you move the DIV from:
     document.getElementById(elmnt.id).onmousedown = dragMouseDown;
 
     function dragMouseDown(e) {
@@ -38,25 +37,24 @@ function dragElement(elmnt) {
       // stop moving when mouse button is released:
       document.onmouseup = null;
       document.onmousemove = null;
+
+      var id = elmnt.id;
+      var rect = elmnt.getBoundingClientRect();
+      console.log("tiepoint " + id + " at " + rect.left + "," + rect.top);
+      $.post("/console/tiepoint_update.php",
+      {
+        corner: id,
+        x: rect.left,
+        y: rect.top
+      },
+      function(data, status){
+        console.log("Data: " + data + "\nStatus: " + status);
+      });
+      
     }
   }
 
   $(document).ready( function() {
-
-
-  //   $.ajax({
-  //     type: "POST",
-  //     url: "kill_localiser.php" ,
-  //     data: {},
-  //     success : function() { 
-
-  //         // here is the code that will run on client side after running clear.php on server
-
-  //         // function below reloads current page
-  //         console.log("sent request to kill localiser script");
-
-  //     }
-  // });
 
     // Attach event listeners to draggable markers 
 

@@ -60,6 +60,15 @@ int Localiser::init_networking(void){
     return 0;
 }
 
+int Localiser::update_camera_img(void){
+
+    #ifdef CAMERA
+    camera.grab();
+    camera.retrieve(camera_image);
+    #endif 
+    return 0;
+}
+
 int Localiser::listen(void){
     
     if (sock.wait_for_request()){
@@ -77,7 +86,7 @@ int Localiser::listen(void){
     return request_type;
 }
 
-int Localiser::pose_get(void){
+int Localiser::send_pose(void){
 
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
@@ -90,6 +99,55 @@ int Localiser::pose_get(void){
     return 0;
 }
 
+int Localiser::send_tie_points(void){
+
+    char response[LOC_MSG_LEN];
+    memset(response,0,LOC_MSG_LEN);
+
+    sprintf(response,"{\"NW\":{\"x\":%d, \"y\":%d}, \"NE\":{\"x\":%d, \"y\":%d}, \"SE\":{\"x\":%d,\"y\":%d}, \"SW\":{\"x\":%d,\"y\":%d}}\0",
+    tiepoint_src[TIEPOINT_NW].x,
+    tiepoint_src[TIEPOINT_NW].y,
+    tiepoint_src[TIEPOINT_NE].x,
+    tiepoint_src[TIEPOINT_NE].y,
+    tiepoint_src[TIEPOINT_SE].x,
+    tiepoint_src[TIEPOINT_SE].y,
+    tiepoint_src[TIEPOINT_SW].x,
+    tiepoint_src[TIEPOINT_SW].y
+    );
+
+    sock.pack_response(response);
+    sock.send_response();
+    return 0;
+}
+
+int Localiser::update_tie_point(void){
+
+    char tiepoint_str[LOC_REQ_TYPE_LEN+1];
+    char x_coord_str[TIE_POINT_WIDTH+1];
+    char y_coord_str[TIE_POINT_WIDTH+1];
+
+    memcpy(tiepoint_str, (sock.buf + LOC_REQ_CORNER_OFFSET), LOC_REQ_CORNER_LEN);
+    tiepoint_str[LOC_REQ_TYPE_LEN] = '\0';
+
+    memcpy(x_coord_str, (sock.buf + LOC_REQ_CORNER_OFFSET + LOC_REQ_CORNER_LEN), TIE_POINT_WIDTH);
+    x_coord_str[TIE_POINT_WIDTH] = '\0';
+
+    memcpy(y_coord_str, (sock.buf + LOC_REQ_CORNER_OFFSET + LOC_REQ_CORNER_LEN + LOC_REQ_COORD_LEN), TIE_POINT_WIDTH);
+    x_coord_str[TIE_POINT_WIDTH] = '\0';
+
+    tiepoint_id tiepoint = atoi(tiepoint_str);   
+    pixel_coord x = atoi(x_coord_str);
+    pixel_coord y= atoi(y_coord_str);
+
+    cout << "Decoded tie point request to " << tiepoint << "," << x << "," << y << endl;
+
+    tiepoint_src[tiepoint].x = x;
+    tiepoint_src[tiepoint].y = y;
+
+    homography = findHomography(tiepoint_src, tiepoint_dest);
+
+    return 0;
+}
 
 int Localiser::save_camera_img(void){
     char response[LOC_MSG_LEN];
@@ -237,16 +295,6 @@ int Localiser::compute_pose(Pose2D * result){
     } 
     return 0;
 }
-
-int Localiser::update_camera_img(void){
-
-    #ifdef CAMERA
-    camera.grab();
-    camera.retrieve(camera_image);
-    #endif 
-    return 0;
-}
-
 
 std::ostream & operator<<(std::ostream & os, const Localiser & localiser)
 {

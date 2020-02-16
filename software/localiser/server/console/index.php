@@ -12,12 +12,22 @@
     }
 
     fwrite($sock, '2'."\r\n");
-    $socket_response = fread($sock, 128)."\n";
+    $socket_response = fread($sock, 256)."\n";
     socket_close($sock);
 
-    $string = file_get_contents("tie_points.json");
-    $tie_points = json_decode($string, true); 
+    $sock = stream_socket_client('unix:///var/run/penguinpi/localiser.sock', $errno, $errstr);
 
+    if ($errno!=0){
+        echo "Error creating socket: " . $errstr . "[" . $errno . "]"; 
+    }
+
+    fwrite($sock, '3'."\r\n");
+    $socket_response = fread($sock, 256)."\n";
+    socket_close($sock);
+
+    //$string = file_get_contents("tie_points.json");
+    $tie_points = json_decode(trim($socket_response), true);
+    
     $tie_point_html = "";
 
     foreach($tie_points as $key => $value){

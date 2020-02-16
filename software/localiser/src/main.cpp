@@ -20,7 +20,7 @@ int main(int argc, char * argv[]){
 
         switch(request){
             case LOC_REQ_GET_POSE:{
-                localiser.pose_get();
+                localiser.send_pose();
                 break;
             }
 
@@ -34,7 +34,14 @@ int main(int argc, char * argv[]){
                 break;
             }
 
+            case LOC_REQ_GET_TIEPOINT: {
+                localiser.send_tie_points();
+                break;
+            }
+
             case LOC_REQ_POST_TIEPOINT: {
+                localiser.update_tie_point();
+                cout << localiser << endl;
                 break;
             }
 
