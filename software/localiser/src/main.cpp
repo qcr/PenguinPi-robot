@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char * argv[]){
 
     PenguinPi::Localiser localiser;
-    
+
     localiser.init_networking();
 
     cout << localiser << endl;
@@ -38,7 +38,7 @@ int main(int argc, char * argv[]){
                 break;
             }
 
-            default: std::cerr << "Request to localiser not recognised!\n";
+            default: std::cerr << "Request to localiser not recognised: " << request << std::endl;
             break;
         }
     }

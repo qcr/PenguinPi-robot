@@ -90,6 +90,31 @@ int Localiser::pose_get(void){
     return 0;
 }
 
+
+int Localiser::save_camera_img(void){
+    char response[LOC_MSG_LEN];
+    memset(response,0,LOC_MSG_LEN);
+    update_camera_img();
+    cv::imwrite("camera/camera_raw.jpg",camera_image);
+    sprintf(response,"success");
+    sock.pack_response(response);
+    sock.send_response();
+    return 0;
+}
+
+int Localiser::save_pose_img(void){
+    char response[LOC_MSG_LEN];
+    memset(response,0,LOC_MSG_LEN);
+    PenguinPi::Pose2D latest_pose;
+    update_camera_img();
+    compute_pose(&latest_pose);
+    cv::imwrite("camera/arena.jpg",pose_image);
+    sprintf(response,"success");
+    sock.pack_response(response);
+    sock.send_response();
+    return 0;
+}
+
 int Localiser::compute_pose(Pose2D * result){
 
     // Apply homography to extract arena image from camera image
@@ -222,15 +247,6 @@ int Localiser::update_camera_img(void){
     return 0;
 }
 
-int Localiser::save_camera_img(void){
-    cv::imwrite("camera/camera_img.jpg",camera_image);
-    return 0;
-}
-
-int Localiser::save_pose_img(void){
-    cv::imwrite("camera/arena.jpg",pose_image);
-    return 0;
-}
 
 std::ostream & operator<<(std::ostream & os, const Localiser & localiser)
 {

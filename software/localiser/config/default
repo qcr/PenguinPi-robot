@@ -17,14 +17,18 @@ server {
 		index index.php;
      } 
 
+	location /camera/get {
+		index index.php;
+    }
+
+	location /camera {
+		try_files $uri =404;
+	}
+
 	location /console {
 		index index.php;
 	}
 
-     location /camera/get {
-		sendfile on;
-        try_files arena.jpg;
-     }
 
 	# pass PHP scripts to FastCGI server
 	#
@@ -32,7 +36,7 @@ server {
 
 		include snippets/fastcgi-php.conf;
 	
-		With php-fpm (or other unix sockets):
+		#With php-fpm (or other unix sockets):
 		fastcgi_pass unix:/var/run/php/php7.2-fpm.sock;
 	}
 
