@@ -29,9 +29,14 @@ function dragElement(elmnt) {
       pos3 = e.clientX;
       pos4 = e.clientY;
       // set the element's new position:
-      elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+
+      elmnt.style.top  = (elmnt.offsetTop - pos2) + "px";
+
+
       elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-    }
+
+
+      }
   
     function closeDragElement() {
       // stop moving when mouse button is released:
@@ -40,12 +45,27 @@ function dragElement(elmnt) {
 
       var id = elmnt.id;
       var rect = elmnt.getBoundingClientRect();
-      console.log("tiepoint " + id + " at " + rect.left + "," + rect.top);
+
+      var new_x = rect.left;
+      var new_y = rect.top;
+ 
+      if (new_y > 479){
+        new_y = 479;
+        elmnt.style.top  = 479 + "px";
+
+      }
+
+      if (new_x > 639){
+        new_x = 639;
+        elmnt.style.left = 639 + "px";
+      }
+
+      console.log("tiepoint " + id + " at " + new_x + "," + new_y);
       $.post("/console/tiepoint_update.php",
       {
         corner: id,
-        x: rect.left,
-        y: rect.top
+        x: new_x,
+        y: new_y
       },
       function(data, status){
         console.log("Data: " + data + "\nStatus: " + status);

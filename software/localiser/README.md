@@ -1,6 +1,6 @@
 # Localiser with Nginx + C++
 
-A version of the EGB439 localiser that uses compiled binaries for speed and shared memory constructs for safety.
+A version of the EGB439 localiser that uses compiled binaries for speed and unix domain sockets for communication with an nginx server.
 These instructions will work on both the raspberry pi and a desktop computer.
 If used on a desktop computer, localiser will use a static test image.
 
