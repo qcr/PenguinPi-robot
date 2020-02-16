@@ -76,6 +76,12 @@ Start the server and cgi endpoint (do not need to be root):
 
 ### Troubleshooting
 
+Test the unix domain socket between the vision process and the server:
+
+```
+echo "ping" | nc -U /var/run/penguinpi/localiser.sock
+```
+
 Check the server is running on port 8080.
 
 Note: to avoid conflict with old localiser, server has been set to port 8008 for now.

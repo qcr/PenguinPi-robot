@@ -4,14 +4,16 @@ After=network.target
 
 [Service]
 ExecStart=/usr/local/bin/localiser 
-User=jenna
+User=www-data
 Group=www-data
-WorkingDirectory=/home/jenna/srvtest
-RuntimeDirectory=/home/jenna/srvtest/runfiles
-RuntimeDirectoryMode=0775
+WorkingDirectory=/home/jenna/
+RuntimeDirectory=penguinpi
+RuntimeDirectoryMode=0774
 PIDFile=/var/run/penguinpi/localiser.pid
 StandardOutput=inherit
 StandardError=inherit
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

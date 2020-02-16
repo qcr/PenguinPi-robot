@@ -117,8 +117,9 @@ sudo cp $SERVICE_FILE /etc/systemd/system/$SERVICE_FILE
 sudo chmod 644 /etc/systemd/system/$SERVICE_FILE
 
 echo "Killing any open TCP ports..."
-fuser -k 631/tcp
+#fuser -k 631/tcp
 
 echo "Restarting systemd service..."
 sudo systemctl daemon-reload
+sudo systemctl stop localiser
 sudo systemctl start localiser

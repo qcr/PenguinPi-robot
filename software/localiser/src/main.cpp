@@ -5,13 +5,15 @@
 #include "localiser.h"
 #include "sock_srvr.h"
 
+#define DOMAIN_SOCK_LEN     (128)
+
 using namespace std;
 
 int main(int argc, char * argv[]){
 
     socksrvconf config;
-    std::strcpy(config.sun_path, "localiser.socket");
-    config.buflen = sizeof(PenguinPi::Pose2D);
+    std::strcpy(config.sun_path, "/var/run/penguinpi/localiser.sock");
+    config.buflen = DOMAIN_SOCK_LEN;
 
     SocketServer sock(&config);
 
@@ -43,7 +45,11 @@ int main(int argc, char * argv[]){
         localiser.compute_pose(&latest_pose);
 
         // Prepare response 
-        sock.pack_response(&latest_pose);
+        // TODO PROPER SIZES
+        char buffer[DOMAIN_SOCK_LEN];
+        memset(buffer,0,DOMAIN_SOCK_LEN);
+        sprintf(buffer,"{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}\0",latest_pose.x,latest_pose.y,latest_pose.theta);
+        sock.pack_response(buffer);
 
         // Send data on the socket 
         sock.send_response();
