@@ -52,7 +52,7 @@ int SocketServer :: wait_for_request () {
     }
 
     bzero(buf,buflen);
-    int n = read(clientfd,buf,255);
+    int n = read(clientfd,buf,buflen);
     if (n < 0) {
         cerr << "ERROR reading from socket" << endl;
     }

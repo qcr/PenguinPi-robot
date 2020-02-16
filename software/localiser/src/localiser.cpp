@@ -19,7 +19,7 @@ Localiser :: Localiser () :
     if (!camera.open()) { cerr << "Error opening camera " << endl; }
 
     #else 
-    camera_image = cv::imread("camera/get/arena.jpg", IMREAD_GRAYSCALE);
+    camera_image = cv::imread("test_img.jpg", IMREAD_GRAYSCALE);
 
     #ifdef DEBUG 
     cout << "Displaying image... " << endl;
@@ -187,8 +187,13 @@ int Localiser::update_camera_img(void){
     return 0;
 }
 
+int Localiser::save_camera_img(void){
+    cv::imwrite("camera/camera_img.jpg",camera_image);
+    return 0;
+}
+
 int Localiser::save_pose_img(void){
-    cv::imwrite("camera/get/arena.jpg",pose_image);
+    cv::imwrite("camera/arena.jpg",pose_image);
     return 0;
 }
 

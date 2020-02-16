@@ -98,7 +98,7 @@ sudo make install
 
 echo "Setting up startup service..."
 cd ..
-SERVICE_FILE=localiser.service
+SERVICE_FILE=config/localiser.service
 sudo cp $SERVICE_FILE /etc/systemd/system/$SERVICE_FILE
 sudo chmod 644 /etc/systemd/system/$SERVICE_FILE
 

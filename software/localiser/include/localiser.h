@@ -30,6 +30,18 @@ namespace PenguinPi {
 #define ARROW_THICKNESS             (2)
 #define ARROW_INTENSITY             (200)
 
+#define LOC_MSG_LEN                 (128)
+
+#define LOC_REQ_TYPE_OFFSET         (0)
+#define LOC_REQ_PARAM_OFFSET        (1)
+#define LOC_REQ_PAYLOAD_OFFSET      (16)
+
+#define LOC_REQ_GET_POSE            (0)
+#define LOC_REQ_SAVE_POSE_IMG       (1)
+#define LOC_REQ_SAVE_CAM_IMG        (2)
+#define LOC_REQ_POST_TIEPOINT       (3)
+
+
 class Localiser {
     private:
 
@@ -48,6 +60,7 @@ class Localiser {
         Localiser ();
         int update_camera_img(void);
         int save_pose_img(void);
+        int save_camera_img(void);
         int compute_pose(Pose2D * result);
         friend std::ostream & operator<<(std::ostream& os, const Localiser& localiser);
         ~Localiser ();
