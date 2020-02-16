@@ -57,17 +57,11 @@ SERVICE_FILE=localiser.service
 sudo cp config/$SERVICE_FILE /etc/systemd/system/$SERVICE_FILE
 sudo chmod 644 /etc/systemd/system/$SERVICE_FILE
 
-echo "Killing any open TCP ports..."
-#fuser -k 631/tcp
-
-echo "Restarting systemd service..."
+echo "Starting systemd service..."
 sudo systemctl daemon-reload
 sudo systemctl stop localiser
 sudo systemctl start localiser
-
-# mkdir -p $WEB_DIR/pose/get
-# mkdir -p $WEB_DIR/console
-# mkdir -p $WEB_DIR/camera/get
+sudo systemctl enable localiser
 
 echo "Copying nginx configuration..."
 cp config/default /etc/nginx/sites-available/default

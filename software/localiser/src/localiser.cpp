@@ -65,6 +65,9 @@ int Localiser::update_camera_img(void){
     #ifdef CAMERA
     camera.grab();
     camera.retrieve(camera_image);
+
+    #else 
+    
     #endif 
     return 0;
 }
@@ -145,6 +148,11 @@ int Localiser::update_tie_point(void){
     tiepoint_src[tiepoint].y = y;
 
     homography = findHomography(tiepoint_src, tiepoint_dest);
+
+    char response[LOC_MSG_LEN];
+    sprintf(response,"success");
+    sock.pack_response(response);
+    sock.send_response();
 
     return 0;
 }

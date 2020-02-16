@@ -19,7 +19,7 @@ Install opencv prerequisites:
 ```
 sudo apt install libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev 
 sudo apt install libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libcanberra-gtk-module libcanberra-gtk3-module
-111
+```
 
 Get the source:
 
@@ -61,31 +61,20 @@ sudo make install
 ### Installing
 
 
-Configure as root:
+```
+sudo ./install.sh
+``` 
 
-```
-sudo ./configure.sh
-```
-
-Or to skip installing dependencies, use the -s flag:
-
-```
-sudo ./configure.sh -s
-```
-
-Build as regular user:
-
-```
-./build.sh
-```
 
 ### Usage
 
-Start the server and cgi endpoint (do not need to be root):
+The localiser will start on reboot. 
 
-```
-./LOCALISER.sh
-```
+Available endpoints:
+
+8080/pose/get
+8080/camera/get
+8080/console
 
 
 ### Troubleshooting
@@ -119,7 +108,6 @@ sudo systemctl restart php7.2-fpm  # could be different php version
 sudo /etc/init.d/nginx stop
 sudo /etc/init.d/nginx start
 ```
-
 
 
 
