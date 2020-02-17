@@ -8,6 +8,7 @@ RUNFILE_DIR=/var/run/$APP
 WEB_USER=www-data
 INSTALL_DIR=/usr/local
 USER=$(whoami)
+SOURCES_DIR=$PWD
 
 debug=FALSE
 
@@ -43,7 +44,13 @@ else
     camera=FALSE
 fi
 
-mkdir -p build
+BUILD_DIR=$(mktemp -d -t)
+echo "Created temporary directory " $BUILD_DIR
+cp -r ./src $BUILD_DIR
+cp -r ./include $BUILD_DIR
+cp CMakeLists.txt $BUILD_DIR
+cd $BUILD_DIR
+mkdir build 
 cd build
 cmake -DCAMERA=$camera -DDEBUG=$debug -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
 make
@@ -51,8 +58,10 @@ make
 echo "Installing into $INSTALL_DIR"
 sudo make install
 
+echo "Going back into " $SOURCES_DIR
+cd $SOURCES_DIR
+
 echo "Setting up startup service..."
-cd ..
 SERVICE_FILE=localiser.service
 sudo cp config/$SERVICE_FILE /etc/systemd/system/$SERVICE_FILE
 sudo chmod 644 /etc/systemd/system/$SERVICE_FILE
@@ -72,7 +81,7 @@ cp config/php.ini /etc/php/$PHP_VERSION/fpm/php.ini
 
 echo "Copying application..."
 rm -f -r $WEB_DIR/*
-cp -r server/* $WEB_DIR
+cp -r www/* $WEB_DIR
 
 echo "Adding r/w permissions for $WEB_USER..."
 sudo chgrp -R $WEB_USER $WEB_DIR

@@ -24,7 +24,6 @@ sudo apt install libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev libcanber
 Get the source:
 
 ```
-cd ~/Downloads
 git clone https://github.com/opencv/opencv.git
 git clone https://github.com/opencv/opencv_contrib.git
 ```
