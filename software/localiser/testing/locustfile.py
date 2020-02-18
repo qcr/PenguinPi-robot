@@ -15,9 +15,9 @@ class UserBehaviour(TaskSet):
     #def logout(self):
     #    self.client.post("/logout", {"username":"ellen_key", "password":"education"})
 
-    @task(2)
-    def index(self):
-        self.client.get("/camera/get")
+    #@task(2)
+    #def index(self):
+    #    self.client.get("/camera/get")
 
     @task(1)
     def get_pose(self):
