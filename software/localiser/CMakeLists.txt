@@ -14,9 +14,9 @@ endif(DEBUG)
 
 find_package( OpenCV REQUIRED)
 
-if (CAMERA)
-    find_package(raspicam REQUIRED)
-endif()
+#if (CAMERA)
+#    find_package(raspicam REQUIRED)
+#endif()
 
 if (PROFILE)
     add_definitions(-DPROFILE=1)
@@ -37,7 +37,7 @@ target_link_libraries(localiser
 )
 
 if(CAMERA)
-    target_link_libraries(localiser "${raspicam_CV_LIBS}")
+    #target_link_libraries(localiser "${raspicam_CV_LIBS}")
     target_compile_definitions(localiser PRIVATE CAMERA=1)
 endif(CAMERA)
 
