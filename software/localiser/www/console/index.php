@@ -5,7 +5,7 @@
 
     error_reporting(E_ALL);
 
-    $sock = stream_socket_client('unix:///var/run/penguinpi/localiser.sock', $errno, $errstr);
+    $sock = stream_socket_client('unix:///var/www/penguinpi/localiser.sock', $errno, $errstr);
 
     if ($errno!=0){
         echo "Error creating socket: " . $errstr . "[" . $errno . "]"; 
@@ -15,7 +15,7 @@
     $socket_response = fread($sock, 256)."\n";
     socket_close($sock);
 
-    $sock = stream_socket_client('unix:///var/run/penguinpi/localiser.sock', $errno, $errstr);
+    $sock = stream_socket_client('unix:///var/www/penguinpi/localiser.sock', $errno, $errstr);
 
     if ($errno!=0){
         echo "Error creating socket: " . $errstr . "[" . $errno . "]"; 

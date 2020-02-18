@@ -4,7 +4,6 @@ set -e
 
 APP=penguinpi
 WEB_DIR=/var/www/$APP
-RUNFILE_DIR=/var/run/$APP
 WEB_USER=www-data
 INSTALL_DIR=/usr/local
 LAUNCH_SCRIPT_DIR=/opt/penguinpi
@@ -35,10 +34,6 @@ sudo usermod -a -G video $WEB_USER
 echo "Setting up server directory structure in $WEB_DIR..."
 sudo rm -r -f $WEB_DIR
 sudo mkdir -p $WEB_DIR
-
-# echo "Creating runfile directory in " $RUNFILE_DIR
-# sudo rm -r -f $RUNFILE_DIR
-# sudo mkdir -p $RUNFILE_DIR
 
 echo "Copying php settings..."
 PHP_VERSION=$(php -r "echo PHP_VERSION;" | grep --only-matching --perl-regexp "7.\d+")

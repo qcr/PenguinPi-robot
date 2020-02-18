@@ -49,7 +49,7 @@ Localiser :: Localiser () :
     homography = findHomography(tiepoint_src, tiepoint_dest);
 
     socksrvconf config;
-    std::strcpy(config.sun_path, "/var/run/penguinpi/localiser.sock");
+    std::strcpy(config.sun_path, SOCKFILE);
     config.buflen = LOC_MSG_LEN;
     sock.configure(&config);
 
