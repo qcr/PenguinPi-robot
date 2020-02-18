@@ -15,7 +15,7 @@
         $PID = trim($string);
         $kill_command = "kill " . $PID;
         $output = shell_exec($kill_command);
-        $myfile = fopen("shutterspeed", "w") or die("Unable to open file!");
+        $myfile = fopen("/var/www/penguinpi/shutterspeed", "w") or die("Unable to open file!");
         fwrite($myfile, $new_speed);
         fclose($myfile);
         header("HTTP/1.1 $status $status_message");
