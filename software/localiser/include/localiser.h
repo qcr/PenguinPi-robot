@@ -13,7 +13,7 @@
 #include <iostream>
 #include <vector>
 #ifdef CAMERA
-#include <raspicam/raspicam_cv.h>
+
 #endif 
 
 #include "pose.h"
@@ -23,6 +23,8 @@
 using namespace cv; 
 
 namespace PenguinPi {
+
+#define VIDEO_STREAM                "127.0.0.0:3333"  
 
 #define MASK_LOWER_BOUND            (220)
 #define MASK_UPPER_BOUND            (255)
@@ -56,11 +58,13 @@ class Localiser {
     private:
 
       #ifdef CAMERA
-      raspicam::RaspiCam_Cv camera;
+      cv::VideoCapture camera;
       #endif
 
+      Mat video_frame;
       Mat camera_image;
       Mat pose_image;
+      PenguinPi::Pose2D latest_pose;
       SocketServer sock;
       std::vector<Point> tiepoint_src;
       std::vector<Point> tiepoint_dest;
@@ -70,6 +74,7 @@ class Localiser {
 
         Localiser ();
         int init_networking(void);
+        int wait_for_stream(void);
         int listen(void);
         int update_camera_img(void);
         int save_pose_img(void);

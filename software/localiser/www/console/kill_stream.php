@@ -6,7 +6,8 @@
     }
     
     function deliver_response($status, $status_message, $data) {
-        
+
+        $new_speed = $_POST['new_speed'];
         $shell_user = exec("whoami"); 
         $string = file_get_contents("../videostream.pid");
         $PID = trim($string);
@@ -15,6 +16,6 @@
         header("HTTP/1.1 $status $status_message");
         $response['status'] = $status;
         $response['status_message'] = $status_message;
-        echo "User " . $shell_user . " sent signal " . $signal . " to PID " . $PID . " with code " . $output;
+        echo "User " . $shell_user . " sent signal " . $signal . " to PID " . $PID . " with code " . $output . " and requested new speed " . $new_speed;
     }
 ?>

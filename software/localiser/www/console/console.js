@@ -76,13 +76,22 @@ function dragElement(elmnt) {
 
   $(document).ready( function() {
 
-    // Attach event listeners to draggable markers 
+    // Attach event listeners 
 
     var tie_points = ["NW","NE","SE","SW"];
 
     for (var i=0; i< tie_points.length; i++){
         dragElement(document.getElementById(tie_points[i]));
     }
+
+    document.getElementById("SSbutton").onclick = function(){
+        console.log("Clicked button");
+        var slider_val = document.getElementById("shutterSpeed").value; 
+        $.post( "kill_stream.php", { new_speed: slider_val})
+        .done(function( data ) {
+          console.log( "Data Loaded: " + data );
+        });
+    };
   });
 
 

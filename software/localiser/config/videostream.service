@@ -1,15 +1,15 @@
 [Unit]
-Description=egb439localiser
+Description=egb439stream
 After=network.target
 
 [Service]
-ExecStart=/bin/bash /opt/penguinpi/localiser.sh
+ExecStart=/bin/bash /opt/penguinpi/videostream.sh
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/penguinpi
 RuntimeDirectory=penguinpi
 RuntimeDirectoryMode=0774
-PIDFile=/var/www/penguinpi/localiser.pid
+PIDFile=/var/www/penguinpi/videostream.pid
 StandardOutput=inherit
 StandardError=inherit
 Restart=always

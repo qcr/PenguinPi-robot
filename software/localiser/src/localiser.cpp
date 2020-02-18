@@ -17,21 +17,14 @@ Localiser :: Localiser () :
     cartesian_size(ARENA_WIDTH_PIXELS,ARENA_HEIGHT_PIXELS) {
 
     #ifdef CAMERA
-
-    raspicam::RASPICAM_EXPOSURE exposure = raspicam::RASPICAM_EXPOSURE_SPORTS;
-    camera.set(CAP_PROP_FORMAT, CV_8UC1);
-    camera.set(CAP_PROP_FRAME_WIDTH, PICAM_IMG_WIDTH);
-    camera.set(CAP_PROP_FPS, TARGET_FPS);
-    //camera.set(CAP_PROP_EXPOSURE, exposure);
-    camera.set(CAP_PROP_FRAME_HEIGHT, PICAM_IMG_HEIGHT);
     cout << "Opening camera.. " << endl; 
-    if (!camera.open()) { cerr << "Error opening camera " << endl; }
+
+    wait_for_stream();
 
     #else 
     camera_image = cv::imread("test_img.jpg", IMREAD_GRAYSCALE);
 
     #ifdef DEBUG 
-    cout << "Displaying image... " << endl;
     cv::namedWindow( "Display window", WINDOW_AUTOSIZE );
     cv::imshow( "Display window", camera_image );             
     cv::waitKey(0);                 
@@ -68,18 +61,37 @@ Localiser :: Localiser () :
 
 int Localiser::init_networking(void){
     if(sock.connect()){
-        cerr << "Socket failed to connect, exiting..." << endl;
+        cerr << "Socket failed to connect" << endl;
         return -1;
     }
+    return 0;
+}
+
+int Localiser::wait_for_stream(void){
+
+
+    #ifdef CAMERA
+    bool camera_open = camera.isOpened();
+
+    while (!camera_open){
+        camera.open(VIDEO_STREAM);
+        if (camera.isOpened()) {
+            camera_open = true;
+            cout << "Connected to stream at " << VIDEO_STREAM << endl;
+        else { 
+            cerr << "Error opening camera, retrying... " << endl; 
+            std::this_thread::sleep_for (std::chrono::seconds(1));
+        }
+    }
+    #endif
     return 0;
 }
 
 int Localiser::update_camera_img(void){
 
     #ifdef CAMERA
-    camera.grab();
-    camera.retrieve(camera_image);
-
+    camera.read(video_frame);
+    cvtColor(video_frame, camera_image, COLOR_BGR2GRAY);
     #else 
     
     #endif 
@@ -89,7 +101,7 @@ int Localiser::update_camera_img(void){
 int Localiser::listen(void){
     
     if (sock.wait_for_request()){
-        cerr << "Error getting request from socket!" << endl;
+        cerr << "Error getting request from socket" << endl;
         return -1;
     }
 
@@ -113,7 +125,6 @@ int Localiser::send_pose(void){
 
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
-    PenguinPi::Pose2D latest_pose;
     update_camera_img();
     
     #ifdef PROFILE
@@ -129,7 +140,7 @@ int Localiser::send_pose(void){
     cout << "Time taken for camera: " << camera_duration << " us, img proc: " << imgproc_duration << endl;
     #endif
 
-    sprintf(response,"{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}\0",latest_pose.x,latest_pose.y,latest_pose.theta);
+    sprintf(response,"{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}",latest_pose.x,latest_pose.y,latest_pose.theta);
     sock.pack_response(response);
     sock.send_response();
     return 0;
@@ -140,7 +151,7 @@ int Localiser::send_tie_points(void){
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
 
-    sprintf(response,"{\"NW\":{\"x\":%d, \"y\":%d}, \"NE\":{\"x\":%d, \"y\":%d}, \"SE\":{\"x\":%d,\"y\":%d}, \"SW\":{\"x\":%d,\"y\":%d}}\0",
+    sprintf(response,"{\"NW\":{\"x\":%d, \"y\":%d}, \"NE\":{\"x\":%d, \"y\":%d}, \"SE\":{\"x\":%d,\"y\":%d}, \"SW\":{\"x\":%d,\"y\":%d}}",
     tiepoint_src[TIEPOINT_NW].x,
     tiepoint_src[TIEPOINT_NW].y,
     tiepoint_src[TIEPOINT_NE].x,
@@ -215,8 +226,6 @@ int Localiser::save_pose_img(void){
 }
 
 int Localiser::compute_pose(Pose2D * result){
-
-
 
     // Apply homography to extract arena image from camera image
     cv::Mat registered_img, mask;

@@ -25,7 +25,6 @@
     $socket_response = fread($sock, 256)."\n";
     socket_close($sock);
 
-    //$string = file_get_contents("tie_points.json");
     $tie_points = json_decode(trim($socket_response), true);
     
     $tie_point_html = "";
@@ -53,9 +52,11 @@
             <?php echo $tie_point_html; ?>
         </div>
     </div>
-
+    <div class="slidecontainer">
+  <input type="range" min="100" max="2000" value="100" class="slider" id="shutterSpeed">
+    </div>
     <div>
-    <button type="button">Kill localiser</button> 
+    <button id ="SSbutton" type="button">Update shutter speed</button> 
     </div>
     </body>
 </html>

@@ -6,10 +6,10 @@ If used on a desktop computer, localiser will use a static test image.
 
 ### Prerequisites
 
-Install nginx and php:
+Install web tools:
 
 ```
-sudo apt install nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git
+sudo apt install nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git npm
 ```
 
 Install OpenCV C++ libraries including contrib.

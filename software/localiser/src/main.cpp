@@ -16,6 +16,9 @@ int main(int argc, char * argv[]){
 
     while(1){
 
+        // If stream has died, wait to reconnect
+        localiser.wait_for_stream();
+
         int request = localiser.listen(); 
 
         switch(request){
