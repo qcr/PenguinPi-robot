@@ -27,7 +27,7 @@ namespace PenguinPi {
 #define VIDEO_STREAM                "tcp://127.0.0.1:3333"
 #define SOCKFILE                    "localiser.sock"  
 
-#define MASK_LOWER_BOUND            (220)
+#define MASK_LOWER_BOUND            (150)
 #define MASK_UPPER_BOUND            (255)
 #define MINIMUM_BLOB_AREA           (5)
 #define ARROW_LENGTH                (35)
