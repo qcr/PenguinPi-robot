@@ -81,7 +81,7 @@ int Localiser::wait_for_stream(void){
         }
         else { 
             cerr << "Error opening camera, retrying... " << endl; 
-            std::this_thread::sleep_for (std::chrono::seconds(1));
+//            std::this_thread::sleep_for (std::chrono::seconds(1));
         }
     }
     #endif
