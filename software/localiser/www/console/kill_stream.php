@@ -7,7 +7,7 @@
     
     function deliver_response($status, $status_message, $data) {
 
-        $new_speed = $_POST['new_speed'];
+        $new_speed = trim($_POST['new_speed']);
 
         // Write new speed to file
         $shell_user = exec("whoami"); 

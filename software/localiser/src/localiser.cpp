@@ -249,11 +249,12 @@ int Localiser::compute_pose(Pose2D * result){
     // Extract features
     cv::findContours(mask, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 
-    #ifdef DEBUG 
+    
     for( int i = 0; i< robot_contours.size(); i++ ) {
         cv::Scalar color = 100;
         drawContours( pose_image, robot_contours,  i, color);
     }
+    #ifdef DEBUG 
     cv::namedWindow( "LED mask", WINDOW_AUTOSIZE );
     cv::imshow( "LED mask", mask );     
     waitKey(0);  
