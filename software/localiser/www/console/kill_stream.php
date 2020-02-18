@@ -9,7 +9,7 @@
 
         $new_speed = $_POST['new_speed'];
         $shell_user = exec("whoami"); 
-        $string = file_get_contents("../videostream.pid");
+        $string = file_get_contents("/var/www/penguinpi/videostream.pid");
         $PID = trim($string);
         $kill_command = "kill " . $PID;
         $output = shell_exec($kill_command);

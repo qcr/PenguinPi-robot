@@ -6,10 +6,10 @@ If used on a desktop computer, localiser will use a static test image.
 
 ### Prerequisites
 
-Install web tools:
+Install packages:
 
 ```
-sudo apt install nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git npm
+sudo apt install nginx net-tools libfcgi libfcgi-dev build-essential libc-dev libboost-all-dev php php-fpm php-mysql cmake git
 ```
 
 Install OpenCV C++ libraries including contrib.
@@ -66,6 +66,21 @@ Available endpoints:
 ### Troubleshooting
 
 
+The localiser consists of two systemd services, localiser.service and videostream.service.
+They should start automatically at boot time or upon failure. They can be stopped and started with
+
+```
+sudo systemctl stop <localiser/videostream>
+sudo systemctl start <localiser/videostream>
+```
+
+Systemd services direct their i/o streams to a log file. Check the log, eg 10 latest messages:
+
+```
+journalctl -n 10 -u localiser.service 
+journalctl -n 10 -u localiser.service 
+```
+
 Check the server is running on port 8080.
 
 Note: to avoid conflict with old localiser, server has been set to port 8008 for now.
@@ -74,7 +89,7 @@ Note: to avoid conflict with old localiser, server has been set to port 8008 for
 sudo netstat -tlpn| grep nginx
 ``` 
 
-Check the http service is running on port 8080 (8008) and the CGI script on 9000
+Check the http service is running on port 8080
 
 ```
 nmap 127.0.0.1
@@ -90,7 +105,7 @@ wget <host>:8080/camera/get
 Restart the server:
 
 ```
-sudo systemctl restart php7.2-fpm  # could be different php version
+sudo systemctl restart php$(php -r "echo PHP_VERSION;" | grep --only-matching --perl-regexp "7.\d+")-fpm  
 sudo /etc/init.d/nginx stop
 sudo /etc/init.d/nginx start
 ```
