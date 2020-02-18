@@ -78,6 +78,7 @@ int Localiser::wait_for_stream(void){
         if (camera.isOpened()) {
             camera_open = true;
             cout << "Connected to stream at " << VIDEO_STREAM << endl;
+        }
         else { 
             cerr << "Error opening camera, retrying... " << endl; 
             std::this_thread::sleep_for (std::chrono::seconds(1));
