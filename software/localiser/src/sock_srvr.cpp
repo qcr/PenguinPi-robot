@@ -78,10 +78,12 @@ int SocketServer :: wait_for_request () {
 int SocketServer :: pack_response(void * data){
     bzero(buf,buflen);
     memcpy(buf,data,buflen);
+    return 0;
 }
 
 int SocketServer :: send_response(){
     send(clientfd,buf,buflen,0);
+    return 0;
 }
 
 SocketServer :: ~SocketServer () {

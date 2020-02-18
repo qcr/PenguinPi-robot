@@ -1,6 +1,6 @@
 [Unit]
 Description=egb439stream
-After=network.target
+After=network.target videostream.service
 
 [Service]
 ExecStart=/bin/bash /opt/penguinpi/videostream.sh
