@@ -110,7 +110,13 @@ sudo /etc/init.d/nginx stop
 sudo /etc/init.d/nginx start
 ```
 
-The localiser service communicates with the web server via unix domain sockets.
+Check the camera stream. Stop the localiser service:
+
+```
+sudo systemctl stop localiser
+```
+
+And on another computer on the network open vlc, file->network stream tcp/h264://<PI HOST>:3333
 
 
 ## Authors
