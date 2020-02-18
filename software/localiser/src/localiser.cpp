@@ -241,13 +241,13 @@ int Localiser::compute_pose(Pose2D * result){
     #endif 
 
     // Threshold image to find bright points
-    cv::inRange(registered_img, MASK_LOWER_BOUND, MASK_UPPER_BOUND, mask);
+    //cv::inRange(registered_img, MASK_LOWER_BOUND, MASK_UPPER_BOUND, mask);
 
     // Save image without pose in case localisation fails
     pose_image = registered_img.clone();
 
     // Extract features
-    cv::findContours(mask, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
+    cv::findContours(registered_img, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 
     
     for( int i = 0; i< robot_contours.size(); i++ ) {
