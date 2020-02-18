@@ -110,6 +110,7 @@ sudo /etc/init.d/nginx stop
 sudo /etc/init.d/nginx start
 ```
 
+The localiser service communicates with the web server via unix domain sockets.
 
 
 ## Authors
