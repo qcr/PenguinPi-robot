@@ -5,8 +5,8 @@ set -e
 APP=penguinpi
 WEB_DIR=/var/www/$APP
 WEB_USER=www-data
-INSTALL_DIR=/usr/local
-LAUNCH_SCRIPT_DIR=/opt/penguinpi
+BIN_INSTALL_DIR=/usr/local
+SCRIPT_INSTALL_DIR=/opt/penguinpi
 USER=$(whoami)
 SOURCES_DIR=$PWD
 PROFILE=FALSE
@@ -48,11 +48,11 @@ echo "Copying application..."
 cp -r www/* $WEB_DIR
 
 echo "Making folder in /opt/ for streaming script..."
-mkdir -p $LAUNCH_SCRIPT_DIR
-sudo cp scripts/* $LAUNCH_SCRIPT_DIR
-chmod +x $LAUNCH_SCRIPT_DIR/*
+mkdir -p $SCRIPT_INSTALL_DIR
+sudo cp scripts/* $SCRIPT_INSTALL_DIR
+chmod +x $SCRIPT_INSTALL_DIR/*
 
-for f in /var/www /etc/nginx /etc/php $WEB_DIR $LAUNCH_SCRIPT_DIR
+for f in /var/www /etc/nginx /etc/php $WEB_DIR $SCRIPT_INSTALL_DIR
 do
     echo "Adding $f r/w permissions for $WEB_USER..."
     sudo chgrp -R $WEB_USER $f
@@ -79,10 +79,10 @@ cp CMakeLists.txt $BUILD_DIR
 cd $BUILD_DIR
 mkdir build 
 cd build
-cmake -DCAMERA=$camera -DDEBUG=$debug -DPROFILE=$PROFILE -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR ..
+cmake -DCAMERA=$camera -DDEBUG=$debug -DPROFILE=$PROFILE -DCMAKE_INSTALL_PREFIX=$BIN_INSTALL_DIR ..
 make
 
-echo "Installing into $INSTALL_DIR"
+echo "Installing localiser binary into $BIN_INSTALL_DIR"
 sudo make install
 
 echo "Going back into " $SOURCES_DIR
