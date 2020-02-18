@@ -6,7 +6,7 @@ set(PROJECT_VERSION 1.0)
 
 option(CAMERA "Compile for raspberry pi target" TRUE) # on by default
 option(DEBUG "Verbose" FALSE) #OFF by default
-option(PROFILE "Time profiling" TRUE)
+option(PROFILE "Time profiling" FALSE)
 
 if(DEBUG)
     add_definitions(-DDEBUG=1)

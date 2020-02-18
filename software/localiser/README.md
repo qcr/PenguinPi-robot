@@ -44,19 +44,6 @@ Install as system library
 sudo make install
 ```
 
-Install raspicam library, must be installed as system library and on cmake path:
-
-```
-cd ~/Downloads
-git clone https://github.com/cedricve/raspicam .
-cd raspicam
-mkdir build
-cd build
-cmake ..
-make
-sudo make install
-```
-
 ### Installing
 
 

@@ -13,7 +13,7 @@ PIDFile=/var/www/penguinpi/localiser.pid
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-RestartSec=1s
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

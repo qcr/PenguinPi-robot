@@ -13,7 +13,7 @@ PIDFile=/var/www/penguinpi/videostream.pid
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-RestartSec=1s
+RestartSec=3s
 
 [Install]
 WantedBy=multi-user.target

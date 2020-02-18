@@ -10,7 +10,7 @@ INSTALL_DIR=/usr/local
 LAUNCH_SCRIPT_DIR=/opt/penguinpi
 USER=$(whoami)
 SOURCES_DIR=$PWD
-PROFILE=TRUE
+PROFILE=FALSE
 debug=FALSE
 
 
