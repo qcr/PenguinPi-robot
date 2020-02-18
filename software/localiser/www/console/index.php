@@ -41,7 +41,7 @@
 <html>
     <head>
         <script type="text/javascript" src="jquery-3.4.1.min.js"></script>
-        <script type="text/javascript" src="drag.js"></script>
+        <script type="text/javascript" src="console.js"></script>
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
 
@@ -52,6 +52,10 @@
         <div> 
             <?php echo $tie_point_html; ?>
         </div>
+    </div>
+
+    <div>
+    <button type="button">Kill localiser</button> 
     </div>
     </body>
 </html>
