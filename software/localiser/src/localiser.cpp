@@ -17,9 +17,6 @@ Localiser :: Localiser () :
     cartesian_size(ARENA_WIDTH_PIXELS,ARENA_HEIGHT_PIXELS) {
 
     #ifdef CAMERA
-    cout << "Opening camera.. " << endl; 
-
-    wait_for_stream();
 
     #else 
     camera_image = cv::imread("test_img.jpg", IMREAD_GRAYSCALE);
@@ -53,15 +50,11 @@ Localiser :: Localiser () :
     config.buflen = LOC_MSG_LEN;
     sock.configure(&config);
 
-    #ifdef CAMERA
-    update_camera_img();
-    save_camera_img();
-    #endif
 }
 
 int Localiser::init_networking(void){
     if(sock.connect()){
-        cerr << "Socket failed to connect" << endl;
+        cout << "Socket failed to connect" << endl;
         return -1;
     }
     return 0;
@@ -71,19 +64,21 @@ int Localiser::wait_for_stream(void){
 
 
     #ifdef CAMERA
-    bool camera_open = camera.isOpened();
-
-    while (!camera_open){
+    bool connected = false;
+    int attempts = 0;
+    while (!(connected || attempts > MAX_CONNECTION_ATTEMPTS)){
         camera.open(VIDEO_STREAM);
         if (camera.isOpened()) {
-            camera_open = true;
             cout << "Connected to stream at " << VIDEO_STREAM << endl;
-        }
-        else { 
-            cerr << "Error opening camera, retrying... " << endl; 
-//            std::this_thread::sleep_for (std::chrono::seconds(1));
+            connected = true;
+        } else {
+            attempts++;
+            usleep(SLEEP_CONNECT_ATTEMPTS_US);
         }
     }
+
+    if (!connected) return -1;
+
     #endif
     return 0;
 }
@@ -91,7 +86,22 @@ int Localiser::wait_for_stream(void){
 int Localiser::update_camera_img(void){
 
     #ifdef CAMERA
-    camera.read(video_frame);
+    bool successful_read = false;
+    int attempts = 0;
+
+    while (!(successful_read || (attempts > MAX_FRAME_GRAB_ATTEMPTS))) {
+        camera.read(video_frame);
+        if (!video_frame.empty()) {
+            successful_read=true;
+        }
+        attempts++;      
+        usleep(SLEEP_FRAME_ATTEMPTS_US);
+    }
+  
+    if (!successful_read){
+        cerr << "Timeout reading frames" << endl;
+        return -1;
+    }
     cvtColor(video_frame, camera_image, COLOR_BGR2GRAY);
     #else 
     
@@ -102,7 +112,7 @@ int Localiser::update_camera_img(void){
 int Localiser::listen(void){
     
     if (sock.wait_for_request()){
-        cerr << "Error getting request from socket" << endl;
+        cout << "Error getting request from socket" << endl;
         return -1;
     }
 
@@ -126,25 +136,32 @@ int Localiser::send_pose(void){
 
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
-    update_camera_img();
-    
-    #ifdef PROFILE
-    auto t2 = std::chrono::high_resolution_clock::now();
-    #endif
 
-    compute_pose(&latest_pose);
+    int ret;
 
-    #ifdef PROFILE
-    auto t3 = std::chrono::high_resolution_clock::now();
-    auto camera_duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
-    auto imgproc_duration = std::chrono::duration_cast<std::chrono::microseconds>(t3-t2).count();
-    cout << "Time taken for camera: " << camera_duration << " us, img proc: " << imgproc_duration << endl;
-    #endif
+    if (update_camera_img() < 0){
+        ret = -1;
+        sprintf(response,"%d{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}",LOC_RESP_FAILURE,0,0,0);
 
-    sprintf(response,"{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}",latest_pose.x,latest_pose.y,latest_pose.theta);
+    } else { 
+        #ifdef PROFILE
+        auto t2 = std::chrono::high_resolution_clock::now();
+        #endif
+
+        compute_pose(&latest_pose);
+
+        #ifdef PROFILE
+        auto t3 = std::chrono::high_resolution_clock::now();
+        auto camera_duration = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+        auto imgproc_duration = std::chrono::duration_cast<std::chrono::microseconds>(t3-t2).count();
+        cout << "Time taken for camera: " << camera_duration << " us, img proc: " << imgproc_duration << endl;
+        #endif
+        sprintf(response,"%d{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}}",LOC_RESP_SUCCESS,latest_pose.x,latest_pose.y,latest_pose.theta);
+        ret = 0;
+    } 
     sock.pack_response(response);
     sock.send_response();
-    return 0;
+    return ret;
 }
 
 int Localiser::send_tie_points(void){
@@ -152,7 +169,8 @@ int Localiser::send_tie_points(void){
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
 
-    sprintf(response,"{\"NW\":{\"x\":%d, \"y\":%d}, \"NE\":{\"x\":%d, \"y\":%d}, \"SE\":{\"x\":%d,\"y\":%d}, \"SW\":{\"x\":%d,\"y\":%d}}",
+    sprintf(response,"%d{\"NW\":{\"x\":%d, \"y\":%d}, \"NE\":{\"x\":%d, \"y\":%d}, \"SE\":{\"x\":%d,\"y\":%d}, \"SW\":{\"x\":%d,\"y\":%d}}",
+    LOC_RESP_SUCCESS,
     tiepoint_src[TIEPOINT_NW].x,
     tiepoint_src[TIEPOINT_NW].y,
     tiepoint_src[TIEPOINT_NE].x,
@@ -187,6 +205,8 @@ int Localiser::update_tie_point(void){
     pixel_coord x = atoi(x_coord_str);
     pixel_coord y= atoi(y_coord_str);
 
+    // TODO add failure
+
     cout << "Decoded tie point request to " << tiepoint << "," << x << "," << y << endl;
 
     tiepoint_src[tiepoint].x = x;
@@ -195,7 +215,7 @@ int Localiser::update_tie_point(void){
     homography = findHomography(tiepoint_src, tiepoint_dest);
 
     char response[LOC_MSG_LEN];
-    sprintf(response,"success");
+    sprintf(response,"%d",LOC_RESP_SUCCESS);
     sock.pack_response(response);
     sock.send_response();
 
@@ -205,25 +225,37 @@ int Localiser::update_tie_point(void){
 int Localiser::save_camera_img(void){
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
-    update_camera_img();
-    cv::imwrite("camera/camera_raw.jpg",camera_image);
-    sprintf(response,"success");
+    int ret;
+    if (update_camera_img() < 0){
+        ret = -1;
+        sprintf(response,"1");
+    } else {
+        cv::imwrite("camera/camera_raw.jpg",camera_image);
+        sprintf(response,"0");
+        ret = 0;
+    }
     sock.pack_response(response);
     sock.send_response();
-    return 0;
+    return ret;
 }
 
 int Localiser::save_pose_img(void){
     char response[LOC_MSG_LEN];
     memset(response,0,LOC_MSG_LEN);
     PenguinPi::Pose2D latest_pose;
-    update_camera_img();
-    compute_pose(&latest_pose);
-    cv::imwrite("camera/arena.jpg",pose_image);
-    sprintf(response,"success");
+    int ret;
+    if (update_camera_img() < 0){
+        sprintf(response,"1");
+        ret = -1;
+    } else {
+        compute_pose(&latest_pose);
+        cv::imwrite("camera/arena.jpg",pose_image);
+        sprintf(response,"0");
+        ret = 0;
+    }
     sock.pack_response(response);
     sock.send_response();
-    return 0;
+    return ret;
 }
 
 int Localiser::compute_pose(Pose2D * result){

@@ -10,8 +10,9 @@ if ($errno!=0){
 
 fwrite($sock, '0'."\r\n");
 
-echo fread($sock, 128)."\n";
-
+$pose_response = fread($sock, 128);
 socket_close($sock);
+
+echo substr($pose_response,1,127);
 
 ?> 

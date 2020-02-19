@@ -11,25 +11,54 @@ USER=$(whoami)
 SOURCES_DIR=$PWD
 PROFILE=FALSE
 debug=FALSE
+BUILD=TRUE
+SET_PERMISSIONS=TRUE
 
-
-arch=$(dpkg --print-architecture)
-echo "Detected architecture $arch"
-
-echo "Checking permissions..."
-
-for group in $WEB_USER video
+POSITIONAL=()
+while [[ $# -gt 0 ]]
 do
-    if groups $SUDO_USER | grep -q '\b$group\b'; then
-        echo "User ${SUDO_USER} already in group in $group"
-    else
-        echo "Adding user ${SUDO_USER} to $group..."
-        sudo usermod -a -G $group $SUDO_USER
-    fi
-done
+key="$1"
 
-echo "Adding ${WEB_USER} to video group..."
-sudo usermod -a -G video $WEB_USER
+case $key in
+    -s|--skip-build)
+    BUILD=FALSE
+    shift # past argument
+    ;;
+    -p|--skip-permissions)
+    SET_PERMISSIONS=FALSE
+    shift # past argument
+    ;;
+    --default)
+    DEFAULT=YES
+    shift # past argument
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+
+if [ $SET_PERMISSIONS = "TRUE" ]; then 
+
+    echo "Checking permissions..."
+
+    for group in $WEB_USER video
+    do
+        if groups $SUDO_USER | grep -q '\b$group\b'; then
+            echo "User ${SUDO_USER} already in group in $group"
+        else
+            echo "Adding user ${SUDO_USER} to $group..."
+            sudo usermod -a -G $group $SUDO_USER
+        fi
+    done
+
+    echo "Adding ${WEB_USER} to video group..."
+    sudo usermod -a -G video $WEB_USER
+
+fi 
 
 echo "Setting up server directory structure in $WEB_DIR..."
 sudo rm -r -f $WEB_DIR
@@ -63,30 +92,38 @@ done
 echo "Restarting nginx.."
 sudo service nginx reload
 
-if [ $arch = "armhf" ]; then 
-    echo "Compiling with camera module"
-    camera=TRUE
-else 
-    echo "Compiling without camera module"
-    camera=FALSE
-fi
 
-BUILD_DIR=$(mktemp -d -t)
-echo "Created temporary directory " $BUILD_DIR
-cp -r ./src $BUILD_DIR
-cp -r ./include $BUILD_DIR
-cp CMakeLists.txt $BUILD_DIR
-cd $BUILD_DIR
-mkdir build 
-cd build
-cmake -DCAMERA=$camera -DDEBUG=$debug -DPROFILE=$PROFILE -DCMAKE_INSTALL_PREFIX=$BIN_INSTALL_DIR ..
-make
+if [ $BUILD = "TRUE" ]; then 
 
-echo "Installing localiser binary into $BIN_INSTALL_DIR"
-sudo make install
+    arch=$(dpkg --print-architecture)
+    echo "Detected architecture $arch"
 
-echo "Going back into " $SOURCES_DIR
-cd $SOURCES_DIR
+    if [ $arch = "armhf" ]; then 
+        echo "Compiling with camera module"
+        camera=TRUE
+    else 
+        echo "Compiling without camera module"
+        camera=FALSE
+    fi
+
+    BUILD_DIR=$(mktemp -d -t)
+    echo "Created temporary directory " $BUILD_DIR
+    cp -r ./src $BUILD_DIR
+    cp -r ./include $BUILD_DIR
+    cp CMakeLists.txt $BUILD_DIR
+    cd $BUILD_DIR
+    mkdir build 
+    cd build
+    cmake -DCAMERA=$camera -DDEBUG=$debug -DPROFILE=$PROFILE -DCMAKE_INSTALL_PREFIX=$BIN_INSTALL_DIR ..
+    make
+
+    echo "Installing localiser binary into $BIN_INSTALL_DIR"
+    sudo make install
+
+    echo "Going back into " $SOURCES_DIR
+    cd $SOURCES_DIR
+
+fi 
 
 echo "Setting up streaming service..."
 STREAM_SERVICE_FILE=videostream.service
@@ -98,18 +135,11 @@ SERVICE_FILE=localiser.service
 sudo cp config/$SERVICE_FILE /etc/systemd/system/$SERVICE_FILE
 sudo chmod 644 /etc/systemd/system/$SERVICE_FILE
 
-sleep 1
-
 sudo systemctl daemon-reload
 
-sleep 1
 echo "Starting systemd services.."
 
-sudo systemctl stop videostream
-sudo systemctl start videostream
 sudo systemctl enable videostream
-sudo systemctl stop localiser
-sudo systemctl start localiser 
 sudo systemctl enable localiser
 
 

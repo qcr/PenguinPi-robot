@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Cleaning up after localiser"
+videopid=$(cat /var/www/penguinpi/videostream.pid)
+kill $videopid
+echo "Killed video stream"
+echo "Removing socket and pid file..."
+rm /var/www/penguinpi/localiser.sock
+rm /var/www/penguinpi/localiser.pid
+rm -f /var/www/penguinpi/camera/*.jpg

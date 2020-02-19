@@ -24,8 +24,12 @@ using namespace cv;
 
 namespace PenguinPi {
 
-#define VIDEO_STREAM                "tcp://127.0.0.1:3333"
-#define SOCKFILE                    "localiser.sock"  
+#define VIDEO_STREAM                "tcp://127.0.0.1:5000"
+#define SOCKFILE                    "localiser.sock" 
+#define MAX_CONNECTION_ATTEMPTS     (10) 
+#define MAX_FRAME_GRAB_ATTEMPTS     (10)
+#define SLEEP_FRAME_ATTEMPTS_US     (200)
+#define SLEEP_CONNECT_ATTEMPTS_US   (200)
 
 #define MASK_LOWER_BOUND            (220)
 #define MASK_UPPER_BOUND            (255)
@@ -41,6 +45,9 @@ namespace PenguinPi {
 #define LOC_REQ_CORNER_OFFSET       (1)
 #define LOC_REQ_CORNER_LEN          (1)
 #define LOC_REQ_COORD_LEN           (4)
+
+#define LOC_RESP_SUCCESS            (0)
+#define LOC_RESP_FAILURE            (1)
 
 #define LOC_REQ_GET_POSE            (0)
 #define LOC_REQ_SAVE_POSE_IMG       (1)
