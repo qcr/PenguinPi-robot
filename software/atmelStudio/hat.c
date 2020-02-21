@@ -489,10 +489,10 @@ void oled_screen(Hat_oled *oled)
 			oled_string( 0, 0, INVERSE, "ENCODERS" );
 
       //Encoders RAW
-			oled_string( 0, 2, NORMAL, "encL: %6d", motorL.position);
-
-			oled_string( 0, 3, NORMAL, "encR: %6d", motorR.position);
-        	
+			oled_string( 0, 1, NORMAL, "encL: %6d", motorL.position);
+			oled_string( 0, 2, NORMAL, "encR: %6d", motorR.position);
+            oled_string( 12, 1, NORMAL, "%4d", motorL.velocity);
+            oled_string( 12, 2, NORMAL, "%4d", motorR.velocity);
             oled_string( 15, 3, INVERSE, "reset");
 			break;
       
