@@ -20,31 +20,31 @@ int SocketServer :: configure(socksrvconf * config){
     server_addr.sun_family = AF_UNIX;
     strcpy(server_addr.sun_path, config->sun_path);
     buf = new char[buflen+1];
+    return 0;
 }
 
 int SocketServer :: connect(void){
 
     sockfd = socket(server_addr.sun_family, SOCK_STREAM, 0);
     if (!sockfd) {
-        cerr << "Failed to get socket file descriptor" << endl;
+        cout << "Failed to get socket file descriptor" << endl;
         return -1;
     }
-
 
     /*
     int enable = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-        cerr << "setsockopt(SO_REUSEADDR) failed" << endl;
+        cout << "setsockopt(SO_REUSEADDR) failed" << endl;
         return -1;
     }*/
 
     if (bind(sockfd, (const struct sockaddr *)&server_addr, sizeof(struct sockaddr_un))) {
-        cerr << "Failed to bind socket" << endl;
+        cout << "Failed to bind socket" << endl;
         return -1;
     }
 
     if (listen(sockfd,BACKLOG)){
-        cerr << "Failed to set socket as passive" << endl;
+        cout << "Failed to set socket as passive" << endl;
         return -1;
     };
 
@@ -57,14 +57,14 @@ int SocketServer :: wait_for_request () {
     clientlen = sizeof(client_addr);
     clientfd = accept(sockfd, (struct sockaddr *) &client_addr, &clientlen);
     if (clientfd < 0) {
-        cerr << ("ERROR on accept") << endl;
+        cout << ("ERROR on accept") << endl;
         return -1;
     }
 
     bzero(buf,buflen);
     int n = read(clientfd,buf,buflen);
     if (n < 0) {
-        cerr << "ERROR reading from socket" << endl;
+        cout << "ERROR reading from socket" << endl;
         return -1;
     }
     else {

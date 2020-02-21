@@ -14,27 +14,38 @@ int main(int argc, char * argv[]){
 
     cout << localiser << endl;
 
-    while(1){
+    if (localiser.wait_for_stream() < 0){
+        cout << "Failed to connect to stream" << endl;
+        return -1;
+    }
 
-        // If stream has died, wait to reconnect
-        localiser.wait_for_stream();
+    while(1){    
 
         int request = localiser.listen(); 
 
         switch(request){
             case LOC_REQ_GET_POSE:{
-                localiser.send_pose();
+                if (localiser.send_pose() < 0){
+                    cout << "Failed to send pose" << endl;
+                    return -1;
+                }
                 break;
             }
 
             case LOC_REQ_SAVE_POSE_IMG: {
-                localiser.save_pose_img();
+                
+                if (localiser.save_pose_img() < 0){
+                    cout << "Failed to save pose img" << endl;
+                    return -1;
+                }
                 break;
             }
 
             case LOC_REQ_SAVE_CAM_IMG: {
-                localiser.update_camera_img();
-                localiser.save_camera_img();
+                if (localiser.save_camera_img() < 0){
+                    cout << "Failed to save camera frame" << endl;
+                    return -1;
+                }
                 break;
             }
 
@@ -49,10 +60,11 @@ int main(int argc, char * argv[]){
                 break;
             }
 
-            default: std::cerr << "Request to localiser not recognised: " << request << std::endl;
+            default: std::cout << "Request to localiser not recognised: " << request << std::endl;
             break;
         }
     }
+    return 0;
 }
 
 

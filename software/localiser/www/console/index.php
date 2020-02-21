@@ -12,26 +12,32 @@
     }
 
     fwrite($sock, '2'."\r\n");
-    $socket_response = fread($sock, 256)."\n";
-    socket_close($sock);
+    $socket_response = fread($sock, 256);
 
-    $sock = stream_socket_client('unix:///var/www/penguinpi/localiser.sock', $errno, $errstr);
-
-    if ($errno!=0){
-        echo "Error creating socket: " . $errstr . "[" . $errno . "]"; 
+    if ($socket_response[0]=='0'){
+        $image_html = "<img src='/camera/camera_raw.jpg'>";
+    } else {    
+        $image_html = "<span>Localiser error</span>";
     }
-
-    fwrite($sock, '3'."\r\n");
-    $socket_response = fread($sock, 256)."\n";
     socket_close($sock);
-
-    $tie_points = json_decode(trim($socket_response), true);
     
     $tie_point_html = "";
 
-    foreach($tie_points as $key => $value){
-        $tie_point_html .= "<div class=\"tie_point\" id=\"" . $key ."\" style=\"top:". $value['y'] . "px; left: " . $value['x'] . "px;\"><img src=\"icon.png\"></div>";
-    }
+    $sock = stream_socket_client('unix:///var/www/penguinpi/localiser.sock', $errno, $errstr);
+
+    fwrite($sock, '3'."\r\n");
+    $tiepoint_response = fread($sock, 256);
+
+    vardump($tiepoint_response);
+    //if ($tiepoint_response[0] == '0'){
+        //$tie_points = json_decode(trim(substr($tiepoint_response,1,200)), true);
+        
+        // foreach($tie_points as $key => $value){
+        //     $tie_point_html .= "<div class=\"tie_point\" id=\"" . $key ."\" style=\"top:". $value['y'] . "px; left: " . $value['x'] . "px;\"><img src=\"icon.png\"></div>";
+        // }
+    //} 
+
+    socket_close($sock);
 
 ?>
 
@@ -47,9 +53,9 @@
     <body>
 
     <div id="arena_image"> 
-        <img src="/camera/camera_raw.jpg">
+        <?php echo $image_html; ?>
         <div> 
-            <?php echo $tie_point_html; ?>
+            <?php echo $tie_points; ?>
         </div>
     </div>
     <div class="slidecontainer">

@@ -1,9 +1,10 @@
 [Unit]
 Description=egb439localiser
-After=network.target
+After=network.target videostream.service
 
 [Service]
-ExecStart=/bin/bash /opt/penguinpi/localiser.sh
+ExecStart=localiser
+ExecStopPost=/bin/bash /opt/penguinpi/localiser.cleanup
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/penguinpi
@@ -13,7 +14,7 @@ PIDFile=/var/www/penguinpi/localiser.pid
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-RestartSec=5s
+RestartSec=1s
 
 [Install]
 WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "Starting localiser"
+/var/www/penguinpi/localiser.pid
+localiser &
+echo $! > /var/www/penguinpi/localiser.pid
