@@ -14,21 +14,18 @@ endif(DEBUG)
 
 find_package( OpenCV REQUIRED)
 
-#if (CAMERA)
-#    find_package(raspicam REQUIRED)
-#endif()
-
 if (PROFILE)
     add_definitions(-DPROFILE=1)
 endif()
 
-add_executable(localiser 
-    src/main.cpp 
-    src/vision_utils.cpp
+add_library(localiser 
     src/localiser.cpp
+    src/vision_utils.cpp
     src/sock_srvr.cpp
     src/led.cpp
 )
+
+set_target_properties(localiser PROPERTIES PUBLIC_HEADER include/localiser.h)
 
 target_link_libraries(localiser
     pthread
@@ -36,8 +33,18 @@ target_link_libraries(localiser
     ${OpenCV_LIBS}
 )
 
+add_executable(locclient 
+    src/main.cpp 
+)
+
+target_link_libraries(locclient
+    pthread
+    localiser
+    rt
+    ${OpenCV_LIBS}
+)
+
 if(CAMERA)
-    #target_link_libraries(localiser "${raspicam_CV_LIBS}")
     target_compile_definitions(localiser PRIVATE CAMERA=1)
 endif(CAMERA)
 
@@ -45,17 +52,36 @@ if(DEBUG)
     target_compile_definitions(localiser PRIVATE DEBUG=1)
 endif(DEBUG)
 
-
 include_directories(localiser 
     ${PROJECT_SOURCE_DIR}/include 
 )
 
+add_executable(teststream 
+    testing/teststream.cpp
+)
+target_link_libraries(teststream
+    localiser
+    pthread
+    rt
+    ${OpenCV_LIBS}
+)
+
+add_executable(testrealtime
+    testing/testrealtime.cpp
+)
+
+target_link_libraries(testrealtime
+    pthread
+    rt
+    ${OpenCV_LIBS}
+)
+
+install(TARGETS locclient localiser
+        RUNTIME DESTINATION bin
+	PUBLIC_HEADER DESTINATION include
+	ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+
 unset(CAMERA CACHE)
 unset(DEBUG CACHE)
 unset(PROFILE CACHE)
-
-install(TARGETS localiser
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib)
-
-

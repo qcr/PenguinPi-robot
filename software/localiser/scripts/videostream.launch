@@ -1,7 +1,9 @@
 #!/bin/bash
-SHUTTER_SPEED=$(cat shutterspeed)
-TIMEOUT_MS=20000
-BITRATE=100000
-raspivid -fl -t 0 -w 640 -h 480 -fps 25 -l -o - | nc -k -l 5000 &
+#SHUTTER_SPEED=$(cat shutterspeed)
+SHUTTER_SPEED_US=100
+BITRATE=600000
+FRAME_RATE=25
+INTER_FRAME_PERIOD=25
+raspivid -t 0 -ss $SHUTTER_SPEED_US -fps $FRAME_RATE -w 640 -h 480 -b $BITRATE -g $INTER_FRAME_PERIOD -o udp://0.0.0.0:5000
 echo $! > /var/www/penguinpi/videostream.pid
 echo "Started video stream"

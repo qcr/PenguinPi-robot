@@ -24,7 +24,6 @@ using namespace cv;
 
 namespace PenguinPi {
 
-#define VIDEO_STREAM                "tcp://127.0.0.1:5000"
 #define SOCKFILE                    "localiser.sock" 
 #define MAX_CONNECTION_ATTEMPTS     (10) 
 #define MAX_FRAME_GRAB_ATTEMPTS     (10)

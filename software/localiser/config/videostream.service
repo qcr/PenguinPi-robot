@@ -14,6 +14,7 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 RestartSec=1s
+Nice=-15
 
 [Install]
 WantedBy=multi-user.target
