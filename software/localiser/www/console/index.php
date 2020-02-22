@@ -24,6 +24,9 @@
     $tie_point_html = "";
 
     $sock = stream_socket_client('unix:///var/www/penguinpi/localiser.sock', $errno, $errstr);
+    if ($errno!=0){
+        echo "Error creating socket: " . $errstr . "[" . $errno . "]"; 
+    }
 
     fwrite($sock, '3'."\r\n");
     $tiepoint_response = fread($sock, 256);
