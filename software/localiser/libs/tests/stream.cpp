@@ -1,6 +1,8 @@
 #include "opencv2/opencv.hpp"
 #include <iostream>
 
+#include <penguinpi.h>
+
 #define WAIT_TIME_MS  (5)
 
 using namespace std;

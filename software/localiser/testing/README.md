@@ -4,7 +4,6 @@ Load testing for the localiser in S901
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
@@ -29,7 +28,12 @@ Source environment variables
 $ source env.sh
 ```
 
-## Running the tests
+## Testing localisation
+
+To test localisation, compile and run one of the cpp binaries in this folder.
+Stream video from a pi eg
+
+$ raspivid -t 0 -w 640 -fps 90 -h 480 -o - | nc -p 1904 -u LOCALHOST 5000
 
 Start locust web server
 
@@ -43,9 +47,7 @@ In a browser, go to http://127.0.0.1:8089/
 Host is the server to test (the localiser). In the Host field, enter http://172.19.232.11:8080 (or whichever IP and port the localiser is running on)
 
 
-## Deployment
 
-Add additional notes about how to deploy this on a live system
 
 
 ## Authors

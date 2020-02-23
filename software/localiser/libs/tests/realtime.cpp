@@ -2,6 +2,8 @@
 #include <iostream>
 #include <chrono>
 
+#include <penguinpi.h>
+
 #define MAX_FRAMES      (1000)
 #define WAIT_TIME_MS  (5)
  
