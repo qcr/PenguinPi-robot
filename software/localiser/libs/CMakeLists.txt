@@ -101,3 +101,14 @@ add_executable(servestreamtcp
 target_link_libraries(servestreamtcp
     penguinpi
 )
+
+add_executable(cvopencamera
+    tests/cvopencamera.cpp 
+)
+target_link_libraries(cvopencamera
+    penguinpi
+)
+
+add_executable(tcpclient
+    tests/tcpclient.cpp 
+)

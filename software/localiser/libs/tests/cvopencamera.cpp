@@ -3,6 +3,12 @@
 
 #include <penguinpi.h>
 
+
+/*
+ * Open a webcam directly using cv videocapture and display frames.
+ * 
+ */
+
 #define WAIT_TIME_MS  (5)
 
 using namespace std;
@@ -12,7 +18,7 @@ int main(){
  
   // Create a VideoCapture object and open the input file
   // If the input is the web camera, pass 0 instead of the video file name
-  VideoCapture cap("udp://0.0.0.0:5000"); 
+  VideoCapture cap("/dev/video0"); 
 
   // Check if camera opened successfully
   if(!cap.isOpened()){
@@ -34,7 +40,7 @@ int main(){
  
     // Display the resulting frame
     imshow( "Frame", frame );
- 
+
     // Press  ESC on keyboard to exit
     waitKey(WAIT_TIME_MS);
 
@@ -48,3 +54,4 @@ int main(){
      
   return 0;
 }
+   

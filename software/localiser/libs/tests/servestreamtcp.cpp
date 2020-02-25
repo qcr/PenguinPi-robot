@@ -3,16 +3,14 @@
  *  Integration test. Video stream from camera, image processing on local host,
  *  TCP server on local host.
  * 
+ *  To send requests one at a time: 
+ *  echo "hello" | socat -t 30 tcp:127.0.0.1:2115 -
+ * 
+ * 
+ * To automate requests:
  * 
  * */
 
-
-/* After compiling and running, run raspivid on a raspberry pi 
- *
- *   $ raspivid -t 0 -w 640 -fps 90 -h 480 -o - | nc -p 1904 -u <YOUR_LOCAL_IP> 5000
- * 
- * /
- 
 
 /**** vary this quantity to enable image processing at different rates ****/
 #define IMGPROC_WAIT_MS      (1000)
@@ -29,13 +27,16 @@
 #include <penguinpi.h>
 
 
+#define MSGLEN 256
+
 // TODO ARGIFY 
-#define STREAM_PORT     "udp://0.0.0.0:5000"
+#define STREAM_PORT     "/dev/video0"
 #define TCP_PORT         2115
 
 #define SLEEP_BETWEEN_FRAME_FETCH_US    (10)
 
 using namespace std::chrono;
+using namespace cv;
 
 std::mutex mtx;           // mutex for critical section
 cv::Mat frame_bgr;
@@ -64,25 +65,16 @@ int decode_frames(cv::VideoCapture * stream){
 int main(int argc, char ** argv){
 
 
-    size_t msglen = 256;
-
-    PenguinPi::TCPServer server(TCP_PORT, msglen);
-
-    if (server.connect() < 0){
-        std::cerr << "Error connecting to stream " << std::endl;
-    }
-    
-
-    PenguinPi::Localiser localiser;
-
     std::cout << "Waiting for stream at " << STREAM_PORT << std::endl;
 
     cv::VideoCapture stream(STREAM_PORT); 
         
     // Check if camera opened successfully
     if(!stream.isOpened()){
-        std::cout << "Error opening video stream or file" << std::endl;
+        std::cerr << "Error opening video stream or file" << std::endl;
         return -1;
+    } else {
+      std::cout << "Opened video with backend " << stream.getBackendName() << " at " << stream.get(CAP_PROP_FPS) << " fps " << std::endl;
     }
 
     cv::Mat latest_frame, frame_gray;
@@ -98,11 +90,23 @@ int main(int argc, char ** argv){
     // This is to ensure the localiser is only using the most recent frame.
     std::thread frame_fetcher(decode_frames, &stream);
 
+    // Now set up the tcp server
+
+    PenguinPi::TCPServer server(TCP_PORT, MSGLEN);
+
+    if (server.connect() < 0){
+        std::cerr << "Error connecting to server " << std::endl;
+    }
+    
+    PenguinPi::Localiser localiser;
+
+
+  char response[MSGLEN];
 
     // Only serve when asked for it
     while(1){
 
-        server.connect(); 
+        //server.connect(); 
         server.getreq();
 
         PenguinPi::Pose2D pose;
@@ -129,12 +133,16 @@ int main(int argc, char ** argv){
         std::cout << "Time waiting for lock and copying latest frame: " << capture_time_ms << " ms" << std::endl;
         std::cout << "Image processing time: " << compute_time_ms << " ms" << std::endl << std::endl;
 
+        localiser.draw_pose(frame_gray, &pose);
+        
         cv::imshow( "Frame", frame_gray );
         cv::waitKey(IMGPROC_WAIT_MS);
 
-        char msg[] = "done ";
-        server.sendmsg(msg, sizeof(msg));
-
+        //bzero(response,MSGLEN);
+        sprintf(response, "{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}",pose.x,pose.y,pose.theta);
+        
+        //char tmp_response[] = "reply from srvr";
+        server.sendmsg(response, sizeof(response));
     }
 
     // Closes all the frames
