@@ -8,6 +8,12 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgproc/types_c.h>
 
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <stdint.h>
 #include <iostream>
 #include <vector>
@@ -65,7 +71,30 @@ class Led {
 
 };
 
+class TCPServer {
 
+private:
+    int parentfd_;                  /* parent socket */
+    int childfd_;                   /* child socket */
+    int portno_;                    /* port to listen on */
+    socklen_t clientlen_;           /* byte size of client's address */
+    struct sockaddr_in serveraddr_; /* server's addr */
+    struct sockaddr_in clientaddr_; /* client addr */
+    struct hostent *hostp_;         /* client host info */
+    char *hostaddrp_;               /* dotted decimal host addr string */
+    size_t msglen_;
+    char * recvbuf_;
+    char * sendbuf_;
+
+public:
+
+    TCPServer(int portno, size_t msglen);
+    int connect(); 
+    int getreq();
+    int sendmsg(char * msg, size_t n);
+    ~TCPServer();
+
+};
 
 bool operator <(const Led & led1, const Led & led2);
 

@@ -43,7 +43,6 @@ int Localiser::compute_pose(const cv::Mat * src, Pose2D * result){
     // Threshold image to find bright points
     cv::threshold( registered_img, mask, MASK_LOWER_BOUND, MASK_UPPER_BOUND, cv::THRESH_BINARY );
 
-
     // Extract features
     cv::findContours(mask, robot_contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
     #ifdef DEBUG 

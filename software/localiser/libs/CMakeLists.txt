@@ -3,6 +3,7 @@ find_package( OpenCV REQUIRED)
 add_library(penguinpi 
     src/localiser.cpp
     src/led.cpp
+    src/tcp_srvr.cpp
 )
 
 set_target_properties(penguinpi PROPERTIES PUBLIC_HEADER 
@@ -10,7 +11,7 @@ set_target_properties(penguinpi PROPERTIES PUBLIC_HEADER
 )
 
 include_directories(penguinpi 
-    # ${PROJECT_SOURCE_DIR}/include 
+    ${PROJECT_SOURCE_DIR}/include 
     include
 )
 
@@ -85,5 +86,18 @@ add_executable(simpleudpserver
     tests/simpleudpserver.cpp 
 )
 add_executable(simpletcpserver
-    tests/simpleudpserver.cpp 
+    tests/simpletcpserver.cpp 
+)
+add_executable(tcpclass
+    tests/tcpclass.cpp 
+)
+target_link_libraries(tcpclass
+    penguinpi
+)
+
+add_executable(servestreamtcp
+    tests/servestreamtcp.cpp 
+)
+target_link_libraries(servestreamtcp
+    penguinpi
 )

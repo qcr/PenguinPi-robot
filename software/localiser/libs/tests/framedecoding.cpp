@@ -23,8 +23,6 @@
 /**** ----------------------------------------------------------------- ****/
 
 
-
-
 #include "opencv2/opencv.hpp"
 
 #include <iostream>
@@ -39,7 +37,6 @@
 #define SLEEP_BETWEEN_FRAME_FETCH_US    (10)
 
 using namespace std::chrono;
-
 
 
 std::mutex mtx;           // mutex for critical section
