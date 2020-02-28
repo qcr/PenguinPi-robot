@@ -76,7 +76,7 @@ classdef PiBot < handle
             self.timeout(5);
             if nargin == 3
                 assert(ischar(localizerURL), 'Localizer robot must be a character array')
-                self.localizer = "http://" + string(localizerrobot) + ":8080";
+                self.localizer = "http://" + string(localizerURL) + ":8080";
                 self.groupNum = groupNum;
             elseif nargin ~= 1
                 error('must be 1 or 3 arguments')
@@ -92,7 +92,7 @@ classdef PiBot < handle
   
             s = sprintf('PenguinPi robot at %s', self.robot);
             if ~isempty(self.localizer)
-                s = strcat(s, ', with localizer at %s', self.localizer);
+                s = strcat(s, sprintf(', with localizer at %s', self.localizer);
             end
         end
 
@@ -132,7 +132,7 @@ classdef PiBot < handle
             %
             % PB.setVelocity(VEL, T, ACC) as above but the speed ramps up and down at
             % the end of the motion over ACC seconds.  The constant velocity part of
-            % the motion lasts for T-ACC seconds, the total motion time is T+2*ACC
+            % the motion lasts for T-2*ACC seconds, the total motion time is T+2*ACC
             % seconds.  This profile moves the same distance as a rectangular speed
             % profile over T seconds.
             %
@@ -344,7 +344,7 @@ classdef PiBot < handle
             self.webread("/hat/screen/print", "value", sprintf(varargin{:}));
         end
 
-        function setScreen(self, S)
+        function setScreen(self, screen)
             %PiBot.setScreen select screen on OLED
             %
             % PB.setScreen(i) sets the OLED display to show information screen S. The OLED
@@ -385,7 +385,7 @@ classdef PiBot < handle
             %
 
             if ~isempty(self.localizer)
-                im = self.webread("/camera/get", "group", self.groupNum);
+                im = self.webread_localizer("/camera/get", "group", self.groupNum);
             else
                 im = [];
             end
