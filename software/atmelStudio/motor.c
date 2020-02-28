@@ -1,5 +1,6 @@
 #include "motor.h"
 #include "global.h"
+#include    <util/atomic.h>
 
 void
 motor_velocity_control(Motor *motor)
@@ -8,10 +9,14 @@ motor_velocity_control(Motor *motor)
     // motor control interval is 20ms
     // setpoint after scaling is the number of ticks per time step (of the loop)
     int16_t vdmd = motor->velocity_dmd/5;
+    int16_t motor_pos;
 
     // estimate velocity (encs/interval)
-    motor->velocity = motor->position - motor->position_prev;
-    motor->position_prev = motor->position;
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+        motor_pos = motor->position;
+    }
+    motor->velocity = motor_pos - motor->position_prev;
+    motor->position_prev = motor_pos;
 
     // Error
     motor->verror = vdmd - motor->velocity;
