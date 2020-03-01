@@ -40,75 +40,74 @@ install(
 # -------------------------- BUILD TESTS (won't be installed) ------------------------------ #
 
 
-add_executable(test_stream 
-    tests/stream.cpp
+add_executable(01_test_stream 
+    tests/01_stream.cpp
 )
-target_link_libraries(test_stream
+target_link_libraries(01_test_stream
     penguinpi
     pthread
     rt
     ${OpenCV_LIBS}
 )
 
-add_executable(test_realtime
-    tests/realtime.cpp
+add_executable(02_test_realtime
+    tests/02_realtime.cpp
 )
 
-target_link_libraries(test_realtime
+target_link_libraries(02_test_realtime
     penguinpi
     pthread
     rt
     ${OpenCV_LIBS}
 )
 
-add_executable(test_localisationspeed
-    tests/localisationspeed.cpp
+add_executable(03_test_localisationspeed
+    tests/03_localisationspeed.cpp
 )
 
-target_link_libraries(test_localisationspeed
+target_link_libraries(03_test_localisationspeed
     penguinpi
     pthread
     rt
     ${OpenCV_LIBS}
 )
 
-add_executable(test_frame_decoding 
-    tests/framedecoding.cpp
+add_executable(04_test_frame_decoding 
+    tests/04_framedecoding.cpp
 )
-target_link_libraries(test_frame_decoding
+target_link_libraries(04_test_frame_decoding
     penguinpi
     pthread
     rt
     ${OpenCV_LIBS}
 )
 
-add_executable(simpleudpserver
-    tests/simpleudpserver.cpp 
+add_executable(05_simpleudpserver
+    tests/05_simpleudpserver.cpp 
 )
-add_executable(simpletcpserver
-    tests/simpletcpserver.cpp 
+add_executable(06_simpletcpserver
+    tests/06_simpletcpserver.cpp 
 )
-add_executable(tcpclass
-    tests/tcpclass.cpp 
+add_executable(07_tcpclass
+    tests/07_tcpclass.cpp 
 )
-target_link_libraries(tcpclass
+target_link_libraries(07_tcpclass
     penguinpi
 )
 
-add_executable(servestreamtcp
-    tests/servestreamtcp.cpp 
+add_executable(08_tcpclient
+    tests/08_tcpclient.cpp 
 )
-target_link_libraries(servestreamtcp
+
+add_executable(09_cvopencamera
+    tests/09_cvopencamera.cpp 
+)
+target_link_libraries(09_cvopencamera
     penguinpi
 )
 
-add_executable(cvopencamera
-    tests/cvopencamera.cpp 
-)
-target_link_libraries(cvopencamera
+add_executable(10_servestreamtcp
+    tests/10_servestreamtcp.cpp)
+target_link_libraries(10_servestreamtcp
     penguinpi
-)
-
-add_executable(tcpclient
-    tests/tcpclient.cpp 
 )

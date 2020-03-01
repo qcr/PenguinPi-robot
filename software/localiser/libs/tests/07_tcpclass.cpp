@@ -11,7 +11,7 @@
  * 
  * In another terminal/ computer on network:
  * 
- * echo "hello" | socat -t 30 tcp:<local IP>:<port> -
+ * 
  * 
  */
 
