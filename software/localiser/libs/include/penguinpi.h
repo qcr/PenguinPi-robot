@@ -83,14 +83,13 @@ private:
     struct hostent *hostp_;         /* client host info */
     char *hostaddrp_;               /* dotted decimal host addr string */
     size_t msglen_;
-    char * recvbuf_;
     char * sendbuf_;
 
 public:
 
     TCPServer(int portno, size_t msglen);
     int connect(); 
-    int getreq();
+    int getreq(char * request);
     int sendmsg(char * msg, size_t n);
     ~TCPServer();
 

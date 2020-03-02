@@ -46,8 +46,12 @@ int main(int argc, char ** argv){
         std::cerr << "Error connecting to stream " << std::endl;
     }
     
+    char request[msglen];
     stream.connect(); 
-    stream.getreq();
+    stream.getreq(request);
+
+    std::cout << "Received: " << request << std::endl;
+
     char msg[] = "boop";
     stream.sendmsg(msg, sizeof(msg));
 

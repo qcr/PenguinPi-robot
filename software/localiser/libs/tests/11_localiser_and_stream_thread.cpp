@@ -4,7 +4,7 @@
  *  TCP server on local host.
  * 
  *  To send requests one at a time: 
- *  echo "hello" | socat -t 30 tcp:127.0.0.1:2115 -
+ *  echo "hello" | socat -t 30 tcp:<HOST>:2115 -
  * 
  * 
  * To automate requests:
@@ -79,14 +79,14 @@ int image_processing(PenguinPi::Localiser * localiser){
     #endif 
 
     pose_mutex.lock();
-    *(localiser).compute_pose(&frame_gray, &pose);
+    localiser->compute_pose(&frame_gray, &pose);
     pose_mutex.unlock();
 
     #ifdef PROFILE
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
     #endif
 
-    *(localiser).draw_pose(frame_gray, &pose);
+    localiser->draw_pose(frame_gray, &pose);
 
     #ifdef PROFILE
     duration<double> capture_time = duration_cast<duration<double>>(t1 - t0);
@@ -97,7 +97,7 @@ int image_processing(PenguinPi::Localiser * localiser){
     std::cout << "Image processing time: " << compute_time_ms << " ms" << std::endl << std::endl;
     #endif 
 
-    *(localiser).draw_pose(frame_gray, &pose);
+    localiser->draw_pose(frame_gray, &pose);
     
     #ifndef HEADLESS 
     cv::imshow( "Frame", frame_gray );
@@ -146,14 +146,15 @@ int main(int argc, char ** argv){
     
     // Start a thread for image processing 
     PenguinPi::Localiser localiser;
-    std::thread image_processor(image_processing, &localiser)
+    std::thread image_processor(image_processing, &localiser);
 
     char response[MSGLEN];
 
     while(1){
 
         //server.connect(); 
-        server.getreq();
+        char request[256];
+        server.getreq(request);
 
         // Lock the pose to serve it     
         //bzero(response,MSGLEN);

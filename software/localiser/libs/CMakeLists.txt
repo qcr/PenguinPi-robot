@@ -15,11 +15,16 @@ include_directories(penguinpi
     include
 )
 
-target_compile_definitions(penguinpi PRIVATE)
 
 if(DEBUG)
     target_compile_definitions(penguinpi PRIVATE DEBUG=1)
 endif(DEBUG)
+if(PROFILE)
+    target_compile_definitions(penguinpi PRIVATE PROFILE=1)
+endif(PROFILE)
+if(HEADLESS)
+    target_compile_definitions(penguinpi PRIVATE HEADLESS=1)
+endif(HEADLESS)
 
 target_link_libraries(penguinpi
     pthread
@@ -34,7 +39,6 @@ install(
 	    ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
     )
-
 
 
 # -------------------------- BUILD TESTS (won't be installed) ------------------------------ #
@@ -109,5 +113,17 @@ target_link_libraries(09_cvopencamera
 add_executable(10_servestreamtcp
     tests/10_servestreamtcp.cpp)
 target_link_libraries(10_servestreamtcp
+    penguinpi
+)
+
+add_executable(11_localiser_and_stream_thread
+    tests/11_localiser_and_stream_thread.cpp)
+target_link_libraries(11_localiser_and_stream_thread
+    penguinpi
+)
+
+add_executable(12_parse_request
+    tests/12_parse_request.cpp)
+target_link_libraries(12_parse_request
     penguinpi
 )

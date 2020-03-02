@@ -22,7 +22,6 @@ namespace PenguinPi {
 TCPServer :: TCPServer (int portno, size_t msglen) : msglen_(msglen) {
 
     sendbuf_ = new char(msglen_);
-    recvbuf_ = new char(msglen_);
 
     parentfd_ = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -74,7 +73,7 @@ int TCPServer :: connect(){
  * 
  */
 
-int TCPServer :: getreq() {
+int TCPServer :: getreq(char * request) {
 
     clientlen_ = sizeof(clientaddr_);
 
@@ -116,6 +115,9 @@ int TCPServer :: getreq() {
 
     std::cout << "server received " << n << " bytes: " << buf << std::endl;
 
+    // Return the request
+    memcpy(request, buf, msglen_);
+
     return 0;
 }
 
@@ -152,7 +154,6 @@ int TCPServer :: sendmsg(char * msg, size_t n){
 TCPServer :: ~TCPServer () {
 
     // delete sendbuf_;
-    // delete recvbuf_;
 }
 }
 

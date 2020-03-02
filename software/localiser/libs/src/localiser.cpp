@@ -34,10 +34,11 @@ int Localiser::compute_pose(const cv::Mat * src, Pose2D * result){
     cv::warpPerspective(*src, registered_img, homography, cartesian_size); 
     
     #ifdef DEBUG 
-    cout << "Displaying registered image... " << endl;
+    #ifndef HEADLESS
     cv::namedWindow( "Registered image", WINDOW_AUTOSIZE );
     cv::imshow( "Registered image", registered_img );   
     waitKey(DEBUG_WINDOW_TIMEOUT_MS);  
+    #endif 
     #endif 
 
     // Threshold image to find bright points
@@ -54,9 +55,11 @@ int Localiser::compute_pose(const cv::Mat * src, Pose2D * result){
         drawContours( registered_img, robot_contours,  i, color);
     }
     #ifdef DEBUG 
+    #ifndef HEADLESS 
     cv::namedWindow( "LED mask", WINDOW_AUTOSIZE );
     cv::imshow( "LED mask", mask );     
     waitKey(DEBUG_WINDOW_TIMEOUT_MS);  
+    #endif 
     #endif 
 
     // Find the LEDs
@@ -142,7 +145,10 @@ int Localiser::compute_pose(const cv::Mat * src, Pose2D * result){
 
 int Localiser::draw_pose(cv::Mat & frame, Pose2D * pose){
 
+        #ifdef DEBUG
         cout << "Pose: " << pose->x << "," << pose->y << "," << pose->theta <<  endl;
+        #endif 
+
         int x_ = ARENA_WIDTH_PIXELS*(pose->x)/ARENA_WIDTH_M;
         int y_ = ARENA_HEIGHT_PIXELS - ARENA_HEIGHT_PIXELS*(pose->y)/ARENA_HEIGHT_M;
         cv::Point pt1(x_,y_);
@@ -151,7 +157,11 @@ int Localiser::draw_pose(cv::Mat & frame, Pose2D * pose){
                     (y_ + ARROW_LENGTH * (sin(pose->theta*M_PI/180)))
                 );
         cv::arrowedLine(frame, pt1, pt2, ARROW_INTENSITY, ARROW_THICKNESS);
+
+        #ifdef DEBUG
         cout << "Location in pixels:" << x_ << "," << y_ << endl;
+        #endif 
+
         return 0;
 }
 

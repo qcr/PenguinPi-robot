@@ -107,7 +107,8 @@ int main(int argc, char ** argv){
     while(1){
 
         //server.connect(); 
-        server.getreq();
+        char request[256];
+        server.getreq(request);
 
         PenguinPi::Pose2D pose;
         high_resolution_clock::time_point t0 = high_resolution_clock::now();
@@ -135,7 +136,10 @@ int main(int argc, char ** argv){
 
         localiser.draw_pose(frame_gray, &pose);
         
+        #ifndef HEADLESS 
         cv::imshow( "Frame", frame_gray );
+        #endif 
+
         cv::waitKey(IMGPROC_WAIT_MS);
 
         //bzero(response,MSGLEN);
@@ -146,7 +150,9 @@ int main(int argc, char ** argv){
     }
 
     // Closes all the frames
+    #ifndef HEADLESS
     cv::destroyAllWindows();
+    #endif 
         
     return 0;
 }
