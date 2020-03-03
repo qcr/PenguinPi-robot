@@ -132,7 +132,7 @@ int main(int argc, char ** argv){
         std::cerr << "Error opening video stream or file" << std::endl;
         return -1;
     } else {
-      std::cout << "Opened video with backend " << stream.getBackendName() << " at " << stream.get(CAP_PROP_FPS) << " fps " << std::endl;
+      std::cout << "Opened video  at " << stream.get(CAP_PROP_FPS) << " fps " << std::endl;
     }
 
     // Grab the initial frame 
