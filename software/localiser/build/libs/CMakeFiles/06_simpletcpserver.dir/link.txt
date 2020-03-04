@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/06_simpletcpserver.dir/tests/06_simpletcpserver.cpp.o  -o 06_simpletcpserver 

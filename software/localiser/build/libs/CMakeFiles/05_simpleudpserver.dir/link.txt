@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/05_simpleudpserver.dir/tests/05_simpleudpserver.cpp.o  -o 05_simpleudpserver 
