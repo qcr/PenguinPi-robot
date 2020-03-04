@@ -4,7 +4,7 @@
  *  TCP server on local host.
  * 
  *  To send requests one at a time: 
- *  echo "hello" | socat -t 30 tcp:127.0.0.1:2115 -
+ *  echo "hello" | socat -t 30 tcp:<HOST>:2115 -
  * 
  * 
  * To automate requests:
@@ -30,6 +30,17 @@
 #define SLEEP_BETWEEN_FRAME_FETCH_US    (10)    // wait in between decoding video frames
 #define SLEEP_BETWEEN_LOCALISATION_US   (100)   // wait in between processing image frames
 
+/* 
+ * The protocol for communicating with the web server.
+ * (Or any other client) via TCP.
+ * 
+ */
+#define REQUEST_TYPE_OFFSET             (0)
+#define REQUEST_TYPE_LEN                (2)
+
+#define LOCALISER_SEND_POSE             (0)
+#define LOCALISER_SAVE_IMG              (1)
+
 using namespace std::chrono;
 using namespace cv;
 
@@ -39,7 +50,9 @@ cv::Mat frame_bgr;                // the raw frame from the video stream
 std::mutex pose_mutex;
 PenguinPi::Pose2D pose;
 
-cv::Mat latest_frame, frame_gray;
+std::mutex pose_img_mutex;        // Mutex for a photo of the arena with pose drawn
+
+cv::Mat latest_frame, frame_gray, pose_img;
 
 int decode_frames(cv::VideoCapture * stream){
 
@@ -79,14 +92,13 @@ int image_processing(PenguinPi::Localiser * localiser){
     #endif 
 
     pose_mutex.lock();
-    *(localiser).compute_pose(&frame_gray, &pose);
+    localiser->compute_pose(&frame_gray, &pose);
+    pose_img = frame_gray.clone();
     pose_mutex.unlock();
 
     #ifdef PROFILE
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
     #endif
-
-    *(localiser).draw_pose(frame_gray, &pose);
 
     #ifdef PROFILE
     duration<double> capture_time = duration_cast<duration<double>>(t1 - t0);
@@ -97,8 +109,10 @@ int image_processing(PenguinPi::Localiser * localiser){
     std::cout << "Image processing time: " << compute_time_ms << " ms" << std::endl << std::endl;
     #endif 
 
-    *(localiser).draw_pose(frame_gray, &pose);
-    
+    pose_img_mutex.lock();
+    localiser->draw_pose(pose_img, &pose);
+    pose_img_mutex.unlock();
+
     #ifndef HEADLESS 
     cv::imshow( "Frame", frame_gray );
     cv::waitKey(IMGPROC_WAIT_MS);
@@ -112,7 +126,6 @@ int image_processing(PenguinPi::Localiser * localiser){
 
 int main(int argc, char ** argv){
 
-
     std::cout << "Waiting for stream at " << STREAM_PORT << std::endl;
 
     cv::VideoCapture stream(STREAM_PORT); 
@@ -122,7 +135,7 @@ int main(int argc, char ** argv){
         std::cerr << "Error opening video stream or file" << std::endl;
         return -1;
     } else {
-      std::cout << "Opened video   at " << stream.get(CAP_PROP_FPS) << " fps " << std::endl;
+      std::cout << "Opened video  at " << stream.get(CAP_PROP_FPS) << " fps " << std::endl;
     }
 
     // Grab the initial frame 
@@ -136,8 +149,7 @@ int main(int argc, char ** argv){
     // This is to ensure the localiser is only using the most recent frame.
     std::thread frame_fetcher(decode_frames, &stream);
 
-    // Now set up the tcp server
-
+    // Set up the tcp server
     PenguinPi::TCPServer server(TCP_PORT, MSGLEN);
 
     if (server.connect() < 0){
@@ -146,22 +158,44 @@ int main(int argc, char ** argv){
     
     // Start a thread for image processing 
     PenguinPi::Localiser localiser;
-    std::thread image_processor(image_processing, &localiser)
+    std::thread image_processor(image_processing, &localiser);
 
     char response[MSGLEN];
 
     while(1){
 
-        //server.connect(); 
-        server.getreq();
+        server.connect(); 
+        char request[MSGLEN];
+        bzero(request, MSGLEN);
+        server.getreq(request);
 
-        // Lock the pose to serve it     
-        //bzero(response,MSGLEN);
-        pose_mutex.lock();
-        sprintf(response, "{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}",pose.x,pose.y,pose.theta);
-        pose_mutex.unlock();
-        
-        //char tmp_response[] = "reply from srvr";
+        // Parse incoming requests 
+        char request_type_s[REQUEST_TYPE_LEN];
+        memcpy(request_type_s, (request + REQUEST_TYPE_OFFSET), REQUEST_TYPE_LEN);
+        int request_type = atoi(request_type_s);
+
+        #ifdef DEBUG
+        std::cout << "Localise received request type: " << request_type << std::endl;
+        #endif 
+            
+        bzero(response,MSGLEN);
+
+        if(request_type == LOCALISER_SEND_POSE){
+
+          pose_mutex.lock();
+          sprintf(response, "{\"pose\":{\"x\":%f,\"y\":%f,\"theta\":%f}",pose.x,pose.y,pose.theta);
+          pose_mutex.unlock();
+
+        } else if (request_type == LOCALISER_SAVE_IMG) {
+          
+          pose_img_mutex.lock();
+          imwrite( "pose.png", pose_img );
+          pose_img_mutex.unlock();
+
+        } else {
+          std::cerr << "Localiser failed to parse request: " << request_type << std::endl;
+        }
+ 
         server.sendmsg(response, sizeof(response));
     }
 

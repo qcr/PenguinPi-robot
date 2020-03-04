@@ -127,3 +127,9 @@ add_executable(12_parse_request
 target_link_libraries(12_parse_request
     penguinpi
 )
+
+add_executable(13_pose_and_save_photo
+    tests/13_pose_and_save_photo.cpp)
+target_link_libraries(13_pose_and_save_photo
+    penguinpi
+)

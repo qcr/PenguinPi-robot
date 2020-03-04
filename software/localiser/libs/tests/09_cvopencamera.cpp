@@ -26,7 +26,7 @@ int main(){
     return -1;
   }
 
-  std::cout << "Opened video with backend " << cap.getBackendName() << " at " << cap.get(CAP_PROP_FPS) << " fps " << std::endl;
+  std::cout << "Opened video at " << cap.get(CAP_PROP_FPS) << " fps " << std::endl;
      
   while(1){
  

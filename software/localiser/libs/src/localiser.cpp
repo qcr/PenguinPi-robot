@@ -58,8 +58,7 @@ int Localiser::compute_pose(const cv::Mat * src, Pose2D * result){
     #ifndef HEADLESS 
     cv::namedWindow( "LED mask", WINDOW_AUTOSIZE );
     cv::imshow( "LED mask", mask );     
-    waitKey(DEBUG_WINDOW_TIMEOUT_MS);  
-    #endif 
+    waitKey(DEBUG_WINDOW_TIMEOUT_MS); 
     #endif 
 
     // Find the LEDs

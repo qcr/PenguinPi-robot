@@ -9,11 +9,6 @@ class UserBehaviour(TaskSet):
         """ on_stop is called when the TaskSet is stopping """
         #self.logout()
 
-    #def login(self):
-    #    self.client.post("/login", {"username":"ellen_key", "password":"education"})
-
-    #def logout(self):
-    #    self.client.post("/logout", {"username":"ellen_key", "password":"education"})
 
     #@task(2)
     #def index(self):
@@ -27,4 +22,4 @@ class WebsiteUser(HttpLocust):
     task_set = UserBehaviour
 
     # Define how long the user waits in between requests
-    wait_time = between(1.0, 2.0)
+    wait_time = between(0.25, 0.27)

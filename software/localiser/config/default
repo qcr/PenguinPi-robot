@@ -1,6 +1,6 @@
 server {
-	listen 8080 default_server;
-	listen [::]:8080 default_server;
+	listen 8008 default_server;
+	listen [::]:8008 default_server;
 
 	root /var/www/penguinpi;
 
