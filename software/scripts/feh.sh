@@ -7,5 +7,5 @@
 
 # sleep 20s;
 export DISPLAY=:0.0;  
-(cd /home/pi/egb439/python/localiser; feh current.png --reload 0.1)
+(cd /home/pi/penguinpi-robot/software/python/localiser; feh current.png --reload 0.1)
 

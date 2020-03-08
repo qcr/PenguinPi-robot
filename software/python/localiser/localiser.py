@@ -134,7 +134,7 @@ def LocalizerThread():
     camera.start()
   
     # Homography 
-    src_points = np.array([[6, 499], [480, 499],[475, 30], [6, 25]])
+    src_points = np.array([[6, 480], [480, 480],[475, 30], [6, 25]])
     dst_points = np.array([[0,0],[500,0],[500,500], [0,500]])
     h, status = cv2.findHomography(src_points, dst_points)
 
@@ -240,13 +240,13 @@ def LocalizerThread():
             # make a nice string of all current groups
             gs = ', '.join([str(i) for i in groups.keys()])
 
-            cv2.putText(image, 'x: '+str(x), (50, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
-            cv2.putText(image, 'y: '+str(y), (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
-            cv2.putText(image, 'angle: '+str(int(angle)), (50, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
-            cv2.putText(image, 'groups: '+gs, (50, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,  255),1)
-            cv2.putText(image, 'error: '+str(dist_to_goal), (50, 460), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255, 255),1)
+            cv2.putText(image, 'x: '+str(x), (380, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
+            cv2.putText(image, 'y: '+str(y), (380, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
+            cv2.putText(image, 'angle: '+str(int(angle)), (380, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
+            cv2.putText(image, 'groups: '+gs, (380, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,  255),1)
+            #cv2.putText(image, 'error: '+str(dist_to_goal), (50, 460), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255, 255),1)
             cv2.putText(image, 'd:     '+str(dist_from_line), (50, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255, 255),1)
-
+            cv2.line(image, (0,0), (500,500),(255,255,255),1)
             cv2.imwrite('current.png', image)
 
             log.debug("Pose: %8.3f %8.3f %8.2f",  x, y, angle)
