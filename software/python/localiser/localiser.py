@@ -33,6 +33,7 @@ y = 0
 theta = 0
 # grey = None
 group_number = 0
+groups = {}
 
 
 # USER web page: home page
@@ -70,9 +71,9 @@ def picam():
 
 @app.route('/pose/get', methods = ['GET'])
 def poseget():
-    global group_number
 
     group_number = request.args.get('group')
+    groups[group_number] = 10
 
     # build a dictionary of stuff to return
     state = {
@@ -228,12 +229,23 @@ def LocalizerThread():
             curr = np.array((x,y))
             goal = np.array((1,1))
             dist_to_goal = np.linalg.norm(curr-goal)
+            dist_from_line =  (x + y - 2) / np.sqrt(2)
+            
+            # decrement the lifetime counters for each group
+            for k in groups.keys():
+                if groups[k] > 1:
+                    groups[k] = groups[k] - 1
+                else:
+                    groups.pop(k)   # this one has timed out
+            # make a nice string of all current groups
+            gs = ', '.join([str(i) for i in groups.keys()])
 
-            cv2.putText(image, 'x:'+str(x), (350, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
-            cv2.putText(image, 'y:'+str(y), (350, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
-            cv2.putText(image, 'angle:'+str(int(angle)), (350, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
-            cv2.putText(image, 'group:'+str(group_number), (350, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,  255),1)
-            cv2.putText(image, 'error:'+str(dist_to_goal), (350, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255, 255),1)
+            cv2.putText(image, 'x: '+str(x), (50, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
+            cv2.putText(image, 'y: '+str(y), (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
+            cv2.putText(image, 'angle: '+str(int(angle)), (50, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255),1)
+            cv2.putText(image, 'groups: '+gs, (50, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,  255),1)
+            cv2.putText(image, 'error: '+str(dist_to_goal), (50, 460), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255, 255),1)
+            cv2.putText(image, 'd:     '+str(dist_from_line), (50, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255, 255),1)
 
             cv2.imwrite('current.png', image)
 
