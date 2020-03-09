@@ -134,7 +134,7 @@ def LocalizerThread():
     camera.start()
   
     # Homography 
-    src_points = np.array([[70, 480], [535, 470],[535, 8], [70, 0]])
+    src_points = np.array([[6, 480], [480, 480],[475, 30], [6, 25]])
     dst_points = np.array([[0,0],[500,0],[500,500], [0,500]])
     h, status = cv2.findHomography(src_points, dst_points)
 
