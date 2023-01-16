@@ -10,7 +10,7 @@ import math
 import json
 import logging
 
-import picamera
+# import picamera
 import piVideoStream
 import cv2
 import numpy as np

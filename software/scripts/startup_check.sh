@@ -13,12 +13,11 @@ then
 else
 	echo "First boot ..."
 
-
 	echo "Programming AVR ... "
 	touch /var/log/PPi_startup_check.log
 
 	#AVR software location, compile and load
-	cd /home/pi/PenguinPi/EGB439/atmelStudio/V2.0/
+	cd /home/pi/PenguinPi-robot/software/atmelStudio/
 
 	#AVR fuse programming on first boot
 	sudo avrdude -c pi_isp -p m644p -U lfuse:w:0xFF:m
@@ -29,8 +28,4 @@ else
 	make clean
 	make
 	make load
-
 fi
-
-
-
