@@ -51,7 +51,7 @@ pose_reset = False
 #   B is the displayed label, default is submit
 #   A is the name which is "in" the form
 
-count = 0;
+count = 0
 
 # USER web page: home page
 #
@@ -63,14 +63,14 @@ def home():
             log.debug("refresh")
         elif "test_l" in request.form:
             log.debug("testL")
-            mLeft.set_velocity(20);
+            mLeft.set_velocity(20)
             time.sleep(2)
-            mLeft.set_velocity(0);
+            mLeft.set_velocity(0)
         elif "test_r" in request.form:
             log.debug("testR")
-            mRight.set_velocity(20);
+            mRight.set_velocity(20)
             time.sleep(2)
-            mRight.set_velocity(0);
+            mRight.set_velocity(0)
 
     # read the robot state
     ea = mLeft.get_encoder()
@@ -84,7 +84,7 @@ def home():
     for _ in (True,):
         with open('/etc/os-release') as f:
             line = f.readline()
-            distro = line.split('=')[1];
+            distro = line.split('=')[1]
             break
     with open('/proc/version') as f:
         kernel = f.read()
@@ -106,7 +106,7 @@ def home():
             }
 
     # get refresh
-    refresh = request.args.get('refresh');
+    refresh = request.args.get('refresh')
     if refresh:
             state['refresh'] = refresh
 
@@ -124,21 +124,21 @@ sp2 = 0
 @app.route('/speed', methods = ['POST', 'GET'])
 def speed():
     global sp1, sp2
-    log.debug('--- set velocity\n');
+    log.debug('--- set velocity\n')
     if request.method == 'POST':
         if "Set" in request.form:
             sp1 = request.form['Left']
             sp2 = request.form['Right']
             sp1 = int(sp1)
             sp2 = int(sp2)
-            mLeft.set_velocity(sp1);
-            mRight.set_velocity(sp2);
+            mLeft.set_velocity(sp1)
+            mRight.set_velocity(sp2)
         elif "STOP" in request.form:
             sp1 = 0
             sp2 = 0
-            mLeft.set_velocity(sp1);
-            mRight.set_velocity(sp2);
-    return render_template('speed.html', speed_l=sp1, speed_r=sp2);
+            mLeft.set_velocity(sp1)
+            mRight.set_velocity(sp2)
+    return render_template('speed.html', speed_l=sp1, speed_r=sp2)
 
 # USER web page to control camera parameters
 @app.route('/camera', methods = ['POST', 'GET'])
@@ -190,7 +190,7 @@ def camera():
                     picam2.stop_preview()
 
     # get refresh
-    # refresh = request.args.get('refresh');
+    # refresh = request.args.get('refresh')
     # if refresh:
     #         camera_state['refresh'] = refresh
 
@@ -222,7 +222,7 @@ def settings():
 
 
     # get refresh
-    refresh = request.args.get('refresh');
+    refresh = request.args.get('refresh')
     if refresh:
             ppi_state['refresh'] = refresh
 
@@ -259,19 +259,8 @@ def handle_invalid_command(error):
 
 @app.route('/camera/get')
 def picam():
-    # Create a byte stream
     stream = io.BytesIO()
-
-    # Capture the image
-    #  video port = True, video comes from video splitter, use this for
-    #   fast image capture, quality is lower
-
-    # don't use use_video_port=True, leads to random hanging
     picam2.capture_file(stream, format='png')
-    # camera.capture(stream, format='png')
-
-    # the use_video_port option causes random hangs of the operating system
-    #camera.capture(stream, format='png', use_video_port=True, resize=(320,240))
 
     # Send the image over the connection
     stream.seek(0)
@@ -465,14 +454,14 @@ def getencoders():
     global mLeft, mRight
     ea = mLeft.get_encoder()
     eb = mRight.get_encoder()
-    log.debug('--- get encoders: %d %d\n' % (ea,eb));
+    log.debug('--- get encoders: %d %d\n' % (ea,eb))
     return "%d,%d" % (ea, eb)
 
 @app.route('/robot/set/velocity')
 def motors():
 
     # TODO: the trajectory could be done by the pose estimation thread
-    dt = 0.05;
+    dt = 0.05
 
     # coroutine to do a floating point version of xrange
     def xfrange(start, stop, step):
@@ -516,7 +505,7 @@ def motors():
             if Taccel > 0:
                 # do the initial speed ramp up
                 for t in xfrange(0, Taccel, dt):
-                    setspeed(speeds, t/Taccel);
+                    setspeed(speeds, t/Taccel)
                     time.sleep(dt)
 
             for t in xfrange(0, Ttotal-Taccel, dt):
@@ -526,7 +515,7 @@ def motors():
             if Taccel > 0:
                 # do the final speed ramp down
                 for t in xfrange(0, Taccel, dt):
-                    setspeed(speeds, (Taccel-t)/Taccel);
+                    setspeed(speeds, (Taccel-t)/Taccel)
                     time.sleep(dt)
 
             # all stop
@@ -604,57 +593,42 @@ def robot_state_json():
 """
 def HeartBeatThread():
 
-    log.info('Heartbeat thread launched, every %.1f sec' % args.heartbeat_interval);
+    log.info('Heartbeat thread launched, every %.1f sec' % args.heartbeat_interval)
 
     led = ppi.LED('AD_LED_R')
 
     while True:
-        led.set_count(200);
-        time.sleep(args.heartbeat_interval);
+        led.set_count(200)
+        time.sleep(args.heartbeat_interval)
 
 def IPUpdateThread():
 
     # magic code from https://stackoverflow.com/questions/7585435/best-way-to-convert-string-to-bytes-in-python-3
     def getHwAddr(ifname):
-        ifname = "wlan0"
-
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname[:15], 'utf-8')))
         return list(info[18:24])
 
 
-    # magic code from http://code.activestate.com/recipes/439093-get-names-of-all-up-network-interfaces-linux-only/
-    def all_interfaces():
-        max_possible = 128  # arbitrary. raise if needed.
-        bytes = max_possible * 32
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        names = array.array('B', b'\0' * bytes)
-        outbytes = struct.unpack('iL', fcntl.ioctl(
-                    s.fileno(),
-                    0x8912,  # SIOCGIFCONF
-                    struct.pack('iL', bytes, names.buffer_info()[0])
-                ))[0]
-        interfaces = [];
-        for i in range(0, outbytes, 32):
-            interface = names[i:i+32];
-            interfaces.append( [ interface.tobytes().split(b'\0', 1)[0].decode('utf-8'), list(interface[20:24]) ] )
-        return interfaces
-
     time.sleep(5)
 
-    eth_ip = [];
-    wlan_ip = [];
+    eth_ip = None
+    wlan_ip = None
+
+    from netifaces import interfaces, ifaddresses, AF_INET
+
     while True:
         # set the IP address
-        for name,ip in all_interfaces():
+        for name in interfaces():
+            ip = ifaddresses(name)[AF_INET][0]['addr']
             if name == 'eth0':
                 if ip != eth_ip:
-                    log.debug('eth0 is %d.%d.%d.%d' % tuple(ip))
+                    log.debug('eth0 is %s' % ip)
                     hat.set_ip_eth(ip)
                     eth_ip = ip
             elif name == 'wlan0':
                 if ip != wlan_ip:
-                    log.debug('wlan0 is %d.%d.%d.%d' % tuple(ip))
+                    log.debug('wlan0 is %s' % ip)
                     hat.set_ip_wlan(ip)
                     wlan_ip = ip
 
@@ -675,8 +649,8 @@ def PoseEstimatorThread():
     dt = 1/args.pose_rate
 
     W = 0.156  # lateral wheel separation
-    wheelDiam = 0.065;
-    encScale = math.pi * wheelDiam /384 
+    wheelDiam = 0.065
+    encScale = math.pi * wheelDiam / 384 
 
     # read the initial encoders 
     left = mLeft.get_encoder()
@@ -734,7 +708,7 @@ def PoseEstimatorThread():
         # update the state
         #   no need to multiply by dt, it's included already
         theta_old = theta
-        theta += diff / W;          # update theta
+        theta += diff / W          # update theta
         theta_avg = (theta + theta_old)/2   # average theta over the interval
         x += avg * math.cos(theta_avg)      # update position
         y += avg * math.sin(theta_avg)
@@ -745,7 +719,7 @@ def PoseEstimatorThread():
             theta += 2*math.pi
 
         # sleep a bit
-        time.sleep(dt);
+        time.sleep(dt)
 
 
 
