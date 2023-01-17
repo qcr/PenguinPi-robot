@@ -25,7 +25,7 @@ def shutdown():
     time.sleep(0.5)
 
     # shutdown the Pi, it will reboot...
-    os.system("sudo halt")            
+    os.system("sudo halt")
 
 def checkBUTTON():
     if wp.digitalRead(22) == 0:
@@ -37,15 +37,16 @@ def checkBUTTON():
 
 def checkATMEGA():
     if wp.digitalRead(10) == 0:
-        #long timer to prevent programming from falsely trigerring a 
+        # long timer to prevent programming from falsely trigerring a
         # shutdown
-        time.sleep(15) 
+        time.sleep(15)
         if wp.digitalRead(10) == 0:
             print("Atmel request (GPIO10) -- shutting down")
             shutdown()
 
 if __name__ == '__main__':
     init()
+    print('Init done')
     while True:
         checkBUTTON()
         checkATMEGA()

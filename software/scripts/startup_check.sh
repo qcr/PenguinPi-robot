@@ -7,9 +7,6 @@ if [ -f "/var/log/PPi_startup_check.log" ]
 then
 	echo "Not first boot"
 	echo "AVR programmed"
-
-
-
 else
 	echo "First boot ..."
 

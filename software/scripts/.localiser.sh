@@ -1,5 +1,5 @@
 #!/bin/bash
-(cd /home/pi/PenguinPi-robot/software/python/localiser; python3 localiser.py)
+(cd /home/pi/PenguinPi-robot/software/python/localiser; python localiser.py)
 
 #sleep 30s
 # export DISPLAY=:0
