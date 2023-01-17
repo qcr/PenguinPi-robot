@@ -31,40 +31,13 @@
         <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode">White balance mode</a></td>
       <td>
           <select name="awb_mode">
-              {{ Option('off',          awb_mode) }}
-              {{ Option('auto',         awb_mode) }}
-              {{ Option('sunlight',     awb_mode) }}
-              {{ Option('cloudy',       awb_mode) }}
-              {{ Option('shade',        awb_mode) }}
-              {{ Option('tungsten',     awb_mode) }}
-              {{ Option('fluorescent',  awb_mode) }}
-              {{ Option('incandescent', awb_mode) }}
-              {{ Option('flash',        awb_mode) }}
-              {{ Option('horizon',      awb_mode) }}
-        </select>
-      </td>
-    </tr>
-
-    <tr>
-        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.meter_mode">Meter mode</a></td>
-      <td>
-          <select name="meter_mode">
-              {{ Option('average', meter_mode) }}
-              {{ Option('spot',    meter_mode) }}
-              {{ Option('backlit', meter_mode) }}
-              {{ Option('matrix',  meter_mode) }}
-        </select>
-      </td>
-    </tr>
-
-    <tr>
-        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.drc_strength">Dynamic range compression</a></td>
-      <td>
-        <select name="drc_strength">
-              {{ Option('off',    drc_strength) }}
-              {{ Option('low',    drc_strength) }}
-              {{ Option('medium', drc_strength) }}
-              {{ Option('high',   drc_strength) }}
+              {{ Option('Off',          awb_mode) }}
+              {{ Option('Auto',         awb_mode) }}
+              {{ Option('Tungsten',     awb_mode) }}
+              {{ Option('Fluorescent',  awb_mode) }}
+              {{ Option('Indoor',       awb_mode) }}
+              {{ Option('Daylight',     awb_mode) }}
+              {{ Option('Cloudy',       awb_mode) }}
         </select>
       </td>
     </tr>
@@ -84,10 +57,6 @@
     <tr>
         <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.shutter_speed">Shutter speed</a></td>
         <td><input type="text" value="{{ shutter_speed}}" name="shutter_speed" /></td>
-    </tr>
-    <tr>
-        <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.zoom" title="(xstart, ystart, width, height) in range [0,1]">Zoom</a></td>
-        <td><input type="text" value="{{ zoom }}" name="zoom" /></td>
     </tr>
     <tr>
         <td><a href="https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.start_preview" title="show camera image on HDMI port">Preview</a></td>
