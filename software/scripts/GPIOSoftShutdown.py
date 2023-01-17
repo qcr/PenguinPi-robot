@@ -1,4 +1,5 @@
-#!usr/bin/python3
+#!/usr/bin/env python
+
 '''
 A script to detect the soft shutdown button, and then initiate a shutdown
 Can also detect a low battery warning from the atmega

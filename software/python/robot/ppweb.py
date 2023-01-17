@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import time
 import traceback
@@ -636,6 +636,7 @@ def IPUpdateThread():
     from netifaces import interfaces, ifaddresses, AF_INET
 
     while True:
+        log.debug('Checking for IP addresses')
         # set the IP address
         for name in interfaces():
             ip = ifaddresses(name)[AF_INET][0]['addr']

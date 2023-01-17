@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# Run this script with sudo!!!
+echo $EUID
+if [ "$EUID" -ne 0 ]
+then 
+    echo "Please run as root"
+    exit 1
+fi
+
 #TBD : Generate a log file in /var/log. If it exists then do not program the AVR. Can then run this script every boot
 
 
@@ -9,9 +17,7 @@ then
 	echo "AVR programmed"
 else
 	echo "First boot ..."
-
 	echo "Programming AVR ... "
-	touch /var/log/PPi_startup_check.log
 
 	#AVR software location, compile and load
 	cd /home/pi/PenguinPi-robot/software/atmelStudio/
@@ -25,4 +31,6 @@ else
 	make clean
 	make
 	make load
+
+	touch /var/log/PPi_startup_check.log
 fi
