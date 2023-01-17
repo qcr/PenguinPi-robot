@@ -11,6 +11,7 @@ import io
 import math
 import json
 import logging
+from threading import Condition
 
 import socket
 import fcntl
@@ -23,7 +24,15 @@ import penguinPi as ppi
 import libcamera
 import picamera2
 
-from flask import Flask, request, render_template, redirect, send_file
+from picamera2.encoders import JpegEncoder
+from picamera2.outputs import FileOutput
+
+
+from flask import Flask, Response, request, render_template, redirect, send_file, jsonify
+
+# TODO:
+# All the camera options are broken
+# They changed from "simple" single values to triplets (min, max, default)
 
 IM_WIDTH = 320
 IM_HEIGHT = 240
@@ -102,7 +111,7 @@ def home():
             "distro": distro,
             "kernel": kernel,
             "refresh": 5,
-            # "camera_revision": camera.revision
+            "camera_revision": camera_revision
             }
 
     # get refresh
@@ -143,7 +152,6 @@ def speed():
 # USER web page to control camera parameters
 @app.route('/camera', methods = ['POST', 'GET'])
 def camera():
-
     def update_int(s):
         log.debug('Checking int camera parameter %s: %s -> %s' % (s, request.form[s], camera_state[s]))
         if not s in request.form:
@@ -166,14 +174,14 @@ def camera():
         # NOTE that the request.form multidict may not contain all items
         # in the form
         log.debug('Camera POST' + str(request.form.to_dict(flat=False)))
-        update_int('rotation')
-        update_int('iso')
-        update_int('brightness')
-        update_int('exposure_speed')
-        update_int('shutter_speed')
-        update('awb_mode')
-        update('meter_mode')
-        update('drc_strength')
+        # update('Rotation', type='properties', isint=True)
+        # update_int('iso')
+        # update_int('brightness')
+        # update_int('exposure_speed')
+        # update_int('shutter_speed')
+        # update('AwbMode', type='controls', isint=False)
+        # update('meter_mode')
+        # update('drc_strength')
 
         # if "zoom" in request.form:
         #     if request.form["zoom"] != camera_state["zoom"]:
@@ -199,7 +207,6 @@ def camera():
 # USER web page for various other settings
 @app.route('/settings', methods = ['POST', 'GET'])
 def settings():
-
     def update(s, typ, func):
         if not s in request.form:
             return
@@ -233,8 +240,6 @@ def settings():
 
 #### RESTful web services ###
 
-from flask import jsonify
-
 class InvalidCommand(Exception):
     status_code = 400
 
@@ -257,15 +262,28 @@ def handle_invalid_command(error):
     print('ERROR ', error)
     return response
 
+def gather_img():
+    while True:
+        with stream_output.condition:
+            stream_output.condition.wait()
+            frame = stream_output.frame
+        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+class StreamingOutput(io.BufferedIOBase):
+    def __init__(self):
+        self.frame = None
+        self.condition = Condition()
+
+    def write(self, buf):
+        with self.condition:
+            self.frame = buf
+            self.condition.notify_all()
+
+
 @app.route('/camera/get')
 def picam():
-    stream = io.BytesIO()
-    picam2.capture_file(stream, format='png')
-
-    # Send the image over the connection
-    stream.seek(0)
-
-    return send_file(stream, 'image/png')
+    return Response(gather_img(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/battery/get/voltage')
 def voltage():
@@ -759,15 +777,6 @@ if __name__ == '__main__':
             dest="heartbeat", action="store_false")
     parser.add_argument("--heartbeat-interval", help="set heartbeat rate (sec)",
             dest="heartbeat_interval", action="store", type=float)
-    parser.add_argument("-a", "--auto", dest="awb", help="auto white balance", 
-            action="store_const", const="auto")
-    parser.add_argument("-o", "--off", dest="awb", help="disable white balance", 
-            action="store_const", const="off")
-    parser.add_argument("-t", "--tungsten", dest="awb", help="tungsten white balance", 
-            action="store_const", const="tungsten")
-    parser.add_argument("-s", "--sun", dest="awb", help="sun white balance", 
-            const="sunlight", action="store_const")
-    parser.add_argument("-g", "--gain", dest="gain", action="store", help="set white balance gain manually: rbgain OR rgain,bgain")
 
     args = parser.parse_args()
 
@@ -822,50 +831,34 @@ if __name__ == '__main__':
     ipupdate_thread.start()
 
     # Get the camera up and running
-    # see http://picamera.readthedocs.io/en/release-1.10/api_camera.html for details
-
-    # connect to the camera
     try:
         picam2 = picamera2.Picamera2()
+        import subprocess
+        log_out = subprocess.check_output(['libcamera-hello', '--list-cameras', '-n']).decode('utf-8')
+        camera_revision = 0
+        for line in log_out.split('\n'):
+            if line.startswith('0'):
+                camera_revision = line.split(' ')[2]
     except:
         log.fatal("Couldn't open camera connection -- is it being used by another process?")
         exit(1)
 
-    preview_config = picam2.create_preview_configuration(
+    video_config = picam2.create_video_configuration(
         main={"size": (IM_WIDTH, IM_HEIGHT)},
     )
-    preview_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
-    picam2.configure(preview_config)
-    picam2.start()
-
-    camera_state = {
-            "rotation": picam2.camera_properties['Rotation'],
-            "awb_mode": picam2.camera_controls['AwbMode'],
-            # "drc_strength": camera.drc_strength,
-            "iso": picam2.camera_controls['AnalogueGain'],
-            "brightness": picam2.camera_controls['Brightness'],
-            "exposure_speed": picam2.camera_controls['ExposureTime'],
-            # "shutter_speed": camera.shutter_speed,
-            # "meter_mode": camera.meter_mode,
-            # "zoom": camera.zoom,
-            "preview": "off"
-            }
-    log.debug(camera_state)
+    video_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
+    picam2.configure(video_config)
+    stream_output = StreamingOutput()
+    picam2.start_recording(JpegEncoder(), FileOutput(stream_output))
 
     metadata = picam2.capture_metadata()
     controls = {c: metadata[c] for c in ["ExposureTime", "AnalogueGain", "ColourGains"]}
     log.debug(controls)
-
-    if args.awb:
-        picam2.set_controls({"AwbMode": args.awb})
-    if args.gain:
-        camera.awb_gains = tuple(float(x) for x in args.gain.split(','))
-    logging.debug('white balance mode is ', picam2.camera_controls['AwbMode'])
+    log.debug('white balance mode is ' + str(picam2.camera_controls['AwbMode']))
 
     # fire up the webserver on a non-priviliged port
     app.jinja_env.lstrip_blocks = True
     app.jinja_env.trim_blocks = True
     app.jinja_env.line_statement_prefix = '#'
 
-    app.run(host='0.0.0.0', port=8080)
-
+    app.run(host='0.0.0.0', port=8080, threaded=True)
