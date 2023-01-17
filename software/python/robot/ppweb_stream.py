@@ -30,6 +30,11 @@ from picamera2.outputs import FileOutput
 
 from flask import Flask, Response, request, render_template, redirect, send_file
 
+
+# TODO:
+# All the camera options are broken at the moment
+# They changed from "simple" single values to triplets (min, max, default)
+
 IM_WIDTH = 320
 IM_HEIGHT = 240
 
@@ -107,7 +112,7 @@ def home():
             "distro": distro,
             "kernel": kernel,
             "refresh": 5,
-            # "camera_revision": camera.revision
+            "camera_revision": camera_revision
             }
 
     # get refresh
@@ -171,14 +176,14 @@ def camera():
         # NOTE that the request.form multidict may not contain all items
         # in the form
         log.debug('Camera POST' + str(request.form.to_dict(flat=False)))
-        update_int('rotation')
-        update_int('iso')
-        update_int('brightness')
-        update_int('exposure_speed')
-        update_int('shutter_speed')
-        update('awb_mode')
-        update('meter_mode')
-        update('drc_strength')
+        # update('Rotation', type='properties', isint=True)
+        # update_int('iso')
+        # update_int('brightness')
+        # update_int('exposure_speed')
+        # update_int('shutter_speed')
+        # update('AwbMode', type='controls', isint=False)
+        # update('meter_mode')
+        # update('drc_strength')
 
         # if "zoom" in request.form:
         #     if request.form["zoom"] != camera_state["zoom"]:
@@ -840,11 +845,14 @@ if __name__ == '__main__':
     ipupdate_thread.start()
 
     # Get the camera up and running
-    # see http://picamera.readthedocs.io/en/release-1.10/api_camera.html for details
-
-    # connect to the camera
     try:
         picam2 = picamera2.Picamera2()
+        import subprocess
+        log_out = subprocess.check_output(['libcamera-hello', '--list-cameras', '-n']).decode('utf-8')
+        camera_revision = 0
+        for line in log_out.split('\n'):
+            if line.startswith('0'):
+                camera_revision = line.split(' ')[2]
     except:
         log.fatal("Couldn't open camera connection -- is it being used by another process?")
         exit(1)
@@ -858,8 +866,9 @@ if __name__ == '__main__':
     picam2.start_recording(JpegEncoder(), FileOutput(stream_output))
 
     camera_state = {
-            "rotation": picam2.camera_properties['Rotation'],
-            "awb_mode": picam2.camera_controls['AwbMode'],
+            "Horizontal flip": 1,
+            "Vertical flip": 1,
+            "AwbMode": picam2.camera_controls['AwbMode'],
             # "drc_strength": camera.drc_strength,
             "iso": picam2.camera_controls['AnalogueGain'],
             "brightness": picam2.camera_controls['Brightness'],
@@ -867,19 +876,20 @@ if __name__ == '__main__':
             # "shutter_speed": camera.shutter_speed,
             # "meter_mode": camera.meter_mode,
             # "zoom": camera.zoom,
-            "preview": "off"
+            "preview": "on"
             }
     log.debug(camera_state)
 
-    metadata = picam2.capture_metadata()
-    controls = {c: metadata[c] for c in ["ExposureTime", "AnalogueGain", "ColourGains"]}
-    log.debug(controls)
+    # metadata = picam2.capture_metadata()
+    # controls = {c: metadata[c] for c in ["ExposureTime", "AnalogueGain", "ColourGains"]}
+    # log.info(controls)
 
+    # TODO: Needs fixing up
     if args.awb:
         picam2.set_controls({"AwbMode": args.awb})
     if args.gain:
         camera.awb_gains = tuple(float(x) for x in args.gain.split(','))
-    logging.debug('white balance mode is ', picam2.camera_controls['AwbMode'])
+    log.debug('white balance mode is ' + str(picam2.camera_controls['AwbMode']))
 
     # fire up the webserver on a non-priviliged port
     app.jinja_env.lstrip_blocks = True
