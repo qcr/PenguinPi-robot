@@ -18,7 +18,7 @@ import fcntl
 import struct
 import array
 
-import argparse
+from netifaces import interfaces, ifaddresses, AF_INET
 
 import penguinPi as ppi
 import libcamera
@@ -633,23 +633,25 @@ def IPUpdateThread():
     eth_ip = None
     wlan_ip = None
 
-    from netifaces import interfaces, ifaddresses, AF_INET
-
     while True:
         log.debug('Checking for IP addresses')
         # set the IP address
         for name in interfaces():
-            ip = ifaddresses(name)[AF_INET][0]['addr']
-            if name == 'eth0':
-                if ip != eth_ip:
-                    log.debug('eth0 is %s' % ip)
-                    hat.set_ip_eth(ip)
-                    eth_ip = ip
-            elif name == 'wlan0':
-                if ip != wlan_ip:
-                    log.debug('wlan0 is %s' % ip)
-                    hat.set_ip_wlan(ip)
-                    wlan_ip = ip
+            try:
+                if name == 'eth0':
+                    ip = ifaddresses(name)[AF_INET][0]['addr']
+                    if ip != eth_ip:
+                        log.debug('eth0 is %s' % ip)
+                        hat.set_ip_eth(ip)
+                        eth_ip = ip
+                elif name == 'wlan0':
+                    ip = ifaddresses(name)[AF_INET][0]['addr']
+                    if ip != wlan_ip:
+                        log.debug('wlan0 is %s' % ip)
+                        hat.set_ip_wlan(ip)
+                        wlan_ip = ip
+            except KeyError as e:
+                log.debug(e)
 
         # set the MAC address
         # do it every loop because wireless interface can be plugged in/out

@@ -1,16 +1,14 @@
 #!/bin/bash
 
 # Run this script with sudo!!!
-echo $EUID
-if [ "$EUID" -ne 0 ]
-then 
+if [ "$(id -u)" -ne 0 ]; then
   echo "Please run as root"
   exit 1
 fi
 
 ########################################################################################
 # Hostapd Configuration
-echo "Setting up hotspot configuration in hostapd\n"
+echo "Setting up hotspot configuration in hostapd"
 
 MAC=$(cat /sys/class/net/wlan0/address)
 sudo echo "
