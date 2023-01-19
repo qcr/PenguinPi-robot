@@ -27,7 +27,7 @@ class VideoStreamWidget(object):
             exit(1)
 
 if __name__ == '__main__':
-    video_stream_widget = VideoStreamWidget('http://131.181.33.163:8080/camera/get')
+    video_stream_widget = VideoStreamWidget('http://192.168.50.5:8080/camera/get')
     while True:
         try:
             video_stream_widget.show_frame()
