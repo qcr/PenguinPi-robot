@@ -1,35 +1,30 @@
 # Welcome to EGB439 Advanced Robotics
-  
-Included in this repository is the Python, MATLAB and C code used to operate the PenguinPi using the Raspbian Jessie operating system.
-  
+Included in this repository is the Python, MATLAB and C code used to operate the PenguinPi using the Raspbian Bullseye (64-bit) operating system.
+
+## Folder structure
 The main folders are:
-  - ```matlab``` runs on your computer and talks to the Python server runnng on the robot
-  - ```python``` Python 3 server that runs on the Raspberry Pi and accepts web service requests
-  - ```atmelstudio``` C code that runs on the Atmel processor (on the i/o board) that connects the Pi to the robot hardware
+  - [matlab](./matlab) runs on your computer and talks to the Python server runnng on the robot
+  - [python](./python) Python3 server that runs on the Raspberry Pi and accepts web service requests - there should be no need to touch this for you
+  - [atmelStudio](./atmelStudio) C code that runs on the Atmel processor (on the i/o board) that connects the Pi to the robot hardware - there should be no need to touch this for you
 
-The scripts that Launch on startup are:
-* `server-camera.py`
-* `server-motors_fixed.py`
-* `GPIOSoftShutdown.py`
+## Startup scripts
+The scripts that launch on startup are:
+* [ppweb.py](./python/robot/ppweb.py) - this is the webserver that you communicate with
+* [GPIOSoftShutdown.py](./python/GPIOSoftShutdown.py) - this allows you to safely shut down the PenguinPi by means of pressing a button.
 
-## Defaults
-### Raspberry pi login
+## Raspberry pi login
 * Username: `pi`
-* Password: `PenguinPi` - see instruction to change
-  https://www.raspberrypi.org/documentation/linux/usage/users.md
+* Password: `PenguinPi` - see [instruction to change](https://www.raspberrypi.com/documentation/computers/configuration.html#change-the-default-password)
+* You may want to [change your hostname](https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/). If you wish to change this please speak to your tutor.
 
-Change your host name https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/
+## Connecting to your Pi
+### The easy way
+The easiest way is to connect a screen and keyboard. 
 
-
-
-if you wish to change this please speak to your tutor
-
-## Network setup
-The easiest way is to connect a screen and keyboard. Otherwise connect over the network using ssh.
-
-If you are on S9, it will automatically connect to the EGB439 wifi. 
-
-Otherwise, your PenguinPi will make a hotspot if it can't find any wifi networks to connect to. You will know it has created a hotspot by the ip address shown on the lcd screen: `192.168.50.5`.
+### Via a known network
+* You can also connect over the network using ssh.
+* If you are on S9, the PenguinPi will automatically connect to the EGB439 wifi. You can then connect to the IP shown on the LCD screen.
+* Otherwise, your PenguinPi will make a hotspot if it can't find any wifi networks to connect to. You will know it has created a hotspot by the ip address shown on the lcd screen: `192.168.50.5`. The MAC address will be part of the network name - please refer to more details below.
 
 ### Setting up wifi networks to remember
 The `wpa_supplicant.conf` file stores the details about the wifi networks to connect to.
@@ -83,7 +78,7 @@ Note:
 * The priority allows you to preference one network over the other, in the case there are multiple available. The higher priority networks will be chosen first.
 
 
-### Hiding your passwords
+### Hiding your WiFi passwords
 For personal networks, you can use the `wpa_passphrase` tool.
 ```shell
 wpa_passphrase my_mobile_hotspot my_password
@@ -99,9 +94,9 @@ network={
 Change your password (the `psk=` line) in the `/etc/wpa_supplicant/wpa_supplicant.conf` file to the new value.
 
 
-For the QUT enterprise network, hash your password with:
+For the QUT enterprise network, you can hash your password. Please put a space in front of `echo` so that the command is not being saved in the bash history.
 ```shell
-echo -n 'YOUR_REAL_PASSWORD' | iconv -t utf16le | openssl md4
+ echo -n 'YOUR_REAL_PASSWORD' | iconv -t utf16le | openssl md4
 ```
 
 This will output 
@@ -113,7 +108,7 @@ Ignore the `(stdin)= ` and copy and paste the hashed password into the QUT netwo
 
 Save your changes to the `wpa_supplicant.conf` file.
 
-Now we need to erase the history so that noone can get your password by looking at the commands you typed.
+If you forgot to put a space in front of the command, you need to erase the history so that noone can get your password by looking at the commands you typed.
 
 Find the history file and erase all lines containing your passwords.
 ```shell
@@ -122,7 +117,7 @@ nano ~/.zsh_history
 Save the file. The passwords are still accessable by pressing the up arrow until you close the terminal.
 Reboot your Raspberry Pi (`sudo reboot`).
 
-## Connecting to the hotspot
+### Connecting to the hotspot
 The ssid of the hotspot is set to `penguinpi:xx:xx:xx` where `xx:xx:xx` will correspond to the end of your MAC address.
 
 If you wish to change this, edit the `/etc/hostapd/hostapd.conf` file and change the following option: `ssid=myNewHotSp0t`.
@@ -131,28 +126,10 @@ The default password is `egb439123`. It can be also changed in the `hostapd.conf
 
 The IP address of the robot will be `192.168.50.5`. This will also be the default gateway IP for any device connecting to the hotspot.
 
-## Using ethernet cable
-The ethernet port can be used. 
+### Internet access troubleshoot
+If you can connect to your PenguinPi, but cannot access internet, you may need to use the IAClient. You can set it up with by using `~/InternetAccessClient_Linux_ARM32v71-RaspberryPi_v4.0.250_QUT/IAClientConfigCmd` and entering your username and password. If the domain is empty, please enter `qut.edu.au`. You can then run `~/InternetAccessClient_Linux_ARM32v71-RaspberryPi_v4.0.250_QUT/IAClient`.
 
-It will be assigned an IP address from the DHCP server. If you need the IP address to stay the same, it is highly recommended you don't use a static IP, but try using a hostname. 
+### Using ethernet cable
+The ethernet port can be used. It will be assigned an IP address from the DHCP server. If you need the IP address to stay the same, it is highly recommended you don't use a static IP, but try using a hostname. If you still must have a static IP address, do not edit the `/etc/network/interfaces` file. Since Raspian Jessie, you should use the `/etc/dhcpcd.conf` file to set a static IP address; to do so, follow these [instructions](https://raspberrypi.stackexchange.com/questions/37920/how-do-i-set-up-networking-wifi-static-ip-address/74428#74428).
 
-If you still must have a static IP address, do not edit the `/etc/network/interfaces` file. Since Raspian Jessie, you should use the `/etc/dhcpcd.conf` file to set a static IP address.
-
-Follow the instructions here: https://raspberrypi.stackexchange.com/questions/37920/how-do-i-set-up-networking-wifi-static-ip-address/74428#74428 
-
-If you want access the internet over the PenguinPis wifi hotspot (using the raspberry pi as a wifi router, you will have to enable IP forwarding.
-
-Edit the `sysctl.conf` file:
-```shell
-sudo nano /etc/sysctl.conf
-```
-look for the line
-```shell
-# Uncomment the next line to enable packet forwarding for IPv4
-#net.ipv4.ip_forward=1
-```
-and remove the # so it is
-```shell
-# Uncomment the next line to enable packet forwarding for IPv4
-net.ipv4.ip_forward=1
-```
+If you want access the internet over the PenguinPis wifi hotspot (using the raspberry pi as a wifi router), you will have to enable IP forwarding. This is already enabled by default.
