@@ -14,6 +14,7 @@
 %  stop                 stop all motors
 %  getCurrent           get battery voltage
 %  getVoltage           get battery current
+%  getEncoders          get the encoder values
 %  resetEncoder         zero the hardware encoder counters
 %  resetPose            zero the onboard pose estimator
 %
@@ -35,6 +36,7 @@
 
 
 % (c) 2019 Peter Corke
+% Updated 2023 by Tobias Fischer
 
     
 classdef PiBot < handle
@@ -42,6 +44,7 @@ classdef PiBot < handle
     
     properties(Access = public)
         robot
+        camera
         localizer
         groupNum
         webopt       % web options, used for every call
@@ -71,6 +74,7 @@ classdef PiBot < handle
             v = regexp(robotURL, '^\d+\.\d+\.\d+\.\d+$');
             assert(~isempty(v) && v==1, 'IP address is invalid, can only can contain digits and dots')
             self.robot = "http://" + string(robotURL) + ":8080";
+            self.camera = ipcam("http://" + string(robotURL) + ":8080/camera/get");
 
             self.localizer = [];
             self.timeout(5);
@@ -92,7 +96,7 @@ classdef PiBot < handle
   
             s = sprintf('PenguinPi robot at %s', self.robot);
             if ~isempty(self.localizer)
-                s = strcat(s, sprintf(', with localizer at %s', self.localizer);
+                s = strcat(s, sprintf(', with localizer at %s', self.localizer));
             end
         end
 
@@ -221,7 +225,7 @@ classdef PiBot < handle
             %
             % PB.resetEncoder() stop all motors and reset encoders.
             %
-            % See also PiBot.stop, PiBot.setMotorSpeed.
+            % See also PiBot.stop, PiBot.setVelocity.
             self.webread("/robot/hw/reset");
         end
 
@@ -253,12 +257,27 @@ classdef PiBot < handle
             %
             % PB.getCurrent() is the battery voltage in amps.
             %
-            % See also PiBot.getCurrent.
             s = self.webread("/battery/get/current");
             if ~isempty(s)
                 c = str2num(s) /1000.0;
             else
                 c = NaN;
+            end
+        end
+
+        function [left_enc, right_enc] = getEncoders(self)
+            %PiBot.getEncoders  Get encoder values
+            %
+            % PB.getEncoders() returns the encoder values in ticks.
+            %
+            s = self.webread("/robot/get/encoder");
+            if ~isempty(s)
+                enc_str = split(s, ",");
+                left_enc = str2num(enc_str{1});
+                right_enc = str2num(enc_str{2});
+            else
+                left_enc = NaN;
+                right_enc = NaN;
             end
         end
         
@@ -364,13 +383,14 @@ classdef PiBot < handle
         end
         
         function img = getImage(self)
-            %PiBot.getImagee  Get image from camera
+            %PiBot.getImage  Get image from camera
             %
             % PB.getImage() is an RGB image captured from the front camera of the
             % robot.
             %
             % See also PiBot.getCurrent.
-            img = self.webread("/camera/get");
+            %img = self.webread("/camera/get");
+            img = snapshot(self.camera);
         end
         
         function im = getLocalizerImage(self)
