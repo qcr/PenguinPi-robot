@@ -1,9 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import time
 import traceback
 import socket
 import sys
+import signal
 import threading
 import os
 import argparse
@@ -11,18 +12,55 @@ import io
 import math
 import json
 import logging
+from threading import Condition
 
 import socket
 import fcntl
 import struct
 import array
 
-import argparse
+from netifaces import interfaces, ifaddresses, AF_INET
 
 import penguinPi as ppi
-import picamera
+import libcamera
+import picamera2
 
-from flask import Flask, request, render_template, redirect, send_file
+from picamera2.encoders import JpegEncoder
+from picamera2.outputs import FileOutput
+
+
+from flask import Flask, Response, request, render_template, redirect, send_file, jsonify
+
+
+def on_shutdown(signal, frame):
+    print('Received shutdown')
+    global is_shutdown
+    is_shutdown = True
+
+    global picam2
+    picam2.stop_recording()
+
+    # global pose_thread, heartbeat_thread
+    if pose_thread is not None:
+        print('Waiting for pose_thread to join')
+        pose_thread.join()
+    # if heartbeat_thread is not None:
+    #     print('Waiting for heartheat_thead to join')
+    #     heartbeat_thread.join()
+    print('Stop ppi')
+    global mLeft, mRight
+    mLeft.set_velocity(0)
+    mRight.set_velocity(0)
+    ppi.close()
+    print('Bye!')
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, on_shutdown)
+
+# TODO:
+# All the camera options are broken
+# They changed from "simple" single values to triplets (min, max, default)
 
 IM_WIDTH = 320
 IM_HEIGHT = 240
@@ -40,6 +78,8 @@ y = 0
 theta = 0
 pose_reset = False
 
+is_shutdown = False
+
 # http://flask.pocoo.org/docs/1.0/quickstart/
 
 # request.args is a MultiDict, dictionary subclass
@@ -50,7 +90,7 @@ pose_reset = False
 #   B is the displayed label, default is submit
 #   A is the name which is "in" the form
 
-count = 0;
+count = 0
 
 # USER web page: home page
 #
@@ -62,14 +102,14 @@ def home():
             log.debug("refresh")
         elif "test_l" in request.form:
             log.debug("testL")
-            mLeft.set_velocity(20);
+            mLeft.set_velocity(20)
             time.sleep(2)
-            mLeft.set_velocity(0);
+            mLeft.set_velocity(0)
         elif "test_r" in request.form:
             log.debug("testR")
-            mRight.set_velocity(20);
+            mRight.set_velocity(20)
             time.sleep(2)
-            mRight.set_velocity(0);
+            mRight.set_velocity(0)
 
     # read the robot state
     ea = mLeft.get_encoder()
@@ -83,7 +123,7 @@ def home():
     for _ in (True,):
         with open('/etc/os-release') as f:
             line = f.readline()
-            distro = line.split('=')[1];
+            distro = line.split('=')[1]
             break
     with open('/proc/version') as f:
         kernel = f.read()
@@ -101,11 +141,11 @@ def home():
             "distro": distro,
             "kernel": kernel,
             "refresh": 5,
-            "camera_revision": camera.revision
+            "camera_revision": camera_revision
             }
 
     # get refresh
-    refresh = request.args.get('refresh');
+    refresh = request.args.get('refresh')
     if refresh:
             state['refresh'] = refresh
 
@@ -123,26 +163,25 @@ sp2 = 0
 @app.route('/speed', methods = ['POST', 'GET'])
 def speed():
     global sp1, sp2
-    log.debug('--- set velocity\n');
+    log.debug('--- set velocity\n')
     if request.method == 'POST':
         if "Set" in request.form:
             sp1 = request.form['Left']
             sp2 = request.form['Right']
             sp1 = int(sp1)
             sp2 = int(sp2)
-            mLeft.set_velocity(sp1);
-            mRight.set_velocity(sp2);
+            mLeft.set_velocity(sp1)
+            mRight.set_velocity(sp2)
         elif "STOP" in request.form:
             sp1 = 0
             sp2 = 0
-            mLeft.set_velocity(sp1);
-            mRight.set_velocity(sp2);
-    return render_template('speed.html', speed_l=sp1, speed_r=sp2);
+            mLeft.set_velocity(sp1)
+            mRight.set_velocity(sp2)
+    return render_template('speed.html', speed_l=sp1, speed_r=sp2)
 
 # USER web page to control camera parameters
 @app.route('/camera', methods = ['POST', 'GET'])
 def camera():
-
     def update_int(s):
         log.debug('Checking int camera parameter %s: %s -> %s' % (s, request.form[s], camera_state[s]))
         if not s in request.form:
@@ -165,40 +204,39 @@ def camera():
         # NOTE that the request.form multidict may not contain all items
         # in the form
         log.debug('Camera POST' + str(request.form.to_dict(flat=False)))
-        update_int('rotation')
-        update_int('iso')
-        update_int('brightness')
-        update_int('exposure_speed')
-        update_int('shutter_speed')
-        update('awb_mode')
-        update('meter_mode')
-        update('drc_strength')
+        # update('Rotation', type='properties', isint=True)
+        # update_int('iso')
+        # update_int('brightness')
+        # update_int('exposure_speed')
+        # update_int('shutter_speed')
+        # update('AwbMode', type='controls', isint=False)
+        # update('meter_mode')
+        # update('drc_strength')
 
-        if "zoom" in request.form:
-            if request.form["zoom"] != camera_state["zoom"]:
-                camera_state["zoom"] = request.form["zoom"]
-                camera.zoom = eval(camera_state["zoom"])
-                
+        # if "zoom" in request.form:
+        #     if request.form["zoom"] != camera_state["zoom"]:
+        #         camera_state["zoom"] = request.form["zoom"]
+        #         camera.zoom = eval(camera_state["zoom"])
+
         if "preview" in request.form:
             # preview
             if request.form["preview"] != camera_state["preview"]:
                 camera_state["preview"] = request.form["preview"]
                 if camera_state["preview"] == "on":
-                    camera.start_preview()
+                    picam2.start_preview(True)
                 elif camera_state["preview"] == "off":
-                    camera.stop_preview()
+                    picam2.stop_preview()
 
     # get refresh
-    refresh = request.args.get('refresh');
-    if refresh:
-            camera_state['refresh'] = refresh
+    # refresh = request.args.get('refresh')
+    # if refresh:
+    #         camera_state['refresh'] = refresh
 
     return render_template('camera.html', **camera_state)
 
 # USER web page for various other settings
 @app.route('/settings', methods = ['POST', 'GET'])
 def settings():
-
     def update(s, typ, func):
         if not s in request.form:
             return
@@ -221,7 +259,7 @@ def settings():
 
 
     # get refresh
-    refresh = request.args.get('refresh');
+    refresh = request.args.get('refresh')
     if refresh:
             ppi_state['refresh'] = refresh
 
@@ -231,8 +269,6 @@ def settings():
     return render_template('settings.html', **ppi_state)
 
 #### RESTful web services ###
-
-from flask import jsonify
 
 class InvalidCommand(Exception):
     status_code = 400
@@ -256,25 +292,29 @@ def handle_invalid_command(error):
     print('ERROR ', error)
     return response
 
+def gather_img():
+    while True:
+        global stream_output
+        with stream_output.condition:
+            stream_output.condition.wait()
+            frame = stream_output.frame
+        yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+class StreamingOutput(io.BufferedIOBase):
+    def __init__(self):
+        self.frame = None
+        self.condition = Condition()
+
+    def write(self, buf):
+        with self.condition:
+            self.frame = buf
+            self.condition.notify_all()
+
+
 @app.route('/camera/get')
 def picam():
-    # Create a byte stream
-    stream = io.BytesIO()
-
-    # Capture the image
-    #  video port = True, video comes from video splitter, use this for
-    #   fast image capture, quality is lower
-
-    # don't use use_video_port=True, leads to random hanging
-    camera.capture(stream, format='png')
-
-    # the use_video_port option causes random hangs of the operating system
-    #camera.capture(stream, format='png', use_video_port=True, resize=(320,240))
-
-    # Send the image over the connection
-    stream.seek(0)
-
-    return send_file(stream, 'image/png')
+    return Response(gather_img(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/battery/get/voltage')
 def voltage():
@@ -463,14 +503,14 @@ def getencoders():
     global mLeft, mRight
     ea = mLeft.get_encoder()
     eb = mRight.get_encoder()
-    log.debug('--- get encoders: %d %d\n' % (ea,eb));
+    log.debug('--- get encoders: %d %d\n' % (ea,eb))
     return "%d,%d" % (ea, eb)
 
 @app.route('/robot/set/velocity')
 def motors():
 
     # TODO: the trajectory could be done by the pose estimation thread
-    dt = 0.05;
+    dt = 0.05
 
     # coroutine to do a floating point version of xrange
     def xfrange(start, stop, step):
@@ -514,7 +554,7 @@ def motors():
             if Taccel > 0:
                 # do the initial speed ramp up
                 for t in xfrange(0, Taccel, dt):
-                    setspeed(speeds, t/Taccel);
+                    setspeed(speeds, t/Taccel)
                     time.sleep(dt)
 
             for t in xfrange(0, Ttotal-Taccel, dt):
@@ -524,7 +564,7 @@ def motors():
             if Taccel > 0:
                 # do the final speed ramp down
                 for t in xfrange(0, Taccel, dt):
-                    setspeed(speeds, (Taccel-t)/Taccel);
+                    setspeed(speeds, (Taccel-t)/Taccel)
                     time.sleep(dt)
 
             # all stop
@@ -601,60 +641,49 @@ def robot_state_json():
 " Heartbeat thread, pulse the red LED periodically
 """
 def HeartBeatThread():
-
-    log.info('Heartbeat thread launched, every %.1f sec' % args.heartbeat_interval);
+    log.info('Heartbeat thread launched, every %.1f sec' % args.heartbeat_interval)
 
     led = ppi.LED('AD_LED_R')
 
     while True:
-        led.set_count(200);
-        time.sleep(args.heartbeat_interval);
+        led.set_count(200)
+        time.sleep(args.heartbeat_interval)
+        global is_shutdown
+        if is_shutdown:
+            break
 
 def IPUpdateThread():
-
     # magic code from https://stackoverflow.com/questions/7585435/best-way-to-convert-string-to-bytes-in-python-3
     def getHwAddr(ifname):
-        ifname = "wlan0"
-
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', bytes(ifname[:15], 'utf-8')))
         return list(info[18:24])
 
 
-    # magic code from http://code.activestate.com/recipes/439093-get-names-of-all-up-network-interfaces-linux-only/
-    def all_interfaces():
-        max_possible = 128  # arbitrary. raise if needed.
-        bytes = max_possible * 32
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        names = array.array('B', b'\0' * bytes)
-        outbytes = struct.unpack('iL', fcntl.ioctl(
-                    s.fileno(),
-                    0x8912,  # SIOCGIFCONF
-                    struct.pack('iL', bytes, names.buffer_info()[0])
-                ))[0]
-        interfaces = [];
-        for i in range(0, outbytes, 32):
-            interface = names[i:i+32];
-            interfaces.append( [ interface.tostring().split(b'\0', 1)[0].decode('utf-8'), list(interface[20:24]) ] );
-        return interfaces
-
     time.sleep(5)
 
-    eth_ip = [];
-    wlan_ip = [];
+    eth_ip = None
+    wlan_ip = None
+
     while True:
+        log.debug('Checking for IP addresses')
         # set the IP address
-        for name,ip in all_interfaces():
-            if name == 'eth0':
-                if ip != eth_ip:
-                    log.debug('eth0 is %d.%d.%d.%d' % tuple(ip))
-                    hat.set_ip_eth(ip)
-                    eth_ip = ip
-            elif name == 'wlan0':
-                if ip != wlan_ip:
-                    log.debug('wlan0 is %d.%d.%d.%d' % tuple(ip))
-                    hat.set_ip_wlan(ip)
-                    wlan_ip = ip
+        for name in interfaces():
+            try:
+                if name == 'eth0':
+                    ip = ifaddresses(name)[AF_INET][0]['addr']
+                    if ip != eth_ip:
+                        log.debug('eth0 is %s' % ip)
+                        hat.set_ip_eth(ip)
+                        eth_ip = ip
+                elif name == 'wlan0':
+                    ip = ifaddresses(name)[AF_INET][0]['addr']
+                    if ip != wlan_ip:
+                        log.debug('wlan0 is %s' % ip)
+                        hat.set_ip_wlan(ip)
+                        wlan_ip = ip
+            except KeyError as e:
+                log.debug(e)
 
         # set the MAC address
         # do it every loop because wireless interface can be plugged in/out
@@ -662,6 +691,9 @@ def IPUpdateThread():
         hat.set_mac_wlan(mac)
 
         time.sleep(20)
+        global is_shutdown
+        if is_shutdown:
+            break
 
 """
 " Pose estimation thread
@@ -673,8 +705,8 @@ def PoseEstimatorThread():
     dt = 1/args.pose_rate
 
     W = 0.156  # lateral wheel separation
-    wheelDiam = 0.065;
-    encScale = math.pi * wheelDiam /384 
+    wheelDiam = 0.065
+    encScale = math.pi * wheelDiam / 384 
 
     # read the initial encoders 
     left = mLeft.get_encoder()
@@ -732,7 +764,7 @@ def PoseEstimatorThread():
         # update the state
         #   no need to multiply by dt, it's included already
         theta_old = theta
-        theta += diff / W;          # update theta
+        theta += diff / W          # update theta
         theta_avg = (theta + theta_old)/2   # average theta over the interval
         x += avg * math.cos(theta_avg)      # update position
         y += avg * math.sin(theta_avg)
@@ -743,7 +775,10 @@ def PoseEstimatorThread():
             theta += 2*math.pi
 
         # sleep a bit
-        time.sleep(dt);
+        time.sleep(dt)
+        global is_shutdown
+        if is_shutdown:
+            break
 
 
 
@@ -751,7 +786,6 @@ def PoseEstimatorThread():
 " main execution block
 """
 if __name__ == '__main__':
-
     # handle command line arguments
     parser = argparse.ArgumentParser(
             description="Web interface for PenguinPi robot",
@@ -783,15 +817,6 @@ if __name__ == '__main__':
             dest="heartbeat", action="store_false")
     parser.add_argument("--heartbeat-interval", help="set heartbeat rate (sec)",
             dest="heartbeat_interval", action="store", type=float)
-    parser.add_argument("-a", "--auto", dest="awb", help="auto white balance", 
-            action="store_const", const="auto")
-    parser.add_argument("-o", "--off", dest="awb", help="disable white balance", 
-            action="store_const", const="off")
-    parser.add_argument("-t", "--tungsten", dest="awb", help="tungsten white balance", 
-            action="store_const", const="tungsten")
-    parser.add_argument("-s", "--sun", dest="awb", help="sun white balance", 
-            const="sunlight", action="store_const")
-    parser.add_argument("-g", "--gain", dest="gain", action="store", help="set white balance gain manually: rbgain OR rgain,bgain")
 
     args = parser.parse_args()
 
@@ -835,51 +860,53 @@ if __name__ == '__main__':
     if args.heartbeat:
         heartbeat_thread = threading.Thread(target=HeartBeatThread, daemon=True)
         heartbeat_thread.start()
+    else:
+        heartbeat_thread = None
 
     # launch the pose estimation thread
     if args.pose:
         pose_thread = threading.Thread(target=PoseEstimatorThread, daemon=True)
         pose_thread.start()
+    else:
+        pose_thread = None
 
     # launch the IP update thread
     ipupdate_thread = threading.Thread(target=IPUpdateThread, daemon=True)
     ipupdate_thread.start()
 
     # Get the camera up and running
-    # see http://picamera.readthedocs.io/en/release-1.10/api_camera.html for details
-
-    # connect to the camera
     try:
-        camera = picamera.PiCamera()
+        picam2 = picamera2.Picamera2()
+        import subprocess
+        log_out = subprocess.check_output(['libcamera-hello', '--list-cameras', '-n']).decode('utf-8')
+        camera_revision = 0
+        for line in log_out.split('\n'):
+            if line.startswith('0'):
+                camera_revision = line.split(' ')[2]
     except:
-        log.fatal("Couldn't open camera connection -- is it being used by another process?");
-    camera.resolution = (IM_WIDTH, IM_HEIGHT)
-    camera.rotation = 180
+        log.fatal("Couldn't open camera connection -- is it being used by another process?")
+        exit(1)
 
-    camera_state = {
-            "rotation": camera.rotation,
-            "awb_mode": camera.awb_mode,
-            "drc_strength": camera.drc_strength,
-            "iso": camera.iso,
-            "brightness": camera.brightness,
-            "exposure_speed": camera.exposure_speed,
-            "shutter_speed": camera.shutter_speed,
-            "meter_mode": camera.meter_mode,
-            "zoom": camera.zoom,
-            "preview": "off"
-            }
-    log.debug(camera_state)
+    video_config = picam2.create_video_configuration(
+        main={"size": (IM_WIDTH, IM_HEIGHT)},
+    )
+    video_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
+    picam2.configure(video_config)
+    stream_output = StreamingOutput()
 
-    if args.awb:
-            camera.awb_mode = args.awb
-    if args.gain:
-            camera.awb_gains = tuple(float(x) for x in args.gain.split(','))
-    logging.debug('white balance mode is ', camera.awb_mode)
+    picam2.start_recording(JpegEncoder(), FileOutput(stream_output))
+
+    metadata = picam2.capture_metadata()
+    controls = {c: metadata[c] for c in ["ExposureTime", "AnalogueGain", "ColourGains"]}
+    log.debug(controls)
+    log.debug('white balance mode is ' + str(picam2.camera_controls['AwbMode']))
 
     # fire up the webserver on a non-priviliged port
     app.jinja_env.lstrip_blocks = True
     app.jinja_env.trim_blocks = True
     app.jinja_env.line_statement_prefix = '#'
 
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8080, threaded=True)
 
+    while not is_shutdown:
+        pass

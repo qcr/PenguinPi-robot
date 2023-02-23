@@ -1,4 +1,29 @@
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.bbl
+*.blg
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+
+## Intermediate documents:
+*.dvi
+*.xdv
+*-converted-to.*
+
+# Misc
+.DS_Store
 __pycache__
+
+# Artefacts
 *.o
 *.elf
 *.hex

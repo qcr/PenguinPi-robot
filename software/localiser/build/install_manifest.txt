@@ -1,2 +1,0 @@
-/usr/local/lib/libpenguinpi.a
-/usr/local/include/penguinpi.h

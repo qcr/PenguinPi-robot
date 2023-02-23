@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 '''
 PenguinPi.py test script
@@ -12,9 +12,8 @@ import threading
 import os
 import argparse
 
-
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import penguinPi as ppi
-
 
 display = ppi.Display(ppi.AD_DISPLAY_A)
 

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          setup-pi-network
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: First-time setup of Penguin Pi Network
+### END INIT INFO
+
+service network-manager stop
+cat << 'EOF' > /etc/NetworkManager/NetworkManager.conf
+[device]
+wifi.scan-rand-mac-address=no
+EOF
+service network-manager start
+
+MAC=$(cat /sys/class/net/wlan0/address)
+
+sed -i "s/XX:XX:XX:XX:XX:XX/$MAC/g" /etc/udev/rules.d/70-persistent-net.rules
+
+service dhcpcd stop
+udevadm control --reload
+udevadm trigger
+service dhcpcd start
+
+SEARCH="SSID_KEY"
+REPLACE="penguinpi:${MAC: -8}"
+
+service hostapd stop
+
+sed -i "s/$SEARCH/$REPLACE/g" /etc/hostapd/hostapd.conf
+
+systemctl disable setup-pi-network
+service hostapd start

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libpenguinpi.a  CMakeFiles/penguinpi.dir/src/localiser.cpp.o CMakeFiles/penguinpi.dir/src/led.cpp.o CMakeFiles/penguinpi.dir/src/tcp_srvr.cpp.o
-/usr/bin/ranlib libpenguinpi.a

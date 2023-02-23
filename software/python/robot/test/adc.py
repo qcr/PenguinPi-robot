@@ -3,8 +3,12 @@
 PenguinPi.py test script
 '''
 
-import penguinPi as ppi
+import os
+import sys
 import time
+
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+import penguinPi as ppi
 
 adcVoltage = ppi.AnalogIn('AD_ADC_V')
 adcCurrent = ppi.AnalogIn('AD_ADC_C')

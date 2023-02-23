@@ -1,4 +1,4 @@
-#!usr/bin/python3
+#!/usr/bin/env python
 
 import sys
 import serial
@@ -175,8 +175,8 @@ def init():
 def close():
     '''Close the UART object
     '''
-    stop_all()
-    time.sleep(1)
+    # stop_all()
+    # time.sleep(1)
     uart.stop()
     logging.info("UART stopped and closed")
 
