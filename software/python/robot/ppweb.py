@@ -4,6 +4,7 @@ import time
 import traceback
 import socket
 import sys
+import signal
 import threading
 import os
 import argparse
@@ -30,6 +31,33 @@ from picamera2.outputs import FileOutput
 
 from flask import Flask, Response, request, render_template, redirect, send_file, jsonify
 
+
+def on_shutdown(signal, frame):
+    print('Received shutdown')
+    global is_shutdown
+    is_shutdown = True
+
+    global picam2
+    picam2.stop_recording()
+
+    # global pose_thread, heartbeat_thread
+    if pose_thread is not None:
+        print('Waiting for pose_thread to join')
+        pose_thread.join()
+    # if heartbeat_thread is not None:
+    #     print('Waiting for heartheat_thead to join')
+    #     heartbeat_thread.join()
+    print('Stop ppi')
+    global mLeft, mRight
+    mLeft.set_velocity(0)
+    mRight.set_velocity(0)
+    ppi.close()
+    print('Bye!')
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, on_shutdown)
+
 # TODO:
 # All the camera options are broken
 # They changed from "simple" single values to triplets (min, max, default)
@@ -49,6 +77,8 @@ x = 0
 y = 0
 theta = 0
 pose_reset = False
+
+is_shutdown = False
 
 # http://flask.pocoo.org/docs/1.0/quickstart/
 
@@ -264,6 +294,7 @@ def handle_invalid_command(error):
 
 def gather_img():
     while True:
+        global stream_output
         with stream_output.condition:
             stream_output.condition.wait()
             frame = stream_output.frame
@@ -610,7 +641,6 @@ def robot_state_json():
 " Heartbeat thread, pulse the red LED periodically
 """
 def HeartBeatThread():
-
     log.info('Heartbeat thread launched, every %.1f sec' % args.heartbeat_interval)
 
     led = ppi.LED('AD_LED_R')
@@ -618,9 +648,11 @@ def HeartBeatThread():
     while True:
         led.set_count(200)
         time.sleep(args.heartbeat_interval)
+        global is_shutdown
+        if is_shutdown:
+            break
 
 def IPUpdateThread():
-
     # magic code from https://stackoverflow.com/questions/7585435/best-way-to-convert-string-to-bytes-in-python-3
     def getHwAddr(ifname):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -659,6 +691,9 @@ def IPUpdateThread():
         hat.set_mac_wlan(mac)
 
         time.sleep(20)
+        global is_shutdown
+        if is_shutdown:
+            break
 
 """
 " Pose estimation thread
@@ -741,6 +776,9 @@ def PoseEstimatorThread():
 
         # sleep a bit
         time.sleep(dt)
+        global is_shutdown
+        if is_shutdown:
+            break
 
 
 
@@ -748,7 +786,6 @@ def PoseEstimatorThread():
 " main execution block
 """
 if __name__ == '__main__':
-
     # handle command line arguments
     parser = argparse.ArgumentParser(
             description="Web interface for PenguinPi robot",
@@ -823,11 +860,15 @@ if __name__ == '__main__':
     if args.heartbeat:
         heartbeat_thread = threading.Thread(target=HeartBeatThread, daemon=True)
         heartbeat_thread.start()
+    else:
+        heartbeat_thread = None
 
     # launch the pose estimation thread
     if args.pose:
         pose_thread = threading.Thread(target=PoseEstimatorThread, daemon=True)
         pose_thread.start()
+    else:
+        pose_thread = None
 
     # launch the IP update thread
     ipupdate_thread = threading.Thread(target=IPUpdateThread, daemon=True)
@@ -852,6 +893,7 @@ if __name__ == '__main__':
     video_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
     picam2.configure(video_config)
     stream_output = StreamingOutput()
+
     picam2.start_recording(JpegEncoder(), FileOutput(stream_output))
 
     metadata = picam2.capture_metadata()
@@ -865,3 +907,6 @@ if __name__ == '__main__':
     app.jinja_env.line_statement_prefix = '#'
 
     app.run(host='0.0.0.0', port=8080, threaded=True)
+
+    while not is_shutdown:
+        pass
