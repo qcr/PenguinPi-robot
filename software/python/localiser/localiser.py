@@ -59,13 +59,9 @@ def home():
 
 @app.route('/camera/get', methods = ['GET'])
 def picam():
-
-    global display_img,image
-    if robot:
-        # encode the grey scale image as PNG
-        image_data = cv2.imencode('.png', display_img)[1]
-    else:
-        image_data = cv2.imencode('.png', image)[1]
+    global image
+    # encode the grey scale image as PNG
+    image_data = cv2.imencode('.png', image)[1]
     # make it streamable and return an HTTP image response
     return send_file(io.BytesIO(image_data), 'image/png')
 
@@ -121,7 +117,7 @@ class Contours:
 
 
 def LocalizerThread():
-    global x, y, theta, display_img, image
+    global x, y, theta, image, robot
 
     log.info('Localizer thread launched, running at %.1f Hz' % args.localizer_rate)
     dt = 1/args.localizer_rate

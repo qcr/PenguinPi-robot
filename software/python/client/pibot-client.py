@@ -3,6 +3,7 @@ import time
 import requests
 import sys
 from threading import Thread
+import json
 
 import cv2
 import numpy as np
@@ -38,10 +39,19 @@ class VideoStreamWidget(object):
 
 
 class PiBot(object):
-    def __init__(self, ip='localhost', port=8080):
+    def __init__(self, ip='localhost', port=8080, localiser_ip=None, localiser_port=8080):
         self.ip = ip
         self.port = port
+        self.localiser_ip = localiser_ip
+        self.localiser_port = localiser_port
         self.endpoint = 'http://{}:{}'.format(self.ip, self.port)
+        if localiser_ip is not None:
+            self.localiser_endpoint = 'http://{}:{}'.format(localiser_ip, localiser_port)
+            print('Localiser setup')
+        else:
+            self.localiser_endpoint = None
+            print('Note: localiser was not setup')
+
         self.camera = VideoStreamWidget('{}/camera/get'.format(self.endpoint))
         print('Wait for first camera image')
         while self.camera.frame is None:
@@ -188,15 +198,43 @@ class PiBot(object):
         except requests.exceptions.Timeout as e:
             print('Timed out attempting to communicate with {}:{}'.format(self.ip, self.port), file=sys.stderr)
             return None
+
+    def getLocalizerImage(self):
+        if self.localiser_endpoint is None:
+            print('No localiser endpoint specified')
+            return None
+        try:
+            resp = requests.get('{}/camera/get'.format(self.localiser_endpoint), timeout=1)
+            img = np.frombuffer(resp.content, dtype=np.uint8)
+            img = cv2.imdecode(img, cv2.IMREAD_COLOR)
+            return img
+        except requests.exceptions.Timeout as e:
+            print('Timed out attempting to communicate with {}:{}'.format(self.localiser_ip, self.localiser_port), file=sys.stderr)
+            return None
+
+    def getLocalizerPose(self, group_number):
+        if self.localiser_endpoint is None:
+            print('No localiser endpoint specified')
+            return None
+        try:
+            resp = requests.get('{}/pose/get?group={}'.format(self.localiser_endpoint, group_number), timeout=1)
+            json_decoded = json.loads(resp.text)
+            x, y, theta = json_decoded['pose']['x'], json_decoded['pose']['y'], json_decoded['pose']['theta']
+            return float(x), float(y), float(theta)
+        except requests.exceptions.Timeout as e:
+            print('Timed out attempting to communicate with {}:{}'.format(self.localiser_ip, self.localiser_port), file=sys.stderr)
+            return None
  
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PiBot client')
     parser.add_argument('--ip', type=str, default='localhost', help='IP address of PiBot')
     parser.add_argument('--port', type=int, default=8080, help='Port of PiBot')
+    parser.add_argument('--localiser-ip', type=str, default=None, help='IP address of localiser', required=False)
+    parser.add_argument('--localiser-port', type=int, default=8080, help='Port of localiser', required=False)
     args = parser.parse_args()
 
-    bot = PiBot(args.ip, args.port)
+    bot = PiBot(args.ip, args.port, args.localiser_ip, args.localiser_port)
     img = bot.getImage()
     print("image size %d by %d" % (img.shape[0], img.shape[1]))
 
