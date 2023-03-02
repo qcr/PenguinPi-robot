@@ -21,7 +21,7 @@ Example of MATLAB API usage:
 ```matlab
 robot = PiBot('192.168.3.4')
 robot.setVelocity(20, -20); % set left & right wheel speeds to +20 and -20 respectively
-robot.stop(); % stop the robot moviing
+robot.stop(); % stop the robot moving
 batteryVoltage = pb.getVoltage(); % get battery voltage
 pb.setLed(2, true);  % turn on the green LED
 pb.printfOLED('hello world'); % write string to the OLED display
