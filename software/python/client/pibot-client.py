@@ -255,12 +255,12 @@ if __name__ == '__main__':
     # bot.setVelocity(-50, 50, duration=2)
     # bot.setVelocity(100, 100, 7, 3)
 
-    # print(f'Voltage: {bot.getVoltage():.2f}V')
-    # print(f'Current: {bot.getCurrent():.2f}A')
-    # encs = bot.getEncoders()
-    # print(f'Encoder left: {encs[0]}, right: {encs[1]}')
+    print(f'Voltage: {bot.getVoltage():.2f}V')
+    print(f'Current: {bot.getCurrent():.2f}A')
+    encs = bot.getEncoders()
+    print(f'Encoder left: {encs[0]}, right: {encs[1]}')
 
-    # cv2.imshow('image', img)
-    # cv2.waitKey(0)
+    cv2.imshow('image', img)
+    cv2.waitKey(0)
 
-    # bot.resetEncoder()
+    bot.resetEncoder()
