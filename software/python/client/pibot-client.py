@@ -230,27 +230,37 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PiBot client')
     parser.add_argument('--ip', type=str, default='localhost', help='IP address of PiBot')
     parser.add_argument('--port', type=int, default=8080, help='Port of PiBot')
-    parser.add_argument('--localiser-ip', type=str, default=None, help='IP address of localiser', required=False)
+    parser.add_argument('--localiser-ip', type=str, default='172.19.232.104', help='IP address of localiser', required=False)
     parser.add_argument('--localiser-port', type=int, default=8080, help='Port of localiser', required=False)
+    parser.add_argument('--group_num', type=int, default=None, help='Group number', required=False)
     args = parser.parse_args()
 
     bot = PiBot(args.ip, args.port, args.localiser_ip, args.localiser_port)
     img = bot.getImage()
-    print("image size %d by %d" % (img.shape[0], img.shape[1]))
+    print("robot image size %d by %d" % (img.shape[0], img.shape[1]))
 
-    bot.setVelocity(-50, -50)
-    time.sleep(2)
-    bot.stop()
+    localizer_img = bot.getLocalizerImage()
+    print("localiser image size %d by %d" % (localizer_img.shape[0], localizer_img.shape[1]))
 
-    bot.setVelocity(-50, 50, duration=2)
-    bot.setVelocity(100, 100, 7, 3)
+    robot_x, robot_y, robot_theta = bot.getLocalizerPose(args.group_num)
+    if robot_x == 0 and robot_y == 0 and robot_theta == 0:
+        print("robot was not found by localizer")
+    else:
+        print("robot is currently at: x=%.2f y=%.2f theta=%.2f" % (robot_x, robot_y, robot_theta))
 
-    print(f'Voltage: {bot.getVoltage():.2f}V')
-    print(f'Current: {bot.getCurrent():.2f}A')
-    encs = bot.getEncoders()
-    print(f'Encoder left: {encs[0]}, right: {encs[1]}')
+    # bot.setVelocity(-50, -50)
+    # time.sleep(2)
+    # bot.stop()
 
-    cv2.imshow('image', img)
-    cv2.waitKey(0)
+    # bot.setVelocity(-50, 50, duration=2)
+    # bot.setVelocity(100, 100, 7, 3)
 
-    bot.resetEncoder()
+    # print(f'Voltage: {bot.getVoltage():.2f}V')
+    # print(f'Current: {bot.getCurrent():.2f}A')
+    # encs = bot.getEncoders()
+    # print(f'Encoder left: {encs[0]}, right: {encs[1]}')
+
+    # cv2.imshow('image', img)
+    # cv2.waitKey(0)
+
+    # bot.resetEncoder()
