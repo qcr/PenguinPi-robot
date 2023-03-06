@@ -39,6 +39,7 @@ groups = {}
 # USER web page: home page
 #
 # a bit of everything
+@app.route('/', methods = ['GET'])
 @app.route('/console', methods = ['GET'])
 def home():
     
@@ -145,7 +146,10 @@ def LocalizerThread():
         im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
         img = cv2.warpPerspective(im1, h, (500,500))
         mask = cv2.inRange(img, 220,255)
-        im2, robot_contours, hierarchy_rbt = cv2.findContours(mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if cv2.__version__.startswith("3."):
+            _, robot_contours, hierarchy_rbt = cv2.findContours(mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        else:
+            robot_contours, hierarchy_rbt = cv2.findContours(mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
      
 
         img1 = cv2.flip(img.copy(),-1)

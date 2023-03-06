@@ -22,7 +22,25 @@
         </table>
     </td>
     <td>
-       <img src="/camera/get" style="height:auto; width:100%; max-width:100%;" width="100%">
+       <img id="localiserimg" src="/camera/get" style="height:auto; width:100%; max-width:100%;" width="100%">
+       <script>
+         // Set the initial timestamp
+         var timestamp = new Date().getTime();
+   
+         // Refresh the image every 5 seconds
+         setInterval(function() {
+            var image = document.getElementById("localiserimg");
+            image.setAttribute("src", "/camera/get?" + timestamp);
+            timestamp = new Date().getTime();
+         }, 5000);
+   
+         // Refresh the image when the page is refreshed
+         window.onload = function() {
+            var image = document.getElementById("localiserimg");
+            image.setAttribute("src", "/camera/get?" + timestamp);
+            timestamp = new Date().getTime();
+         };
+      </script>
     </td>
     </tr>
 </table>
