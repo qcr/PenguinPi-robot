@@ -19,6 +19,9 @@ img = pb.getImageFromCamera();
 ```
 which is an RGB image with uint8 pixel data.  Typically acquiring an images takes 100-200ms.
 
+### IP camera package
+To obtain images, you need the [MATLAB Support Package for IP Cameras](https://au.mathworks.com/help/supportpkg/ipcamera/index.html). Typically installation is straightforward - MATLAB will simply ask you to install the package when you try to use the `ipcam()` function and you do not have the support package installed. In case you get errors that "There was a problem downloading the support package", please use the [Download Support Packages](https://au.mathworks.com/support/install/support-software-downloader.html) application on a different machine and follow the instructions.
+
 ## Motor control
 ### Access the motor encoders
 ```
