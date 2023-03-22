@@ -22,25 +22,49 @@
         </table>
     </td>
     <td>
-       <img id="localiserimg" src="/camera/get" style="height:auto; width:100%; max-width:100%;" width="100%">
-       <script>
-         // Set the initial timestamp
-         var timestamp = new Date().getTime();
-   
-         // Refresh the image every 5 seconds
-         setInterval(function() {
-            var image = document.getElementById("localiserimg");
-            image.setAttribute("src", "/camera/get?" + timestamp);
-            timestamp = new Date().getTime();
-         }, 5000);
-   
-         // Refresh the image when the page is refreshed
-         window.onload = function() {
-            var image = document.getElementById("localiserimg");
-            image.setAttribute("src", "/camera/get?" + timestamp);
-            timestamp = new Date().getTime();
-         };
-      </script>
+        <div id="image-container" style="position: relative;">
+            <img id="localiserimg" src="/camera/get" style="height:auto; width:100%; max-width:100%;" width="100%">
+            <div id="coordinates" style="position: absolute; background-color: white; padding: 5px; border: 1px solid black; display: none;"></div>
+        </div>
+        <script>
+            const image = document.getElementById('localiserimg');
+            const coordinates = document.getElementById('coordinates');
+
+            // Scaling factors for the x and y axes
+            const scaleX = 2 / 500;
+            const scaleY = 2 / 500;
+
+            image.addEventListener('click', function(event) {
+               const rect = image.getBoundingClientRect();
+               const x = event.clientX - rect.left;
+               const y = event.clientY - rect.top;
+
+               // Convert pixel coordinates to world coordinates
+               const worldX = x * scaleX;
+               const worldY = y * scaleY;
+
+               coordinates.style.left = `${x}px`;
+               coordinates.style.top = `${y}px`;
+               coordinates.style.display = 'block';
+               coordinates.textContent = `X: ${worldX.toFixed(2)}, Y: ${worldY.toFixed(2)}`;
+            });
+            // Set the initial timestamp
+            var timestamp = new Date().getTime();
+
+            // Refresh the image every 5 seconds
+            setInterval(function() {
+                var image = document.getElementById("localiserimg");
+                image.setAttribute("src", "/camera/get?" + timestamp);
+                timestamp = new Date().getTime();
+            }, 5000);
+
+            // Refresh the image when the page is refreshed
+            window.onload = function() {
+                var image = document.getElementById("localiserimg");
+                image.setAttribute("src", "/camera/get?" + timestamp);
+                timestamp = new Date().getTime();
+            };
+        </script>
     </td>
     </tr>
 </table>
