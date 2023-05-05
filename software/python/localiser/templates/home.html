@@ -41,7 +41,7 @@
 
                // Convert pixel coordinates to world coordinates
                const worldX = x * scaleX;
-               const worldY = y * scaleY;
+               const worldY = 2 - y * scaleY;
 
                coordinates.style.left = `${x}px`;
                coordinates.style.top = `${y}px`;
