@@ -62,8 +62,8 @@ signal.signal(signal.SIGINT, on_shutdown)
 # All the camera options are broken
 # They changed from "simple" single values to triplets (min, max, default)
 
-IM_WIDTH = 320
-IM_HEIGHT = 240
+IM_WIDTH = 1640
+IM_HEIGHT = 1232
 
 # set default values
 log_level = logging.INFO
