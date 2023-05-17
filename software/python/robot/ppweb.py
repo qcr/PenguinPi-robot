@@ -892,6 +892,10 @@ if __name__ == '__main__':
     )
     video_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
     picam2.configure(video_config)
+    try:
+        picam2.set_controls({"AfMode": libcamera.controls.AfModeEnum.Manual, "LensPosition": 0.5}) #Set fixed focal length for Rpiv3 Camera (1/0.5 or 2m)
+    except:
+        log.info("Couldn't set Autofocus mode. Assuming PiCameraV2")
     stream_output = StreamingOutput()
 
     picam2.start_recording(JpegEncoder(), FileOutput(stream_output))
