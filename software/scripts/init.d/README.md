@@ -1,6 +1,6 @@
 # PenguinPi Startup Scripts
 
-
+This folder has scripts for starting PenguinPi services with init.d 
 
 **Penguin-webserver**
 
