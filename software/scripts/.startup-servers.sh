@@ -1,3 +1,6 @@
 #!/bin/bash
-python /home/pi/PenguinPi-robot/software/python/robot/ppweb.py &
-python /home/pi/PenguinPi-robot/software/scripts/GPIOSoftShutdown.py &
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) #Find dir of this script
+
+python $SCRIPT_DIR/../python/robot/ppweb.py &
+python $SCRIPT_DIR/GPIOSoftShutdown.py &
