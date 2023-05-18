@@ -14,14 +14,14 @@ echo "Path to startup script $START_FILE"
 while read line; do
 
    # Replace all instances on line of Khulna with Dhaka
-   echo ${line//FILE_PATH/$START_FILE/}
+   echo ${line//FILE_PATH/$START_FILE}
 
 done < $SCRIPT_DIR/penguin-webserver > $SCRIPT_DIR/penguin-webserver_pathed
 chmod +x $SCRIPT_DIR/penguin-webserver_pathed
 
-#cp $SCRIPT_DIR/penguin-webserver_pathed /etc/init.d/penguin-webserver #Copy penguin web server to init.d
+cp $SCRIPT_DIR/penguin-webserver_pathed /etc/init.d/penguin-webserver #Copy penguin web server to init.d
 
-#update-rc.d penguin-webserver defaults  #update
-#service penguin-webserver start #start
+update-rc.d penguin-webserver defaults  #update
+service penguin-webserver start #start
 
-#rm $SCRIPT_DIR/penguin-webserver_pathed
+rm $SCRIPT_DIR/penguin-webserver_pathed
