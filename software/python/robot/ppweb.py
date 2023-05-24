@@ -62,8 +62,8 @@ signal.signal(signal.SIGINT, on_shutdown)
 # All the camera options are broken
 # They changed from "simple" single values to triplets (min, max, default)
 
-IM_WIDTH = 640  
-IM_HEIGHT = 480
+IM_WIDTH = 320  
+IM_HEIGHT = 240
 
 # set default values
 log_level = logging.INFO
@@ -894,10 +894,15 @@ if __name__ == '__main__':
     video_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
     picam2.configure(video_config)
     try:
+        picam2.set_controls({"FrameRate": 30})
         picam2.set_controls({"AfMode": libcamera.controls.AfModeEnum.Manual, "LensPosition": 0.5}) #Set fixed focal length for Rpiv3 Camera (1/0.5 or 2m)
     except:
         log.info("Couldn't set Autofocus mode. Assuming PiCameraV2")
     stream_output = StreamingOutput()
+
+    jpeg_encoder = JpegEncoder()
+    jpeg_encoder.s
+
 
     picam2.start_recording(JpegEncoder(), FileOutput(stream_output))
 
