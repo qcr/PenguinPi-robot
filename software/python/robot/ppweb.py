@@ -900,10 +900,6 @@ if __name__ == '__main__':
         log.info("Couldn't set Autofocus mode. Assuming PiCameraV2")
     stream_output = StreamingOutput()
 
-    jpeg_encoder = JpegEncoder()
-    jpeg_encoder.s
-
-
     picam2.start_recording(JpegEncoder(), FileOutput(stream_output))
 
     metadata = picam2.capture_metadata()
