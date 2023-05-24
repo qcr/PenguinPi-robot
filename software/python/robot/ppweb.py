@@ -889,6 +889,7 @@ if __name__ == '__main__':
 
     video_config = picam2.create_video_configuration(
         main={"size": (IM_WIDTH, IM_HEIGHT)},
+        raw={"size": (1640, 1232 )}
     )
     video_config["transform"] = libcamera.Transform(hflip=1, vflip=1)
     picam2.configure(video_config)
