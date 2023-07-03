@@ -74,7 +74,7 @@ class PiBot(object):
                     assert acceleration_time < duration / 2.0, 'acceleration_time must be < duration/2'
                     params.append('accel={}'.format(acceleration_time))
 
-            print('{}/robot/set/velocity?{}'.format(self.endpoint, '&'.join(params)))
+            # print('{}/robot/set/velocity?{}'.format(self.endpoint, '&'.join(params)))
             resp = requests.get('{}/robot/set/velocity?{}'.format(self.endpoint, '&'.join(params)))
             
             if resp.status_code != 200:
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PiBot client')
     parser.add_argument('--ip', type=str, default='localhost', help='IP address of PiBot')
     parser.add_argument('--port', type=int, default=8080, help='Port of PiBot')
-    parser.add_argument('--localiser-ip', type=str, default='172.19.232.104', help='IP address of localiser', required=False)
+    parser.add_argument('--localiser-ip', type=str, default='egb439localiser1', help='IP address of localiser', required=False)
     parser.add_argument('--localiser-port', type=int, default=8080, help='Port of localiser', required=False)
     parser.add_argument('--group_num', type=int, default=None, help='Group number', required=False)
     args = parser.parse_args()
@@ -239,14 +239,15 @@ if __name__ == '__main__':
     img = bot.getImage()
     print("robot image size %d by %d" % (img.shape[0], img.shape[1]))
 
-    localizer_img = bot.getLocalizerImage()
-    print("localiser image size %d by %d" % (localizer_img.shape[0], localizer_img.shape[1]))
+    if bot.localiser_endpoint is not None:
+        localizer_img = bot.getLocalizerImage()
+        print("localiser image size %d by %d" % (localizer_img.shape[0], localizer_img.shape[1]))
 
-    robot_x, robot_y, robot_theta = bot.getLocalizerPose(args.group_num)
-    if robot_x == 0 and robot_y == 0 and robot_theta == 0:
-        print("robot was not found by localizer")
-    else:
-        print("robot is currently at: x=%.2f y=%.2f theta=%.2f" % (robot_x, robot_y, robot_theta))
+        robot_x, robot_y, robot_theta = bot.getLocalizerPose(args.group_num)
+        if robot_x == 0 and robot_y == 0 and robot_theta == 0:
+            print("robot was not found by localizer")
+        else:
+            print("robot is currently at: x=%.2f y=%.2f theta=%.2f" % (robot_x, robot_y, robot_theta))
 
     # bot.setVelocity(-50, -50)
     # time.sleep(2)
