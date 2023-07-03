@@ -27,3 +27,4 @@ __pycache__
 *.o
 *.elf
 *.hex
+.Makefile.swp
