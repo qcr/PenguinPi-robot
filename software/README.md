@@ -25,13 +25,21 @@ The easiest way is to connect via a screen and keyboard/mouse.
 ### Via Wifi
 You can also connect to the PI over the network using ssh over WiFi or the Ethernet cable. See the [README-WiFi.md](README-WiFi.md).
 
-### Using ethernet cable
+### Using an ethernet cable
 The ethernet port can be used. It will be assigned an IP address from the DHCP server in your network (e.g. of the QUT DHCP server). The IP will be shown on the Pi's screen.
 
 ### Internet access for the PenguinPi using the QUT Enterprise Network
-If you can connect to your PenguinPi on the QUT network, but cannot access internet, you have to use the IAClient. You can set it up with by using `~/InternetAccessClient_Linux_ARM32v71-RaspberryPi_v4.0.250_QUT/IAClientConfigCmd` and entering your username and password. If the domain is empty, please enter `qut.edu.au`. You can then run `~/InternetAccessClient_Linux_ARM32v71-RaspberryPi_v4.0.250_QUT/IAClient` in a terminal and keep it open (or run in the background by appending ` &` after the command).
+If you can connect to your PenguinPi on the QUT network, but cannot access internet, you have to use the IAClient. You can set it up by using `~/InternetAccessClient_Linux_ARM32v71-RaspberryPi_v4.0.250_QUT/IAClientConfigCmd` and entering your username and password. If the domain is empty, please enter `qut.edu.au`. You can then run `~/InternetAccessClient_Linux_ARM32v71-RaspberryPi_v4.0.250_QUT/IAClient` in a terminal and keep it open (or run in the background by appending ` &` after the command).
 
 ### Old instructions, please ignore or use with caution
+<details><summary>More details, but use with caution!</summary>
 If you need the IP address to stay the same, it is highly recommended you don't use a static IP, but try using a hostname. If you still must have a static IP address, do not edit the `/etc/network/interfaces` file. Since Raspian Jessie, you should use the `/etc/dhcpcd.conf` file to set a static IP address; to do so, follow these [instructions](https://raspberrypi.stackexchange.com/questions/37920/how-do-i-set-up-networking-wifi-static-ip-address/74428#74428) or [these ones](https://www.tomshardware.com/how-to/static-ip-raspberry-pi).
 
-If you want access the internet over the PenguinPis WiFi hotspot (using the raspberry pi as a WiFi router), you will have to enable IP forwarding. This is already enabled by default.
+If you want to access the internet over the PenguinPis WiFi hotspot (using the raspberry pi as a WiFi router), you will have to enable IP forwarding. This is already enabled by default.
+</details>
+
+## Deploying a PenguinPi
+- Flash the HAT: `cd ~/PenguinPi-robot/software/atmelStudio && make` (Steven Bulmer to update instructions)
+- Set up the network with the correct MAC for the robot: `cd ~/PenguinPi-robot/software/scripts && sudo update_networking_script.sh`
+- Reboot the PenguinPi
+- On your local machine, run the `motortest.m` and `cameratest.m` scripts (MATLAB) or the `test_camera_motors.py` script (Python). Note that you will need to update the IP.
