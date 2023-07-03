@@ -40,6 +40,7 @@ If you want to access the internet over the PenguinPis WiFi hotspot (using the r
 
 ## Deploying a PenguinPi
 - Flash the HAT: `cd ~/PenguinPi-robot/software/atmelStudio && make` (Steven Bulmer to update instructions)
-- Set up the network with the correct MAC for the robot: `cd ~/PenguinPi-robot/software/scripts && sudo update_networking_script.sh`
+- Set up the network with the correct MAC for the robot: `cd ~/PenguinPi-robot/software/scripts && sudo sh update_networking_script.sh`
 - Reboot the PenguinPi
-- On your local machine, run the `motortest.m` and `cameratest.m` scripts (MATLAB) or the `test_camera_motors.py` script (Python). Note that you will need to update the IP.
+- Set up the proxy: `cd ~/PenguinPi-robot/software/scripts && sh setup_proxy.sh`
+- On your local machine, run the `motortest.m` and `cameratest.m` scripts (MATLAB) or the `test_camera_motors.py` script (Python). Note that you will need to update the IP - for the Python script, simply run `python test_camera_motors.py --ip AAA.BBB.CCC.DDD`.
